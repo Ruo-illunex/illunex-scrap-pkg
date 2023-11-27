@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "scrap-mng-streamlit"
+version = "0.1.0"
+description = ""
+authors = ["Ruo Lee <ruo@illunex.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+streamlit = "^1.28.2"
+requests = "^2.31.0"
+beautifulsoup4 = "^4.12.2"
+pandas = "^2.1.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

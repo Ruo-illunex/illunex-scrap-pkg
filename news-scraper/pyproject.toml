@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "news-scraper"
+version = "0.1.0"
+description = ""
+authors = ["Ruo Lee <ruo@illunex.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.31.0"
+sqlalchemy = "^2.0.23"
+beautifulsoup4 = "^4.12.2"
+fastapi = "^0.104.1"
+uvicorn = "^0.24.0.post1"
+aiohttp = "^3.9.0"
+pymysql = "^1.1.0"
+feedparser = "^6.0.10"
+pyyaml = "^6.0.1"
+schedule = "^1.2.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

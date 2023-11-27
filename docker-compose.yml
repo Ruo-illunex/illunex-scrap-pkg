@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  scrap_mng_streamlit:
+    build: ./scrap_mng_streamlit
+    ports:
+      - "8501:8080"  # 포트 변경
+    env_file:
+      - ./scrap_mng_streamlit/.env
+    command: streamlit run run.py --server.port 8080 --server.address 0.0.0.0
+
+  news_scraper:
+    build: ./news-scraper
+    ports:
+      - "8500:8080"  # 포트 변경
+    env_file:
+      - ./news-scraper/.env
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --workers 5

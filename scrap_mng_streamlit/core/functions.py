@@ -1,0 +1,184 @@
+import html
+import json
+
+import streamlit as st
+import streamlit.components.v1 as components
+from bs4 import BeautifulSoup
+
+from core.utils import create_scrap_manager, get_scrap_manager_by_id, update_scrap_manager, delete_scrap_manager, get_html, safe_extract
+
+
+import streamlit as st
+import json
+
+
+def create_form():
+    with st.form(key='create_form'):
+        portal = st.text_input("Portal")
+        parsing_target_name = st.text_input("Parsing Target Name")
+        parsing_method = st.selectbox("Parsing Method", ("BeautifulSoup", "Selenium(Not Supported Yet)"))
+
+        if parsing_method == "BeautifulSoup":
+            # 파싱 규칙 관련 필드
+            selector = st.text_input("Selector")
+            attribute_name = st.text_input("Attribute Name")
+            default = st.text_input("Default")
+            find = st.checkbox("Find")
+            tag = st.text_input("Tag")
+            find_attributes_key = st.text_input("Find Attributes Key")
+            find_attributes_value = st.text_input("Find Attributes Value")
+            find_attributes = {find_attributes_key: find_attributes_value} if find_attributes_key else None
+            find_all = st.checkbox("Find All")
+
+            parsing_rule = {
+                "selector": selector,
+                "attribute_name": attribute_name,
+                "default": default,
+                "find": find,
+                "tag": tag,
+                "find_attributes": find_attributes,
+                "find_all": find_all
+            }
+        
+        elif parsing_method == "Selenium(Not Supported Yet)":
+            st.warning("Selenium is not supported yet.")
+
+        submit_button = st.form_submit_button(label='Create')
+
+        if submit_button:
+
+            scrap_manager_data = {
+                "portal": portal,
+                "parsing_target_name": parsing_target_name,
+                "parsing_method": parsing_method,
+                "parsing_rule": parsing_rule
+            }
+
+            if create_scrap_manager(scrap_manager_data):
+                st.success("Scrap Manager created successfully!")
+            else:
+                st.error("Failed to create Scrap Manager.")
+
+
+def update_form():
+    scrap_manager_id = st.number_input("Enter Scrap Manager ID to Update", min_value=1, step=1)
+    
+    if st.button("Load Scrap Manager"):
+        scrap_manager = get_scrap_manager_by_id(scrap_manager_id)
+        if scrap_manager:
+            st.session_state.scrap_manager = scrap_manager
+        else:
+            st.error("Scrap Manager not found.")
+
+    if 'scrap_manager' in st.session_state:
+        with st.form('update_form'):
+            portal = st.text_input("Portal", value=st.session_state.scrap_manager["portal"])
+            parsing_target_name = st.text_input("Parsing Target Name", value=st.session_state.scrap_manager["parsing_target_name"])
+            parsing_method = st.selectbox("Parsing Method", ("BeautifulSoup", "Selenium(Not Supported Yet)"), index=0 if st.session_state.scrap_manager["parsing_method"] == "BeautifulSoup" else 1)
+            
+            if parsing_method == "BeautifulSoup":
+                # 파싱 규칙 관련 필드
+                selector = st.text_input("Selector", value=st.session_state.scrap_manager["parsing_rule"]["selector"])
+                attribute_name = st.text_input("Attribute Name", value=st.session_state.scrap_manager["parsing_rule"]["attribute_name"])
+                default = st.text_input("Default", value=st.session_state.scrap_manager["parsing_rule"]["default"])
+                find = st.checkbox("Find", value=st.session_state.scrap_manager["parsing_rule"]["find"])
+                tag = st.text_input("Tag", value=st.session_state.scrap_manager["parsing_rule"]["tag"])
+                find_attributes = st.text_input("Find Attributes", value=json.dumps(st.session_state.scrap_manager["parsing_rule"]["find_attributes"]))
+                find_all = st.checkbox("Find All", value=st.session_state.scrap_manager["parsing_rule"]["find_all"])
+
+                parsing_rule = {
+                    "selector": selector,
+                    "attribute_name": attribute_name,
+                    "default": default,
+                    "find": find,
+                    "tag": tag,
+                    "find_attributes": json.loads(find_attributes) if find_attributes else None,
+                    "find_all": find_all
+                }
+
+            submitted = st.form_submit_button("Update")
+
+            if submitted:
+                updated_data = {
+                    "portal": portal,
+                    "parsing_target_name": parsing_target_name,
+                    "parsing_method": parsing_method,
+                    "parsing_rule": parsing_rule
+                }
+                if update_scrap_manager(scrap_manager_id, updated_data):
+                    st.success("Scrap Manager updated successfully!")
+                else:
+                    st.error("Failed to update Scrap Manager.")
+
+
+def delete_form():
+    scrap_manager_id = st.number_input("Enter Scrap Manager ID to Delete", min_value=1, step=1)
+
+    if st.button("Delete Scrap Manager"):
+        if delete_scrap_manager(scrap_manager_id):
+            st.success("Scrap Manager deleted successfully!")
+        else:
+            st.error("Failed to delete Scrap Manager.")
+
+
+def check_html(test_url):
+    if st.button("Check HTML"):
+        # streamlit 변수설정
+        st.session_state.html = get_html(test_url)
+        # 접을 수 있도록 펼침
+        code_col, preview_col = st.columns(2)
+        height = 600
+        with code_col:
+                with st.expander("HTML Code Result"):
+                    # 사용자 정의 스타일을 적용한 코드 블록
+                    components.html(f"""
+                        <style>
+                            .code-container {{
+                                height: 600px; /* 높이 제한 */
+                                overflow-y: scroll; /* 세로 스크롤 */
+                                background-color: #f0f0f0; /* 밝은 배경색 */
+                                color: #333; /* 어두운 글씨 색 */
+                            }}
+                            pre {{
+                                white-space: pre-wrap; /* 코드 줄바꿈 */
+                            }}
+                        </style>
+                        <div class="code-container">
+                            <pre>{html.escape(st.session_state.html)}</pre>
+                        </div>
+                    """, height=height)
+
+        with preview_col:
+            components.iframe(test_url, width=800, height=height, scrolling=True)
+
+
+def scrap_test_beautiful_soup(html):
+    with st.container():
+        soup = BeautifulSoup(html, 'html.parser')
+        selector = st.text_input(label="Enter selector to scrape:", value=None)
+        attribute_name = st.text_input(label="Enter attribute to scrape:", value=None)
+        default = st.text_input(label="Enter default value to scrape:", value=None)
+        find = st.checkbox("Find")
+        tag = st.text_input(label="Enter tag to scrape:", value=None)
+        # attributes는 dict 형태로 입력
+        attributes_key = st.text_input(label="Enter attributes key to scrape:", value=None)
+        attributes_value = st.text_input(label="Enter attributes value to scrape:", value=None)
+        find_attributes = {attributes_key: attributes_value} if attributes_key else None
+        find_all = st.checkbox("Find All")
+
+    if st.button("Scrap"):
+        st.session_state.result = safe_extract(
+            soup,
+            selector=selector,
+            attribute_name=attribute_name,
+            default=default,
+            find=find,
+            tag=tag,
+            find_attributes=find_attributes,
+            find_all=find_all
+        )
+        if not st.session_state.result:
+            st.error("Failed to scrape.", icon="❌")
+        else:
+            st.success("Scraped successfully!", icon="✅")
+            st.write(st.session_state.result)
