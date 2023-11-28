@@ -986,6 +986,33 @@ watchdog = {version = ">=2.1.5", markers = "platform_system != \"Darwin\""}
 snowflake = ["snowflake-connector-python (>=2.8.0)", "snowflake-snowpark-python (>=0.9.0)"]
 
 [[package]]
+name = "streamlit-option-menu"
+version = "0.3.6"
+description = "streamlit-option-menu is a simple Streamlit component that allows users to select a single item from a list of options in a menu."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "streamlit-option-menu-0.3.6.tar.gz", hash = "sha256:4f02faadf4d1d1e9a00c3740a2ebd8a3f105a2cdf63fdc0e34cf01ef7267e9de"},
+    {file = "streamlit_option_menu-0.3.6-py3-none-any.whl", hash = "sha256:d051af217ff1e4513e2cc6f3c79ccd4b34d77390b16c34711032e998d41e9850"},
+]
+
+[package.dependencies]
+streamlit = ">=0.63"
+
+[[package]]
+name = "streamlit-timeline"
+version = "0.0.2"
+description = "A Streamlit custom component to display a timeline"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "streamlit-timeline-0.0.2.tar.gz", hash = "sha256:6d77e418cc08211d0cbe87f21cb9b57038b1cda68c364e5a4e518496f6db955b"},
+]
+
+[package.dependencies]
+streamlit = ">=0.70"
+
+[[package]]
 name = "tenacity"
 version = "8.2.3"
 description = "Retry code until it succeeds"
@@ -1175,4 +1202,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "82709ae0bfc39e594b28cc9a62830b6a2b61a141254dea71037b08e8a7dc9c81"
+content-hash = "3719832d3f56708b110eaa4fa1f2c44b8d7dd2afb95d5b02c7ccf7777057ecf3"

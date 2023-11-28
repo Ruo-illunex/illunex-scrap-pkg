@@ -1,4 +1,5 @@
 import traceback
+from datetime import datetime
 
 import requests
 
@@ -107,3 +108,261 @@ def safe_extract(
         stack_trace = traceback.format_exc()
         print(f"Error: {e}\n{stack_trace}")
         return default
+
+
+# TimelineJS JSON 포맷에 맞춰서 데이터를 변환하는 함수 정의
+def convert_to_timelinejs_format_with_colors(df):
+    events = []
+    color_map = {
+        "daum": "#1E90FF",     # dodgerblue
+        "naver": "#FF69B4",    # hotpink
+        "the bell": "#FFD700",  # gold
+        "startupn": "#FF8C00",  # darkorange
+        "startuptoday": "#00FF00",   # lime
+        "venturesquare": "#FF0000",  # red
+        "zdnet": "#0000FF",     # blue
+        "platum": "#FF1493",    # deeppink
+    }
+    default_color = "#808080"  # grey
+
+    for _, row in df.iterrows():
+        start_dt = datetime.fromisoformat(row['start_time'])
+        end_dt = datetime.fromisoformat(row['end_time'])
+        
+        # remarks에 따라 색상을 매핑
+        event_color = color_map.get(row['remarks'], default_color)
+        
+        event = {
+            "media": {
+                "url": "",
+                "caption": "",
+                "credit": ""
+            },
+            "start_date": {
+                "year": start_dt.year,
+                "month": start_dt.month,
+                "day": start_dt.day,
+                "hour": start_dt.hour,
+                "minute": start_dt.minute,
+                "second": start_dt.second,
+                "millisecond": int(start_dt.microsecond / 1000),
+                "format": ""
+            },
+            "end_date": {
+                "year": end_dt.year,
+                "month": end_dt.month,
+                "day": end_dt.day,
+                "hour": end_dt.hour,
+                "minute": end_dt.minute,
+                "second": end_dt.second,
+                "millisecond": int(end_dt.microsecond / 1000),
+                "format": ""
+            },
+            "text": {
+                "headline": row['remarks'],
+                "text": f"Total Records: {row['total_records_processed']}, "
+                        f"Success: {row['success_count']}, "
+                        f"Fail: {row['fail_count']}"
+            },
+            "group": "",
+            "display_date": "",
+            "background": {
+                "url": "",
+                "color": event_color
+            },
+            "media_credit": "",
+            "media_caption": "",
+            "media_thumbnail": "",
+            "media_type": "",
+            "link": "",
+            "unique_id": row['log_id'],
+            "autolink": ""
+        }
+        
+        events.append(event)
+
+    timelinejs_json_format_with_colors = {
+        "title": {
+            "media": {
+                "url": "",
+                "caption": "",
+                "credit": ""
+            },
+            "text": {
+                "headline": "Scrap Session Logs",
+                "text": "A timeline of scrap session logs."
+            }
+        },
+        "events": events
+    }
+
+    return timelinejs_json_format_with_colors
+
+
+# fail_count가 있는 경우 경고색으로 배경색을 변경하는 기능 추가
+def convert_to_timelinejs_format_with_alerts(df):
+    events = []
+    alert_color = "#FF0000"  # red for alerts on failure
+    normal_color = "#D3D3D3"  # light gray for no failure
+
+    for _, row in df.iterrows():
+        start_dt = datetime.fromisoformat(row['start_time'])
+        end_dt = datetime.fromisoformat(row['end_time'])
+        
+        # fail_count가 있는 경우 경고색 적용
+        event_color = alert_color if row['fail_count'] > 0 else normal_color
+        
+        event = {
+            "media": {
+                "url": "",
+                "caption": "",
+                "credit": ""
+            },
+            "start_date": {
+                "year": start_dt.year,
+                "month": start_dt.month,
+                "day": start_dt.day,
+                "hour": start_dt.hour,
+                "minute": start_dt.minute,
+                "second": start_dt.second,
+                "millisecond": int(start_dt.microsecond / 1000),
+                "format": ""
+            },
+            "end_date": {
+                "year": end_dt.year,
+                "month": end_dt.month,
+                "day": end_dt.day,
+                "hour": end_dt.hour,
+                "minute": end_dt.minute,
+                "second": end_dt.second,
+                "millisecond": int(end_dt.microsecond / 1000),
+                "format": ""
+            },
+            "text": {
+                "headline": row['remarks'],
+                "text": f"Total Records: {row['total_records_processed']}, "
+                        f"Success: {row['success_count']}, "
+                        f"Fail: {row['fail_count']}"
+            },
+            "group": "",
+            "display_date": "",
+            "background": {
+                "url": "",
+                "color": event_color
+            },
+            "media_credit": "",
+            "media_caption": "",
+            "media_thumbnail": "",
+            "media_type": "",
+            "link": "",
+            "unique_id": row['log_id'],
+            "autolink": ""
+        }
+        
+        events.append(event)
+
+    timelinejs_json_format_with_alerts = {
+        "title": {
+            "media": {
+                "url": "",
+                "caption": "",
+                "credit": ""
+            },
+            "text": {
+                "headline": "Scrap Session Logs",
+                "text": "A timeline of scrap session logs."
+            }
+        },
+        "events": events
+    }
+
+    return timelinejs_json_format_with_alerts
+
+
+# 스크랩 오류 로그의 URL 도메인에 따른 색상 매핑을 위한 color_map 생성
+# 주어진 데이터에 기반하여 URL 도메인을 추출하고 색상을 할당합니다.
+def create_color_map(df):
+    # 도메인을 색상에 매핑하기 위한 기본 color_map 사전 정의
+    color_map = {
+        "v": "#1E90FF",          # dodgerblue
+        "n": "#FF69B4",         # hotpink
+        "thebell": "#FFD700",       # gold
+        "startupn": "#FF8C00",      # darkorange
+        "startuptoday": "#00FF00",  # lime
+        "venturesquare": "#FF0000", # red
+        "zdnet": "#0000FF",         # blue
+        "platum": "#FF1493",        # deeppink
+    }
+
+    # 모든 URL을 검사하여 도메인에 대한 색상이 color_map에 없으면 추가합니다.
+    for url in df['url']:
+        domain = url.split("//")[-1].split(".")[0]
+        if domain not in color_map:
+            # 새 도메인에 대한 색상을 랜덤하게 생성하거나 사전에 정의된 색상을 선택할 수 있습니다.
+            # 여기서는 단순화를 위해 회색을 사용합니다.
+            color_map[domain] = "#808080"  # 기본색상을 회색으로 설정합니다.
+
+    return color_map
+
+
+    # 스크랩 오류 로그 데이터를 TimelineJS JSON 형식으로 변환하는 함수
+def convert_error_logs_to_timelinejs_format(df, color_map, default_color):
+    events = []
+
+    for _, row in df.iterrows():
+        # 오류 시간 파싱
+        error_time = datetime.fromisoformat(row['error_time'])
+        
+        # URL의 도메인에 따라 색상 매핑, 예를 들어 'startuptoday.co.kr'에서 'startuptoday' 추출
+        domain_key = row['url'].split("//")[-1].split(".")[0]  # 도메인 키 추출
+        event_color = color_map.get(domain_key, default_color)
+
+        # 이벤트 객체 생성
+        event = {
+            "media": {
+                "url": "",
+                "caption": "",
+                "credit": ""
+            },
+            "start_date": {
+                "year": error_time.year,
+                "month": error_time.month,
+                "day": error_time.day,
+                "hour": error_time.hour,
+                "minute": error_time.minute,
+                "second": error_time.second,
+                "millisecond": int(error_time.microsecond / 1000),
+                "format": ""
+            },
+            "text": {
+                "headline": f"Error #{row['error_id']}",
+                "text": f"Session ID: {row['session_log_id']}<br>"
+                        f"URL: {row['url']}<br>"
+                        f"Message: {row['error_message']}"
+            },
+            "background": {
+                "url": "",
+                "color": event_color
+            },
+            "unique_id": f"error_{row['error_id']}"
+        }
+        
+        events.append(event)
+
+    # 타임라인 JSON 포맷
+    timeline_json = {
+        "title": {
+            "media": {
+                "url": "",
+                "caption": "",
+                "credit": ""
+            },
+            "text": {
+                "headline": "Scrap Error Logs",
+                "text": "Timeline of errors encountered during scrap sessions."
+            }
+        },
+        "events": events
+    }
+
+    return timeline_json

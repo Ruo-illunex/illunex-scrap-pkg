@@ -1,7 +1,9 @@
 import streamlit as st
 import pandas as pd
+from streamlit_option_menu import option_menu
+from streamlit_timeline import timeline
 
-from core.utils import get_scrap_managers, get_scraper_logs
+from core.utils import get_scrap_managers, get_scraper_logs, convert_to_timelinejs_format_with_colors, convert_to_timelinejs_format_with_alerts, convert_error_logs_to_timelinejs_format, create_color_map
 from core.functions import create_form, update_form, delete_form, check_html, scrap_test_beautiful_soup
 
 
@@ -12,14 +14,31 @@ st.set_page_config(
    initial_sidebar_state="expanded",
 )
 
-# 
-option = st.sidebar.selectbox(
-    'Menu',
-    ('Scrap Manager', 'Scrap Test', 'Scraper Logs')
-)
+
+# option = st.sidebar.selectbox(
+#     'Menu',
+#     ('Scrap Manager', 'Scrap Test', 'Scraper Logs')
+# )
+
+with st.sidebar:
+    option = option_menu(
+        "Menu", ['Scrap Manager', 'Scrap Test', 'Scraper Logs'],
+        icons=['house', 'kanban', 'bi bi-robot'],
+        menu_icon="app-indicator",
+        default_index=0,
+        styles={
+            "container": {"padding": "4!important", "background-color": "#fafafa"},
+            "icon": {"color": "black", "font-size": "25px"},
+            "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px", "--hover-color": "#fafafa"},
+            "nav-link-selected": {"background-color": "#08c7b4"},
+            }
+        )
+
 
 # 스크랩 매니저
 if option == 'Scrap Manager':
+
+
     st.title("Scrap Manager")
 
     # 데이터 조회
@@ -89,7 +108,34 @@ elif option == 'Scraper Logs':
     scrap_error_logs_df = pd.DataFrame(st.session_state.scrap_error_logs)
 
     st.header("Scrap Session Logs")
-    st.dataframe(scrap_session_logs_df)
+    session_logs_filter = st.selectbox(
+        'Filter',
+        ('Timeline By Portal', 'Timeline By Status', 'Table'),
+        index=1
+    )
+    if session_logs_filter == 'Timeline By Status':
+        timelinejs_json = convert_to_timelinejs_format_with_alerts(scrap_session_logs_df)
+    elif session_logs_filter == 'Timeline By Portal':
+        timelinejs_json = convert_to_timelinejs_format_with_colors(scrap_session_logs_df)
+    elif session_logs_filter == 'Table':
+        timelinejs_json = None
+        st.dataframe(scrap_session_logs_df)
+
+    if timelinejs_json:
+        timeline(timelinejs_json, height=500)
 
     st.header("Scrap Error Logs")
-    st.dataframe(scrap_error_logs_df)
+    error_logs_filter = st.selectbox(
+        'Filter',
+        ('Timeline', 'Table'),
+        index=0
+    )
+
+    color_map = create_color_map(scrap_error_logs_df)
+    default_color = '#808080'
+
+    if error_logs_filter == 'Timeline':
+        timelinejs_json = convert_error_logs_to_timelinejs_format(scrap_error_logs_df, color_map, default_color)
+        timeline(timelinejs_json, height=500)
+    elif error_logs_filter == 'Table':
+        st.dataframe(scrap_error_logs_df)

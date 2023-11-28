@@ -11,6 +11,8 @@ streamlit = "^1.28.2"
 requests = "^2.31.0"
 beautifulsoup4 = "^4.12.2"
 pandas = "^2.1.3"
+streamlit-option-menu = "^0.3.6"
+streamlit-timeline = "^0.0.2"
 
 
 [build-system]
