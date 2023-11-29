@@ -23,7 +23,6 @@ class DaumNewsScraper(NewsScraper):
         daum_urls = URLs(scraper_name)
         urls = daum_urls.urls
         self.news_board_url = urls['news_board_url']
-        self.categories = ["society", "politics", "economic", "foreign", "digital"]
 
 
     def preprocess_datetime(self, unprocessed_date):

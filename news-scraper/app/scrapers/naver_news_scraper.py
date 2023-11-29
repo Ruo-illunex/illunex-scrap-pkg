@@ -25,8 +25,7 @@ class NaverNewsScraper(NewsScraper):
         naver_urls = URLs(scraper_name)
         urls = naver_urls.urls
         self.news_board_url = urls['news_board_url']
-        self.categories = ["100", "101", "102", "105"]
-
+        
         # naver는 naver 일반 뉴스 외에 sports.naver.com도 있습니다.
         # naver_sports 파싱 규칙 추가
         # 한 개 이상의 파싱 규칙을 사용할 경우, self.parsing_rules_dict2에 추가합니다.

@@ -60,7 +60,9 @@ class NewsScraper(abc.ABC):
         }
         self.initialize_error_log("")
         self.parsing_rules_dict = self.get_parsing_rules_dict(self.scraper_name)
-        self.category_dict = load_yaml(settings.FILE_PATHS.get('category')).get('category_dict')
+        category_data = load_yaml(settings.FILE_PATHS.get('category'))
+        self.category_dict = category_data.get('category_dict')
+        self.categories = category_data.get('categories').get(self.scraper_name)
         if not isinstance(self.category_dict, dict):
             err_message = f"CATEGORY YAML FILE IS NOT A DICTIONARY.\n{self.category_dict}"
             self.process_err_log_msg(err_message, "load_yaml")

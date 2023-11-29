@@ -1,3 +1,19 @@
+categories:
+  naver:
+    - "100"
+    - "101"
+    - "102"
+    - "105"
+  daum:
+    - "social"
+    - "politics"
+    - "economic"
+    - "foreign"
+    - "digital"
+  esg_economy:
+    - "econony"
+    - "social_and_env"
+
 category_dict:
   naver:
     "100": "200100"

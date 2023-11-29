@@ -26,7 +26,6 @@ class EsgNewsScraper(NewsScraper):
         urls = esg_urls.urls
         self.news_board_url_economy = urls['news_board_url_economy']
         self.news_board_url_social_and_env = urls['news_board_url_social_and_env']
-        self.categories = ["economy", "social_and_env"]
 
 
     def preprocess_datetime(self, unprocessed_date):
