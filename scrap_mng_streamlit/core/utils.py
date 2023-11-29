@@ -118,10 +118,12 @@ def convert_to_timelinejs_format_with_colors(df):
         "naver": "#6FCF49",
         "thebell": "#D6C565",
         "startupn": "#E6A659",
-        "startuptoday": "#4FCEA4",
+        "startuptoday": "#0FA170",
         "venturesquare": "#FF8E75",
         "zdnet": "#956CC4",
         "platum": "#E671AF",
+        "esgeconomy": "#7CADB6",
+        "greenpostkorea": "#78D6B7",
     }
     default_color = "#575757"  # grey
 
@@ -292,6 +294,8 @@ def create_color_map(df):
         "venturesquare": "#FF8E75",
         "zdnet": "#956CC4",
         "platum": "#E671AF",
+        "esgeconomy": "#7CADB6",
+        "greenpostkorea": "#78D6B7",
     }
 
     # 모든 URL을 검사하여 도메인에 대한 색상이 color_map에 없으면 추가합니다.

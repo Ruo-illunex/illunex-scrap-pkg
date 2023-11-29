@@ -54,6 +54,8 @@ if option == 'Scrap Manager':
         'platum',
         'startupn',
         'startuptoday',
+        'esg_economy',
+        'greenpost_korea'
         ))
     if st.button("Search"):
         scrap_managers = get_scrap_managers(portal)

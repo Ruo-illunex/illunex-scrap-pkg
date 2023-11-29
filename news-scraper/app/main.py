@@ -166,6 +166,36 @@ async def scrape_platum_news_endpoint():
         return {"message": f"Error: {e}"}
 
 
+@app.get("/scrape/esg_news")
+async def scrape_esg_news_endpoint():
+    """ESG 뉴스 스크래핑을 시작하는 엔드포인트"""
+
+    try:
+        await scraper.scrape_esg_news()
+        return {"message": "ESG News Scraping Started"}
+    
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        syn_err_msg = create_error_report_message(e, "esg")
+        send_message_to_synology_chat(syn_err_msg, dev_token)
+        return {"message": f"Error: {e}"}
+
+
+@app.get("/scrape/greenpost_news")
+async def scrape_greenpost_news_endpoint():
+    """Greenpost 뉴스 스크래핑을 시작하는 엔드포인트"""
+
+    try:
+        await scraper.scrape_greenpost_news()
+        return {"message": "Greenpost News Scraping Started"}
+    
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        syn_err_msg = create_error_report_message(e, "greenpost")
+        send_message_to_synology_chat(syn_err_msg, dev_token)
+        return {"message": f"Error: {e}"}
+
+
 # 스케줄러 관련 코드
 def scheduled_job():
     try:

@@ -15,18 +15,16 @@ from app.scrapers.urls import URLs
 from app.common.core.utils import preprocess_datetime_iso
 
 
-class EsgNewsScraper(NewsScraper):
-    """ESG 뉴스 스크래퍼 클래스"""
+class GreenpostNewsScraper(NewsScraper):
+    """Greenpost Korea 뉴스 스크래퍼 클래스"""
 
     def __init__(self, scraper_name: str):
         super().__init__(scraper_name)
         self.interval_time_sleep = 7200
-        esg_urls = URLs(scraper_name)
-        self.headers = esg_urls.headers
-        urls = esg_urls.urls
-        self.news_board_url_economy = urls['news_board_url_economy']
-        self.news_board_url_social_and_env = urls['news_board_url_social_and_env']
-        self.categories = ["economy", "social_and_env"]
+        greenpost_urls = URLs(scraper_name)
+        self.headers = greenpost_urls.headers
+        urls = greenpost_urls.urls
+        self.news_board_url = urls['news_board_url']
 
 
     def preprocess_datetime(self, unprocessed_date):
@@ -50,17 +48,12 @@ class EsgNewsScraper(NewsScraper):
             return None
 
 
-    def get_news_urls(self, category):
+    def get_news_urls(self):
         try:
-            if category == 'economy':
-                news_board_url = self.news_board_url_economy
-            elif category == 'social_and_env':
-                news_board_url = self.news_board_url_social_and_env
-
-            info_message = f"GETTING NEWS URLS FROM {news_board_url}"
+            info_message = f"GETTING NEWS URLS FROM {self.news_board_url}"
             self.process_info_log_msg(info_message, type="info")
 
-            response = requests.get(news_board_url)
+            response = requests.get(self.news_board_url)
             # XML 데이터 파싱
             root = ET.fromstring(response.content)
 
@@ -70,7 +63,7 @@ class EsgNewsScraper(NewsScraper):
 
         except Exception as e:
             stack_trace = traceback.format_exc()
-            err_message = f"THERE WAS AN ERROR WHILE GETTING NEWS URLS FROM {news_board_url}"
+            err_message = f"THERE WAS AN ERROR WHILE GETTING NEWS URLS FROM {self.news_board_url}"
             self.process_err_log_msg(err_message, "get_news_urls", stack_trace, e)
             return None
 
@@ -139,36 +132,32 @@ class EsgNewsScraper(NewsScraper):
                 self.is_error = False
                 self.initialize_session_log()
 
-                # 카테고리별 뉴스 URL을 가져옵니다.
-                for category in self.categories:
-                    news_urls = self.get_news_urls(category)
-                    if not isinstance(news_urls, types.GeneratorType):
-                        err_message = "GET_NEWS_URLS DOES NOT RETURN A GENERATOR. CHECK THE 'news_board_url' OR THE RETURN VALUE OF FUNCTION 'get_news_urls'"
-                        self.process_err_log_msg(err_message, "scrape_news", "", "")
-                        continue
+                news_urls = self.get_news_urls()
+                if not isinstance(news_urls, types.GeneratorType):
+                    err_message = "GET_NEWS_URLS DOES NOT RETURN A GENERATOR. CHECK THE 'news_board_url' OR THE RETURN VALUE OF FUNCTION 'get_news_urls'"
+                    self.process_err_log_msg(err_message, "scrape_news", "", "")
+                    return None
 
-                    for news_url in news_urls:
-                        # 에러 로그 개별 초기화
-                        self.is_error = False
-                        self.initialize_error_log(news_url)
+                for news_url in news_urls:
+                    # 에러 로그 개별 초기화
+                    self.is_error = False
+                    self.initialize_error_log(news_url)
 
-                        self.session_log['total_records_processed'] += 1
+                    self.session_log['total_records_processed'] += 1
 
-                        await asyncio.sleep(random.randint(1, 2))
+                    await asyncio.sleep(random.randint(1, 5))
 
-                        # 각 뉴스 URL에 대해 세부 정보 스크랩
-                        news_data = await self.scrape_each_news(
-                            news_url,
-                            )
-
-                        # 스크랩한 데이터를 데이터베이스에 저장
-                        # news_data가 None이 아닐 경우에만 저장
-                        self.process_news_data_or_error_log(news_data, news_url)
+                    # 각 뉴스 URL에 대해 세부 정보 스크랩
+                    news_data = await self.scrape_each_news(news_url)
+                
+                    # 스크랩한 데이터를 데이터베이스에 저장
+                    # news_data가 None이 아닐 경우에만 저장
+                    self.process_news_data_or_error_log(news_data, news_url)
                 
                 # 최종 세션 로그 저장
                 self.finalize_session_log()
 
-                # 모든 카테고리에 대한 스크래핑이 끝나면 일정 시간 대기
+                # 모든 스크래핑이 끝나면 일정 시간 대기
                 await asyncio.sleep(self.interval_time_sleep)
 
             except Exception as e:
@@ -186,12 +175,12 @@ class EsgNewsScraper(NewsScraper):
         pass
 
 
-# ESG 뉴스 스크래핑 함수
-async def scrape_esg_news():
-    portal = "esg_economy"
-    esg_news_scraper = EsgNewsScraper(scraper_name=portal)
-    await esg_news_scraper.scrape_news()
+# Greenpostkorea 뉴스 스크래핑 함수
+async def scrape_greenpost_news():
+    portal = "greenpost_korea"
+    scraper = GreenpostNewsScraper(scraper_name=portal)
+    await scraper.scrape_news()
 
 
 if __name__ == "__main__":
-    asyncio.run(scrape_esg_news())
+    asyncio.run(scrape_greenpost_news())
