@@ -34,29 +34,9 @@ class VSNewsScraper(NewsScraper):
         """
 
         try:
-            # 한글 부분을 영어 형식으로 변환
-            date_part, time_part = unprocessed_date.replace('년 ', '/').replace('월 ', '/').replace('일 - ', ' - ').split(' - ')
-
-            if '오후' in time_part:
-                time_part = time_part.replace('오후 ', '')
-                hour, minute = map(int, time_part.split(':'))
-                if hour != 12:  # '오후 12시'는 12시로 유지
-                    hour += 12
-                time_part = f"{hour}:{minute}"
-            else:
-                time_part = time_part.replace('오전 ', '')
-                hour, minute = map(int, time_part.split(':'))
-                if hour == 12:  # '오전 12시'는 '00'시로 변경
-                    hour = 0
-                time_part = f"{hour:02d}:{minute}"
-
-            # 날짜와 시간 부분을 다시 결합
-            processed_date = f"{date_part} {time_part}"
-
-            # datetime 객체로 변환
-            processed_date = datetime.datetime.strptime(processed_date, "%Y/%m/%d %H:%M")
-
-            return processed_date.strftime("%Y-%m-%d %H:%M:%S")
+            # ISO 8601 형식의 날짜 파싱
+            processed_date = datetime.datetime.fromisoformat(unprocessed_date)
+            return processed_date
         
         except Exception as e:
             stack_trace = traceback.format_exc()

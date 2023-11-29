@@ -36,9 +36,8 @@ class ZdNetNewsScraper(NewsScraper):
         """
 
         try:
-            split_date = unprocessed_date.split('입력 :')[1].split('\xa0')[0]
-            proecessed_date = datetime.datetime.strptime(split_date, "%Y/%m/%d %H:%M")
-            return proecessed_date
+            processed_date = datetime.datetime.strptime(unprocessed_date, "%Y%m%d%H%M%S")
+            return processed_date
 
         except Exception as e:
             stack_trace = traceback.format_exc()
@@ -90,13 +89,14 @@ class ZdNetNewsScraper(NewsScraper):
                         self.process_err_log_msg(err_message, "scrape_each_news", "", "")
                         return None
 
-            extracted_data = self.extract_news_details(soup)
+            extracted_data = self.extract_news_details(soup, additional_data=['kind'])
 
             title = extracted_data.get('title')
             content = extracted_data.get('content')
             create_date = extracted_data.get('create_date')
             image_url = extracted_data.get('image_url')
             media = extracted_data.get('media')
+            kind = extracted_data.get('kind')
             
             # title이나 content가 없으면 다음 데이터로 넘어갑니다.
             if not title or not content:
@@ -105,7 +105,6 @@ class ZdNetNewsScraper(NewsScraper):
                 return None
 
             url_md5 = hashlib.md5(news_url.encode()).hexdigest()
-            kind = create_date.split('입력 :')[0]
             preprocessed_create_date = self.preprocess_datetime(create_date)
             if self.category_dict.get(self.scraper_name).get(kind):
                 kind_id = self.category_dict.get(self.scraper_name).get(kind)

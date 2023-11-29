@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 
 from core.utils import create_scrap_manager, get_scrap_manager_by_id, update_scrap_manager, delete_scrap_manager, get_html, safe_extract
 
-
 import streamlit as st
 import json
 
@@ -15,35 +14,48 @@ import json
 def create_form():
     with st.form(key='create_form'):
         portal = st.text_input("Portal")
-        parsing_target_name = st.text_input("Parsing Target Name")
-        parsing_method = st.selectbox("Parsing Method", ("BeautifulSoup", "Selenium(Not Supported Yet)"))
+        parsing_target_name = st.selectbox("Parsing Target Name", ["title", "content", "create_date", "image_url", "media", "kind"])
+        parsing_method = st.selectbox("Parsing Method", ["BeautifulSoup", "Selenium(Not Supported Yet)"])
 
+        # 파싱 메소드에 따라 입력 필드 표시
         if parsing_method == "BeautifulSoup":
-            # 파싱 규칙 관련 필드
-            selector = st.text_input("Selector")
-            attribute_name = st.text_input("Attribute Name")
-            default = st.text_input("Default")
-            find = st.checkbox("Find")
-            tag = st.text_input("Tag")
-            find_attributes_key = st.text_input("Find Attributes Key")
-            find_attributes_value = st.text_input("Find Attributes Value")
-            find_attributes = {find_attributes_key: find_attributes_value} if find_attributes_key else None
-            find_all = st.checkbox("Find All")
+            with st.expander("Parsing Rule", expanded=True):
+                default = st.text_input("Default", help="파싱 실패시 기본 반환 값을 입력하세요.")
+                find_option = st.radio("Find Options", ('Select One', 'Find', 'Find All'), help="특정 태그를 찾거나 모든 일치하는 요소를 찾을지 선택하세요.")
+                selector = ""
+                attribute_name = ""
+                tag = ""
+                find_attributes = None
+                st.markdown('- 둘 중 하나만 선택하세요.')
+                col_1, col_2 = st.columns(2)
+                with col_1:
+                    st.markdown("### Selector")
+                    selector = st.text_input("Selector", help="CSS 선택자를 입력하세요.")
+                    attribute_name_selector = st.text_input("Attribute Name", help="속성 이름을 입력하세요.", key="attribute_name_selector")
 
-            parsing_rule = {
-                "selector": selector,
-                "attribute_name": attribute_name,
-                "default": default,
-                "find": find,
-                "tag": tag,
-                "find_attributes": find_attributes,
-                "find_all": find_all
-            }
-        
+                with col_2:
+                    st.markdown("### Find or Find All")
+                    tag = st.text_input("Tag", help="찾을 HTML 태그의 이름입니다.")
+                    find_attributes_key = st.text_input("Find Attributes Key", help="찾을 속성의 키를 입력하세요.")
+                    find_attributes_value = st.text_input("Find Attributes Value", help="찾을 속성의 값을 입력하세요.")
+                    find_attributes = {find_attributes_key: find_attributes_value} if find_attributes_key else None
+                    attribute_name_find = st.text_input("Attribute Name", help="속성 이름을 입력하세요.", key="attribute_name_find_or_find_all")
+
+                attribute_name = attribute_name_selector if find_option == 'Select One' else attribute_name_find
+                parsing_rule = {
+                    "selector": selector,
+                    "attribute_name": attribute_name,
+                    "default": default,
+                    "find": find_option == 'Find',
+                    "find_all": find_option == 'Find All',
+                    "tag": tag,
+                    "find_attributes": find_attributes,
+                }
+
         elif parsing_method == "Selenium(Not Supported Yet)":
             st.warning("Selenium is not supported yet.")
 
-        submit_button = st.form_submit_button(label='Create')
+        submit_button = st.form_submit_button("Create")
 
         if submit_button:
 

@@ -57,7 +57,28 @@ if option == 'Scrap Manager':
         ))
     if st.button("Search"):
         scrap_managers = get_scrap_managers(portal)
-        st.write(scrap_managers)
+        df = pd.DataFrame(scrap_managers)
+
+        # 'parsing_rule' 열이 이미 dict 타입이므로 바로 json_normalize를 사용
+        parsing_rules_df = pd.json_normalize(df['parsing_rule'])
+
+        # 원본 데이터프레임에 새 열 추가
+        df = df.join(parsing_rules_df)
+
+        # 원래 'parsing_rule' 열 제거
+        df.drop(columns=['parsing_rule'], inplace=True)
+
+        # NULL 값을 Python의 None으로 변환
+        df.fillna(value=pd.NA, inplace=True)
+
+        # id 칼럼을 인덱스로 사용
+        df.set_index('id', inplace=True)
+
+        # 스타일 적용
+        styled_df = df.style.set_properties(**{'text-align': 'left'})
+
+        # Streamlit을 사용하여 웹 앱에 DataFrame 표시
+        st.dataframe(styled_df)
 
 
     # 데이터 삽입

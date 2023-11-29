@@ -114,16 +114,16 @@ def safe_extract(
 def convert_to_timelinejs_format_with_colors(df):
     events = []
     color_map = {
-        "daum": "#1E90FF",     # dodgerblue
-        "naver": "#FF69B4",    # hotpink
-        "the bell": "#FFD700",  # gold
-        "startupn": "#FF8C00",  # darkorange
-        "startuptoday": "#00FF00",   # lime
-        "venturesquare": "#FF0000",  # red
-        "zdnet": "#0000FF",     # blue
-        "platum": "#FF1493",    # deeppink
+        "daum": "#56A9FD",
+        "naver": "#6FCF49",
+        "thebell": "#D6C565",
+        "startupn": "#E6A659",
+        "startuptoday": "#4FCEA4",
+        "venturesquare": "#FF8E75",
+        "zdnet": "#956CC4",
+        "platum": "#E671AF",
     }
-    default_color = "#808080"  # grey
+    default_color = "#575757"  # grey
 
     for _, row in df.iterrows():
         start_dt = datetime.fromisoformat(row['start_time'])
@@ -202,16 +202,16 @@ def convert_to_timelinejs_format_with_colors(df):
 # fail_count가 있는 경우 경고색으로 배경색을 변경하는 기능 추가
 def convert_to_timelinejs_format_with_alerts(df):
     events = []
-    alert_color = "#FF0000"  # red for alerts on failure
-    normal_color = "#D3D3D3"  # light gray for no failure
+    alert_color = "#FF5733"
+    normal_color = "#28B463"
 
     for _, row in df.iterrows():
         start_dt = datetime.fromisoformat(row['start_time'])
         end_dt = datetime.fromisoformat(row['end_time'])
-        
+
         # fail_count가 있는 경우 경고색 적용
         event_color = alert_color if row['fail_count'] > 0 else normal_color
-        
+
         event = {
             "media": {
                 "url": "",
@@ -284,14 +284,14 @@ def convert_to_timelinejs_format_with_alerts(df):
 def create_color_map(df):
     # 도메인을 색상에 매핑하기 위한 기본 color_map 사전 정의
     color_map = {
-        "v": "#1E90FF",          # dodgerblue
-        "n": "#FF69B4",         # hotpink
-        "thebell": "#FFD700",       # gold
-        "startupn": "#FF8C00",      # darkorange
-        "startuptoday": "#00FF00",  # lime
-        "venturesquare": "#FF0000", # red
-        "zdnet": "#0000FF",         # blue
-        "platum": "#FF1493",        # deeppink
+        "v": "#56A9FD",
+        "n": "#6FCF49",
+        "thebell": "#D6C565",
+        "startupn": "#E6A659",
+        "startuptoday": "#4FCEA4",
+        "venturesquare": "#FF8E75",
+        "zdnet": "#956CC4",
+        "platum": "#E671AF",
     }
 
     # 모든 URL을 검사하여 도메인에 대한 색상이 color_map에 없으면 추가합니다.

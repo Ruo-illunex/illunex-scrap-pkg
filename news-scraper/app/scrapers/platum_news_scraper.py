@@ -4,7 +4,6 @@ import hashlib
 import traceback
 import types
 import email.utils
-from typing import Any, Coroutine, Generator, Optional
 
 import feedparser
 from bs4 import BeautifulSoup
