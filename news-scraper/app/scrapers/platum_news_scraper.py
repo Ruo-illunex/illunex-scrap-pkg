@@ -145,6 +145,7 @@ class PlatumNewsScraper(NewsScraper):
                 
                 # 피드 엔트리를 순회하며 기사를 스크랩합니다.
                 for entry in feed_entries:
+                    news_data = None
                     news_url = entry.link
 
                     # 에러 로그 개별 초기화

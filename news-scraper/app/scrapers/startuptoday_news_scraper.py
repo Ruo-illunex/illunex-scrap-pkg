@@ -148,6 +148,7 @@ class StartuptodayNewsScraper(NewsScraper):
                     return None
 
                 for news_url in news_urls:
+                    news_data = None
                     # 에러 로그 개별 초기화
                     self.is_error = False
                     self.initialize_error_log(news_url)

@@ -150,6 +150,7 @@ class EsgNewsScraper(NewsScraper):
                         continue
 
                     for news_url in news_urls:
+                        news_data = None
                         # 에러 로그 개별 초기화
                         self.is_error = False
                         self.initialize_error_log(news_url)
@@ -170,7 +171,7 @@ class EsgNewsScraper(NewsScraper):
                         self.check_error(news_data, news_url)
 
                 # 뉴스 데이터베이스에 한 번에 저장
-                self.save_news_data_bulk(self.news_data_list, self.scraper_name)
+                self.save_news_data_bulk(self.news_data_list)
                 
                 # 최종 세션 로그 저장
                 self.finalize_session_log()
