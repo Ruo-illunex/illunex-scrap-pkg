@@ -152,11 +152,14 @@ class PlatumNewsScraper(NewsScraper):
                     self.initialize_error_log(news_url)
 
                     self.session_log['total_records_processed'] += 1
+                    if not self.is_already_scraped(news_url):
+                        await asyncio.sleep(random.randint(1, 5))
 
-                    await asyncio.sleep(random.randint(1, 5))
-
-                    # 각 뉴스 URL에 대해 세부 정보 스크랩
-                    news_data = await self.scrape_each_feed_entry(entry)
+                        # 각 뉴스 URL에 대해 세부 정보 스크랩
+                        news_data = await self.scrape_each_feed_entry(entry)
+                    else:
+                        err_message = f"NEWS ALREADY EXISTS IN DATABASE: {news_url}"
+                        self.process_err_log_msg(err_message, "scrape_news", "", "")
 
                     # 뉴스 데이터에 에러가 있으면, 에러 로그를 append하고, 그렇지 않으면 뉴스 데이터를 리스트에 추가
                     self.check_error(news_data, news_url)

@@ -135,7 +135,7 @@ class NaverNewsScraper(NewsScraper):
                 self.process_err_log_msg(err_message, "scrape_each_news", "", "")
                 return None
 
-            url_md5 = hashlib.md5(news_url.encode()).hexdigest()
+            url_md5 = self.generate_md5(news_url)
             create_date = self.preprocess_datetime(create_date)
             if self.category_dict.get(self.scraper_name).get(category):
                 kind_id = self.category_dict.get(self.scraper_name).get(category)
@@ -192,24 +192,26 @@ class NaverNewsScraper(NewsScraper):
                         self.initialize_error_log(news_url)
 
                         self.session_log['total_records_processed'] += 1
+                        if not self.is_already_scraped(news_url):
+                            await asyncio.sleep(random.randint(1, 2))
+                            while not news_data and scraper_cursor < len(self.all_parsing_rules_dicts):
+                                current_parsing_rule = self.all_parsing_rules_dicts[scraper_cursor]
 
-                        await asyncio.sleep(random.randint(1, 2))
-                        
-                        while not news_data and scraper_cursor < len(self.all_parsing_rules_dicts):
-                            current_parsing_rule = self.all_parsing_rules_dicts[scraper_cursor]
+                                news_data = await self.scrape_each_news(
+                                    news_url,
+                                    category,
+                                    current_parsing_rule
+                                    )
 
-                            news_data = await self.scrape_each_news(
-                                news_url,
-                                category,
-                                current_parsing_rule
-                                )
+                                # 스크랩한 데이터가 없고, 마지막 스크래퍼인 경우 > 에러
+                                scraper_cursor += 1
+                                if not news_data and scraper_cursor == len(self.all_parsing_rules_dicts):
+                                    err_message = f"NEWS DATA IS EMPTY FOR URL: {news_url}"
+                                    self.process_err_log_msg(err_message, "scrape_news", "", "")
 
-                            scraper_cursor += 1
-
-                            # 스크랩한 데이터가 없고, 마지막 스크래퍼인 경우 > 에러
-                            if not news_data and scraper_cursor == len(self.all_parsing_rules_dicts):
-                                err_message = f"NEWS DATA IS EMPTY FOR URL: {news_url}"
-                                self.process_err_log_msg(err_message, "scrape_news", "", "")
+                        else:
+                            err_message = f"NEWS ALREADY EXISTS IN DATABASE: {news_url}"
+                            self.process_err_log_msg(err_message, "scrape_news", "", "")
 
                         # 뉴스 데이터에 에러가 있으면, 에러 로그를 append하고, 그렇지 않으면 뉴스 데이터를 리스트에 추가
                         self.check_error(news_data, news_url)

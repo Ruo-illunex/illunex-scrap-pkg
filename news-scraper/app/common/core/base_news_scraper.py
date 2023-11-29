@@ -4,6 +4,8 @@ from typing import Generator, Optional, Tuple
 import traceback
 import json
 import asyncio
+from collections import deque
+import hashlib
 
 import aiohttp
 import requests
@@ -43,7 +45,8 @@ class NewsScraper(abc.ABC):
 
         self.interval_time_sleep = 600   # 10분(600초)
 
-        
+        self.scraped_md5s = deque(maxlen=10000)  # 최근 스크래핑한 URL MD5 저장
+
         # 세션 로그
         self.session_log = {
             "remarks" : self.scraper_name,
@@ -67,6 +70,23 @@ class NewsScraper(abc.ABC):
             err_message = f"CATEGORY YAML FILE IS NOT A DICTIONARY.\n{self.category_dict}"
             self.process_err_log_msg(err_message, "load_yaml")
             self.category_dict = {}
+
+
+    # URL의 MD5 해시를 생성하는 함수
+    def generate_md5(self, url: str) -> str:
+        return hashlib.md5(url.encode()).hexdigest()
+
+
+    # 스크래핑 전 URL MD5 확인
+    def is_already_scraped(self, url: str) -> bool:
+        url_md5 = self.generate_md5(url)
+        return url_md5 in self.scraped_md5s
+
+
+    # 스크래핑 후 URL MD5 저장
+    def mark_as_scraped(self, url: str):
+        url_md5 = self.generate_md5(url)
+        self.scraped_md5s.append(url_md5)
 
 
     # 인포, 성공, 경고 메세지 > 로그 메세지 로직
@@ -296,9 +316,10 @@ class NewsScraper(abc.ABC):
         if not news_data:
             self.is_error = True
             err_message = f"CANNOT SCRAP DATA FOR {news_url}"
-            self.process_err_log_msg(err_message, "process_news_data_or_error_log")
+            self.process_err_log_msg(err_message, "check_error")
         else:
             self.news_data_list.append(news_data)
+            self.mark_as_scraped(news_url)
             success_message = f"NEWS DATA SUCCESSFULLY SCRAPED FOR {news_url}"
             self.process_info_log_msg(success_message, "success")
 
