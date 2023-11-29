@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.config.settings import NEWS_DB_URL
-from app.models_init import DaumNews, NaverNews, EtcNews
+from app.models_init import DaumNews, NaverNews, EtcNews, EsgNews
 
 
 class NewsDatabase:
@@ -14,33 +14,38 @@ class NewsDatabase:
         self.existing_data = None
 
 
-    # 뉴스 데이터베이스에 데이터를 저장하는 함수
-    def save_news_data(self, news_data, portal: str):
-        """뉴스 데이터베이스에 데이터를 저장하는 함수
+    # 뉴스 데이터베이스에 대량의 데이터를 저장하는 함수
+    def save_data_bulk(self, news_data_list: list, portal: str):
+        """뉴스 데이터베이스에 데이터를 대량으로 저장하는 함수
         Args:
-            news_data (NaverNews or DaumNews or EtcNews): 뉴스 데이터
+            news_data_list (list): 뉴스 데이터 객체 리스트
             portal (str): 포털 이름
         """
-
-        # 뉴스 데이터베이스 세션 생성
         session = self.SessionLocal()
-
         try:
-            # 'url_md5' 필드를 이용해 기존 데이터가 있는지 확인
-            if portal == "naver":
-                self.existing_data = session.query(NaverNews).filter(NaverNews.url_md5 == news_data.url_md5).first()
-            elif portal == "daum":
-                self.existing_data = session.query(DaumNews).filter(DaumNews.url_md5 == news_data.url_md5).first()
-            elif portal == "etc":
-                self.existing_data = session.query(EtcNews).filter(EtcNews.url_md5 == news_data.url_md5).first()
+            to_add = []
+            for news_data in news_data_list:
+                existing_data = None
+                # 기존 데이터 확인 로직 (기존 로직을 사용)
+                if portal == "naver":
+                    existing_data = session.query(NaverNews).filter(NaverNews.url_md5 == news_data.url_md5).first()
+                elif portal == "daum":
+                    existing_data = session.query(DaumNews).filter(DaumNews.url_md5 == news_data.url_md5).first()
+                elif portal in ['venturesquare', 'zdnet', 'the bell', 'startuptoday', 'startupn', 'platum']:
+                    existing_data = session.query(EtcNews).filter(EtcNews.url_md5 == news_data.url_md5).first()
+                elif portal in ['esg_economy', 'greenpost_korea']:
+                    existing_data = session.query(EsgNews).filter(EsgNews.url_md5 == news_data.url_md5).first()
 
-            # 기존 데이터가 없을 경우에만 새 데이터 추가
-            if not self.existing_data:
-                session.add(news_data)
+                # 기존 데이터가 없으면 to_add 리스트에 추가
+                if not existing_data:
+                    to_add.append(news_data)
+
+            # to_add에 있는 모든 뉴스 데이터를 한 번에 데이터베이스에 저장
+            if to_add:
+                session.bulk_save_objects(to_add)
                 session.commit()
         except Exception as e:
             stack_trace = traceback.format_exc()
             print(f"Error: {e}\n{stack_trace}")
         finally:
-            # 세션 닫기
             session.close()

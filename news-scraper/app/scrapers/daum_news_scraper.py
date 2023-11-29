@@ -19,7 +19,7 @@ class DaumNewsScraper(NewsScraper):
 
     def __init__(self, scraper_name: str):
         super().__init__(scraper_name)
-        self.interval_time_sleep = 10
+        self.interval_time_sleep = 120
         daum_urls = URLs(scraper_name)
         urls = daum_urls.urls
         self.news_board_url = urls['news_board_url']
@@ -134,6 +134,9 @@ class DaumNewsScraper(NewsScraper):
                 self.is_error = False
                 self.initialize_session_log()
 
+                # 뉴스 데이터 리스트 초기화
+                self.news_data_list = []
+
                 # 카테고리별 뉴스 URL을 가져옵니다.
                 for category in self.categories:
                     news_urls = self.get_news_urls(category)
@@ -157,9 +160,11 @@ class DaumNewsScraper(NewsScraper):
                             category,
                             )
 
-                        # 스크랩한 데이터를 데이터베이스에 저장
-                        # news_data가 None이 아닐 경우에만 저장
-                        self.process_news_data_or_error_log(news_data, news_url)
+                        # 뉴스 데이터에 에러가 있으면, 에러 로그를 append하고, 그렇지 않으면 뉴스 데이터를 리스트에 추가
+                        self.check_error(news_data, news_url)
+
+                # 뉴스 데이터베이스에 한 번에 저장
+                self.save_news_data_bulk(self.news_data_list, self.scraper_name)
                 
                 # 최종 세션 로그 저장
                 self.finalize_session_log()

@@ -132,6 +132,9 @@ class GreenpostNewsScraper(NewsScraper):
                 self.is_error = False
                 self.initialize_session_log()
 
+                # 뉴스 데이터 리스트 초기화
+                self.news_data_list = []
+
                 news_urls = self.get_news_urls()
                 if not isinstance(news_urls, types.GeneratorType):
                     err_message = "GET_NEWS_URLS DOES NOT RETURN A GENERATOR. CHECK THE 'news_board_url' OR THE RETURN VALUE OF FUNCTION 'get_news_urls'"
@@ -150,9 +153,11 @@ class GreenpostNewsScraper(NewsScraper):
                     # 각 뉴스 URL에 대해 세부 정보 스크랩
                     news_data = await self.scrape_each_news(news_url)
                 
-                    # 스크랩한 데이터를 데이터베이스에 저장
-                    # news_data가 None이 아닐 경우에만 저장
-                    self.process_news_data_or_error_log(news_data, news_url)
+                    # 뉴스 데이터에 에러가 있으면, 에러 로그를 append하고, 그렇지 않으면 뉴스 데이터를 리스트에 추가
+                    self.check_error(news_data, news_url)
+
+                # 뉴스 데이터베이스에 한 번에 저장
+                self.save_news_data_bulk(self.news_data_list)
                 
                 # 최종 세션 로그 저장
                 self.finalize_session_log()

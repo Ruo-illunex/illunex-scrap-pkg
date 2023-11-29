@@ -133,6 +133,9 @@ class PlatumNewsScraper(NewsScraper):
                 self.is_error = False
                 self.initialize_session_log()
 
+                # 뉴스 데이터 리스트 초기화
+                self.news_data_list = []
+
                 # 피드 엔트리를 가져옵니다.
                 feed_entries = self.get_feed_entries()
                 if not isinstance(feed_entries, types.GeneratorType):
@@ -142,17 +145,24 @@ class PlatumNewsScraper(NewsScraper):
                 
                 # 피드 엔트리를 순회하며 기사를 스크랩합니다.
                 for entry in feed_entries:
+                    news_url = entry.link
+
                     # 에러 로그 개별 초기화
                     self.is_error = False
-                    self.initialize_error_log(entry.link)
+                    self.initialize_error_log(news_url)
 
                     self.session_log['total_records_processed'] += 1
 
                     await asyncio.sleep(random.randint(1, 5))
 
+                    # 각 뉴스 URL에 대해 세부 정보 스크랩
                     news_data = await self.scrape_each_feed_entry(entry)
 
-                    self.process_news_data_or_error_log(news_data, entry.link)
+                    # 뉴스 데이터에 에러가 있으면, 에러 로그를 append하고, 그렇지 않으면 뉴스 데이터를 리스트에 추가
+                    self.check_error(news_data, news_url)
+
+                # 뉴스 데이터베이스에 한 번에 저장
+                self.save_news_data_bulk(self.news_data_list)
 
                 # 최종 세션 로그 저장
                 self.finalize_session_log()

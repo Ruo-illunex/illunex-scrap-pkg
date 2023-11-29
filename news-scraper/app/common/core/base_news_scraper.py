@@ -39,6 +39,7 @@ class NewsScraper(abc.ABC):
 
         self.news_db = NewsDatabase()
         self.scraper_manager_db = ScraperManagerDatabase()
+        self.news_data_list = []    # 뉴스 데이터 리스트
 
         self.interval_time_sleep = 600   # 10분(600초)
 
@@ -283,34 +284,44 @@ class NewsScraper(abc.ABC):
 
 
     # 스크랩한 데이터를 데이터베이스에 저장하는 함수
-    def process_news_data_or_error_log(self, news_data: dict, news_url: str) -> None:
+    def check_error(self, news_data: dict, news_url: str) -> None:
         """스크랩한 데이터를 데이터베이스에 저장하는 함수
         Args:
             news_data (dict): 뉴스 데이터
             news_url (str): 뉴스 기사 URL
         """
         # news_data가 None이 아닐 경우에만 저장
-        if news_data:
-            try:
-                self.news_db.save_news_data(news_data, self.scraper_name)
-                self.session_log['success_count'] += 1
-
-                success_message = f"NEWS DATA SAVED FOR URL: {news_url}"
-                self.process_info_log_msg(success_message, "success")
-            except Exception as e:
-                stack_trace = traceback.format_exc()
-                err_message = "THERE WAS AN ERROR WHILE SAVING DATA FOR {news_url}"
-                self.process_err_log_msg(err_message, "process_news_data_or_error_log", stack_trace, e)
-        else:
-            err_message = "CANNOT SCRAP DATA FOR {news_url}"
+        if not news_data:
+            self.is_error = True
+            err_message = f"CANNOT SCRAP DATA FOR {news_url}"
             self.process_err_log_msg(err_message, "process_news_data_or_error_log")
-
+        else:
+            self.news_data_list.append(news_data)
+            success_message = f"NEWS DATA SUCCESSFULLY SCRAPED FOR {news_url}"
+            self.process_info_log_msg(success_message, "success")
 
         # 에러 로그가 있으면 에러 로그 리스트에 추가
         if self.is_error:
             self.session_log['fail_count'] += 1
             self.error_log['error_time'] = self.get_current_time()
             self.error_logs.append(ScrapErrorLog(**self.error_log))
+
+
+    # 스크랩한 데이터 리스트를 데이터베이스에 저장하는 함수
+    def save_news_data_bulk(self, news_data_list: list) -> None:
+        """스크랩한 데이터 리스트를 데이터베이스에 저장하는 함수
+        Args:
+            news_data_list (list): 뉴스 데이터 리스트
+        """
+        try:
+            self.news_db.save_data_bulk(news_data_list, self.scraper_name)
+            self.session_log['success_count'] += len(news_data_list)
+            success_message = f"{len(news_data_list)} NEWS DATA SAVED FOR {self.scraper_name}"
+            self.process_info_log_msg(success_message, "success")
+        except Exception as e:
+            stack_trace = traceback.format_exc()
+            err_message = f"THERE WAS AN ERROR WHILE SAVING NEWS DATA FOR {self.scraper_name}"
+            self.process_err_log_msg(err_message, "save_news_data_bulk", stack_trace, e)
 
 
     # 최종 세션 로그 저장 함수
