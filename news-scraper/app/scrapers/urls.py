@@ -39,6 +39,13 @@ class URLs:
         elif self.portal == 'platum':
             self.urls['news_board_url'] = self.get_platum_newsboard_url()
 
+        elif self.portal == 'esg_economy':
+            self.urls['news_board_url_economy'] = self.get_esgeconomy_newsboard_url1()
+            self.urls['news_board_url_social_and_env'] = self.get_esgeconomy_newsboard_url2()
+
+        elif self.portal == 'greenpost_korea':
+            self.urls['news_board_url'] = self.get_greenpostkorea_newsboard_url()
+
         else:
             raise ValueError(f"Error: {self.portal} is not a valid portal name")     
 
@@ -94,9 +101,21 @@ class URLs:
     
 
     def get_vs_newsboard_url(self):
-        """Venture Square 뉴스 보드 URL을 리턴하는 함수"""
+        """Venture Square 뉴스 피드 URL을 리턴하는 함수"""
         return "https://www.venturesquare.net/category/news-contents/feed"
 
     def get_platum_newsboard_url(self):
-        """Platum 뉴스 보드 URL을 리턴하는 함수"""
+        """Platum 뉴스 피드 URL을 리턴하는 함수"""
         return "https://platum.kr/feed"
+
+    def get_esgeconomy_newsboard_url1(self):
+        """ESG Economy rss URL을 리턴하는 함수"""
+        return "https://www.esgeconomy.com/rss/S1N1.xml"
+
+    def get_esgeconomy_newsboard_url2(self):
+        """ESG Economy rss URL을 리턴하는 함수"""
+        return "https://www.esgeconomy.com/rss/S1N2.xml"
+
+    def get_greenpostkorea_newsboard_url(self):
+        """Greenpostkorea rss URL을 리턴하는 함수"""
+        return "https://www.greenpostkorea.co.kr/rss/allArticle.xml"

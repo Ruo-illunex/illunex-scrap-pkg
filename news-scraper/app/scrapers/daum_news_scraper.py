@@ -1,10 +1,8 @@
 import asyncio
-import datetime
 import random
 import hashlib
 import traceback
 import types
-from typing import Generator
 
 import aiohttp
 import requests
@@ -13,6 +11,7 @@ from bs4 import BeautifulSoup
 from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import DaumNews
 from app.scrapers.urls import URLs
+from app.common.core.utils import preprocess_datetime_compact
 
 
 class DaumNewsScraper(NewsScraper):
@@ -26,6 +25,7 @@ class DaumNewsScraper(NewsScraper):
         self.news_board_url = urls['news_board_url']
         self.categories = ["society", "politics", "economic", "foreign", "digital"]
 
+
     def preprocess_datetime(self, unprocessed_date):
         """날짜 전처리 함수
         Args:
@@ -33,15 +33,15 @@ class DaumNewsScraper(NewsScraper):
         Returns:
             str: 전처리된 날짜
         """
-
+        processed_date = preprocess_datetime_compact(unprocessed_date)
+        if processed_date:
+            return processed_date
+        
         try:
-            # 유효한 날짜 형식인 경우 변환
-            return datetime.datetime.strptime(
-                unprocessed_date, "%Y. %m. %d. %H:%M"
-                ).strftime("%Y-%m-%d %H:%M:%S")
+            raise ValueError(f"Invalid date format: {unprocessed_date}")
         except Exception as e:
             stack_trace = traceback.format_exc()
-            err_message = "THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
+            err_message = f"THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
             self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
             return None
 

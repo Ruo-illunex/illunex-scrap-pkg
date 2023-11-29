@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import EtcNews
 from app.scrapers.urls import URLs
+from app.common.core.utils import preprocess_datetime_rfc2822
 
 
 class PlatumNewsScraper(NewsScraper):
@@ -32,17 +33,18 @@ class PlatumNewsScraper(NewsScraper):
         Returns:
             str: 전처리된 날짜
         """
-        try:
-            # RFC 2822 형식의 날짜를 datetime 객체로 변환 (email.utils 사용)
-            processed_date = email.utils.parsedate_to_datetime(unprocessed_date)
+            
+        processed_date = preprocess_datetime_rfc2822(unprocessed_date)
+        if processed_date:
             return processed_date.strftime("%Y-%m-%d %H:%M:%S")
-
-        except Exception as e:
-            # 오류 처리
-            stack_trace = traceback.format_exc()
-            err_message = "THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
-            self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
-            return None
+        else:
+            try:
+                raise ValueError(f"Invalid date format: {unprocessed_date}")
+            except Exception as e:
+                stack_trace = traceback.format_exc()
+                err_message = f"THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
+                self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
+                return None
 
 
     def get_feed_entries(self):

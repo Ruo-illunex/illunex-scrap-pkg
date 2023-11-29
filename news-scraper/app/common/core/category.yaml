@@ -60,3 +60,7 @@ category_dict:
     etc: "200799"
   the bell:
     etc: "200899"
+  esg_economy:
+    etc: "300199"
+  greenpost_korea:
+    etc: "300299"

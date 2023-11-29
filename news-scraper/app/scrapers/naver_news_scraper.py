@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import NaverNews
 from app.scrapers.urls import URLs
+from app.common.core.utils import preprocess_datetime_standard, preprocess_datetime_compact
 
 
 class NaverNewsScraper(NewsScraper):
@@ -33,41 +34,49 @@ class NaverNewsScraper(NewsScraper):
         self.all_parsing_rules_dicts = [self.parsing_rules_dict, self.parsing_rules_dict2]
 
 
-    def preprocess_datetime(self, unprocessed_date):
-        """날짜 전처리 함수
-        Args:
-            unprocessed_date (str): 전처리되지 않은 날짜
-        Returns:
-            str: 전처리된 날짜
-        """
-
+    def preprocess_datetime_custom(self, date_str):
+        """사용자 정의 날짜 형식 처리"""
         try:
-            # 먼저 기존 형식으로 시도합니다.
-            processed_date = datetime.datetime.strptime(unprocessed_date, "%Y-%m-%d %H:%M:%S")
-            return processed_date
+            matched = re.search(r'기사입력 (\d{4}\.\d{2}\.\d{2}\.) (오전|오후) (\d{2}:\d{2})', date_str)
+            if matched:
+                date_part = matched.group(1).strip('.')
+                am_pm = matched.group(2)
+                time_part = matched.group(3)
+
+                hour, minute = map(int, time_part.split(':'))
+                if am_pm == '오후' and hour < 12:
+                    hour += 12
+
+                final_date_str = f"{date_part} {hour:02d}:{minute:02d}"
+                return datetime.datetime.strptime(final_date_str, "%Y.%m.%d %H:%M")
+            return None
         except ValueError:
-            try:
-                # 기존 형식으로 처리되지 않으면, 새로운 형식으로 시도합니다.
-                matched = re.search(r'기사입력 (\d{4}\.\d{2}\.\d{2}\.) (오전|오후) (\d{2}:\d{2})', unprocessed_date)
-                if matched:
-                    date_str = matched.group(1).strip('.')
-                    am_pm = matched.group(2)
-                    time_str = matched.group(3)
+            return None
 
-                    hour, minute = map(int, time_str.split(':'))
-                    if am_pm == '오후' and hour < 12:
-                        hour += 12
 
-                    final_date_str = f"{date_str} {hour:02d}:{minute:02d}"
-                    processed_date = datetime.datetime.strptime(final_date_str, "%Y.%m.%d %H:%M")
-                    return processed_date
+    def preprocess_datetime(self, unprocessed_date):
+        """날짜 전처리 함수"""
+        # 각 형식에 대해 순차적으로 시도
+        processed_date = preprocess_datetime_standard(unprocessed_date)
+        if processed_date:
+            return processed_date
 
-            except Exception as e:
-                # 예외 처리
-                stack_trace = traceback.format_exc()
-                err_message = f"THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
-                self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
-                return None
+        processed_date = preprocess_datetime_compact(unprocessed_date)
+        if processed_date:
+            return processed_date
+
+        processed_date = self.preprocess_datetime_custom(unprocessed_date)
+        if processed_date:
+            return processed_date
+
+        # 모든 형식이 실패한 경우, 로그 처리
+        try:
+            raise ValueError(f"Invalid date format: {unprocessed_date}")
+        except Exception as e:
+            stack_trace = traceback.format_exc()
+            err_message = f"THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
+            self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
+            return None
 
 
     def get_news_urls(self, category):

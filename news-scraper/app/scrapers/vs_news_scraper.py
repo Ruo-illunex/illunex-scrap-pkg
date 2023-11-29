@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 import random
 import hashlib
 import traceback
@@ -12,7 +11,7 @@ from bs4 import BeautifulSoup
 from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import EtcNews
 from app.scrapers.urls import URLs
-
+from app.common.core.utils import preprocess_datetime_iso
 
 class VSNewsScraper(NewsScraper):
     """VS 뉴스 스크래퍼 클래스"""
@@ -33,14 +32,15 @@ class VSNewsScraper(NewsScraper):
             str: 전처리된 날짜
         """
 
-        try:
-            # ISO 8601 형식의 날짜 파싱
-            processed_date = datetime.datetime.fromisoformat(unprocessed_date)
+        processed_date = preprocess_datetime_iso(unprocessed_date)
+        if processed_date:
             return processed_date
         
+        try:
+            raise ValueError(f"Invalid date format: {unprocessed_date}")
         except Exception as e:
             stack_trace = traceback.format_exc()
-            err_message = "THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
+            err_message = f"THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
             self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
             return None
         
