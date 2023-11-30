@@ -1,5 +1,6 @@
 import traceback
 from datetime import datetime
+from io import StringIO
 
 import requests
 import pandas as pd
@@ -393,7 +394,7 @@ def get_data_from_api(portal):
             data_json = response.json()
             
             # Pandas DataFrame으로 변환
-            df = pd.read_json(data_json)
+            df = pd.read_json(StringIO(data_json))
             return df
         else:
             # 요청에 실패하면 오류 메시지를 출력
