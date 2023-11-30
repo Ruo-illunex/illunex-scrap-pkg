@@ -46,6 +46,9 @@ class URLs:
         elif self.portal == 'greenpost_korea':
             self.urls['news_board_url'] = self.get_greenpostkorea_newsboard_url()
 
+        elif self.portal == 'esg_finance_hub':
+            self.urls['news_board_url'] = self.get_esgfinancehub_newsboard_url()
+
         else:
             raise ValueError(f"Error: {self.portal} is not a valid portal name")     
 
@@ -119,3 +122,7 @@ class URLs:
     def get_greenpostkorea_newsboard_url(self):
         """Greenpostkorea rss URL을 리턴하는 함수"""
         return "https://www.greenpostkorea.co.kr/rss/allArticle.xml"
+    
+    def get_esgfinancehub_newsboard_url(self):
+        """ESG Finance Hub rss URL을 리턴하는 함수"""
+        return "https://www.esgfinancehub.or.kr/portal/news/summaryModal/20211213155213000177"

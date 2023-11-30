@@ -18,6 +18,8 @@ API_SERVER_URL = f'http://{api_server_host}:{api_server_port}/api/scrap_manager/
 # 파일 경로
 FILE_PATHS = {
     'category':'app/common/core/category.yaml',
+    'chromedriver': 'app/config/chromedriver',
+    'esg_finance_hub_links_csv': 'app/data/esg_finance_hub_links_*.csv',
     }
 
 

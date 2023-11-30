@@ -1,13 +1,17 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 from datetime import timedelta, datetime
+import glob
+import os
 
 import logging
 from sqlalchemy.orm import Session
+import pandas as pd
 
 from app.models_init import ScrapManager, ScrapManagerPydantic, ScrapManagerWithIDPydantic, ScrapSessionLog, ScrapSessionLogPydantic, ScrapErrorLog, ScrapErrorLogPydantic
 from app.common.db.scraper_manager_database import ScraperManagerDatabase
 from app.common.log.log_config import setup_logger
+from app.config.settings import FILE_PATHS
 
 
 scraper_mng_db = ScraperManagerDatabase()
@@ -346,6 +350,43 @@ async def get_scrap_manager_monitoring(
 
         return monitoring_data
 
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.get("/data/{portal}/")
+def get_csv_data(portal: str):
+    """CSV 파일을 읽어서 데이터를 가져오는 엔드포인트
+    args:
+        portal (str): 포털 이름
+    returns:
+        data (json): CSV 파일의 데이터
+    """
+
+    # portal이 없는 경우에 대한 예외 처리
+    if not portal:
+        logger.error(f"[Fail] Portal not specified")
+        raise HTTPException(status_code=400, detail="Portal not specified")
+
+    try:
+        # CSV 파일 경로
+        file_path = FILE_PATHS.get(f'{portal}_links_csv')
+        file_list = glob.glob(file_path)
+
+        # CSV 파일이 존재하는 경우
+        if file_list:
+            file_list.sort(key=lambda x: os.path.splitext(os.path.basename(x))[0][-14:])
+            latest_file = file_list[-1]
+            # json 파일로 변환
+            data = pd.read_csv(latest_file).to_json(orient='records')
+            return data
+        
+        # CSV 파일이 존재하지 않는 경우
+        else:
+            logger.error(f"[Fail] CSV file not found")
+            raise HTTPException(status_code=404, detail="CSV file not found")
+        
     except Exception as e:
         logger.error(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")

@@ -2,6 +2,7 @@ import traceback
 from datetime import datetime
 
 import requests
+import pandas as pd
 
 from config import settings
 
@@ -10,7 +11,7 @@ api_url = settings.API_URL
 
 # 데이터 조회
 def get_scrap_managers(portal):
-    response = requests.get(f"{api_url}?portal={portal}")
+    response = requests.get(f"{api_url}scrap_manager/?portal={portal}")
     if response.status_code == 200:
         return response.json()
     else:
@@ -19,7 +20,7 @@ def get_scrap_managers(portal):
 
 # 데이터 삽입
 def create_scrap_manager(scrap_manager_data):
-    response = requests.post(api_url, json=scrap_manager_data)
+    response = requests.post(f'{api_url}scrap_manager/', json=scrap_manager_data)
     return response.status_code == 201
 
 
@@ -27,12 +28,12 @@ def create_scrap_manager(scrap_manager_data):
 def update_scrap_manager(id, scrap_manager_data):
     print("update_scrap_manager", id, scrap_manager_data)
 
-    response = requests.put(f"{api_url}{id}", json=scrap_manager_data)
+    response = requests.put(f"{api_url}scrap_manager/{id}", json=scrap_manager_data)
     return response.status_code == 200
 
 
 def get_scrap_manager_by_id(id):
-    response = requests.get(f"{api_url}{id}")
+    response = requests.get(f"{api_url}scrap_manager/{id}")
     if response.status_code == 200:
         return response.json()
     else:
@@ -40,13 +41,13 @@ def get_scrap_manager_by_id(id):
 
 
 def delete_scrap_manager(id):
-    response = requests.delete(f"{api_url}{id}")
+    response = requests.delete(f"{api_url}scrap_manager/{id}")
     return response.status_code == 204
 
 
 # 로그 조회
 def get_scraper_logs():
-    response = requests.get(f"{api_url}monitoring/")
+    response = requests.get(f"{api_url}scrap_manager/monitoring/")
     if response.status_code == 200:
         return response.json()
     else:
@@ -370,3 +371,34 @@ def convert_error_logs_to_timelinejs_format(df, color_map, default_color):
     }
 
     return timeline_json
+
+
+def get_data_from_api(portal):
+    """API에서 데이터를 가져와 Pandas DataFrame으로 변환하는 함수
+    args:
+        portal (str): 포털 이름
+    returns:
+        df (DataFrame): API에서 가져온 데이터의 DataFrame
+    """
+    # API 엔드포인트 URL 구성
+    url = f"{api_url}data/{portal}/"
+    
+    try:
+        # API 호출
+        response = requests.get(url)
+        
+        # 요청이 성공적이면
+        if response.status_code == 200:
+            # JSON 형식으로 데이터를 받음
+            data_json = response.json()
+            
+            # Pandas DataFrame으로 변환
+            df = pd.read_json(data_json)
+            return df
+        else:
+            # 요청에 실패하면 오류 메시지를 출력
+            response.raise_for_status()
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+    except Exception as err:
+        print(f"An error occurred: {err}")

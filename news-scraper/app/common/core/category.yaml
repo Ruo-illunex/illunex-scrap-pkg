@@ -92,3 +92,5 @@ category_dict:
     오피니언: "300205"
     종합: "300206"
     etc: "300299"
+  esg_finance_hub:
+    etc: "300399"

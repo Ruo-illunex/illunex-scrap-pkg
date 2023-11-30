@@ -8,3 +8,5 @@ from app.scrapers.startuptoday_news_scraper import scrape_startuptoday_news
 from app.scrapers.platum_news_scraper import scrape_platum_news
 from app.scrapers.esg_news_scraper import scrape_esg_news
 from app.scrapers.greenpost_news_scraper import scrape_greenpost_news
+
+from app.scrapers.esg_finance_hub_scraper import  scrape_esg_finance_hub

@@ -3,7 +3,7 @@ import pandas as pd
 from streamlit_option_menu import option_menu
 from streamlit_timeline import timeline
 
-from core.utils import get_scrap_managers, get_scraper_logs, convert_to_timelinejs_format_with_colors, convert_to_timelinejs_format_with_alerts, convert_error_logs_to_timelinejs_format, create_color_map
+from core.utils import get_scrap_managers, get_scraper_logs, convert_to_timelinejs_format_with_colors, convert_to_timelinejs_format_with_alerts, convert_error_logs_to_timelinejs_format, create_color_map, get_data_from_api
 from core.functions import create_form, update_form, delete_form, check_html, scrap_test_beautiful_soup
 
 
@@ -22,8 +22,8 @@ st.set_page_config(
 
 with st.sidebar:
     option = option_menu(
-        "Menu", ['Scrap Manager', 'Scrap Test', 'Scraper Logs'],
-        icons=['house', 'kanban', 'bi bi-robot'],
+        "Menu", ['Scrap Manager', 'Scrap Test', 'Scraper Logs', 'ESG Finance Hub Scraper'],
+        icons=['house', 'kanban', 'bi bi-robot', 'bi bi-robot'],
         menu_icon="app-indicator",
         default_index=0,
         styles={
@@ -162,3 +162,28 @@ elif option == 'Scraper Logs':
         timeline(timelinejs_json, height=500)
     elif error_logs_filter == 'Table':
         st.dataframe(scrap_error_logs_df)
+
+# ESG Finance Hub Scraper
+elif option == 'ESG Finance Hub Scraper':
+    st.title("ESG Finance Hub Scraper")
+
+    # 데이터 조회
+    st.session_state.portal_for_data = st.selectbox('Portal', (
+        'Select',
+        'esg_finance_hub'
+        ), index=1)
+
+    search_button = st.button("Search", key='search_button_for_data_esg_finance_hub')
+    if search_button:
+        if st.session_state.portal_for_data == 'esg_finance_hub':
+            st.session_state.esg_finance_hub_data_df = get_data_from_api(st.session_state.portal_for_data)
+            st.session_state.esg_finance_hub_data_df.columns = ['page', 'news_url']
+            st.session_state.data_page_no = st.number_input(
+                'Page No',
+                min_value=1,
+                max_value=st.session_state.esg_finance_hub_data_df['page'].max(),
+                value=1
+                )
+            st.session_state.data_df = st.session_state.esg_finance_hub_data_df[st.session_state.esg_finance_hub_data_df['page'] == st.session_state.data_page_no]
+
+        st.dataframe(st.session_state.data_df)

@@ -196,6 +196,21 @@ async def scrape_greenpost_news_endpoint():
         return {"message": f"Error: {e}"}
 
 
+@app.get("/scrape/esg_finance_hub")
+def scrape_esg_finance_hub_endpoint():
+    """ESG 파이낸스 허브 스크래핑을 시작하는 엔드포인트"""
+
+    try:
+        scraper.scrape_esg_finance_hub()
+        return {"message": "ESG Finance Hub Scraping Started"}
+    
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        syn_err_msg = create_error_report_message(e, "esg_finance_hub")
+        send_message_to_synology_chat(syn_err_msg, dev_token)
+        return {"message": f"Error: {e}"}
+
+
 # 스케줄러 관련 코드
 def scheduled_job():
     try:
