@@ -185,18 +185,15 @@ elif option == 'ESG Finance Hub Scraper':
         if st.session_state.portal_for_data == 'esg_finance_hub':
             st.session_state.esg_finance_hub_data_df = get_data_from_api(st.session_state.portal_for_data)
             st.session_state.esg_finance_hub_data_df.columns = ['page', 'news_url']
+            st.session_state.esg_finance_hub_data_df['domain'] = st.session_state.esg_finance_hub_data_df['news_url'].apply(lambda x: pd.Series(x.split('/')[2]))
+            unique_domains = st.session_state.esg_finance_hub_data_df['domain'].unique()
+
             st.session_state.data_df = st.session_state.esg_finance_hub_data_df[st.session_state.esg_finance_hub_data_df['page'] == st.session_state.data_page_no]
 
-            # URL에서 도메인을 추출합니다.
-            st.session_state.data_df['domain'] = st.session_state.data_df['news_url'].apply(lambda x: pd.Series(x.split('/')[2]))
-
-            # 도메인별로 유니크한 값들을 뽑습니다.
-            unique_domains = st.session_state.data_df['domain'].unique()
-
         st.dataframe(st.session_state.data_df)
-        st.write(f"Total: {len(st.session_state.data_df)}")
+        st.write(f"Total: {len(st.session_state.esg_finance_hub_data_df)}")
 
         # 도메인별로 뉴스 개수를 세어봅니다.
         st.write("Number of news by domain:")
-        st.bar_chart(st.session_state.data_df['domain'].value_counts())
+        st.bar_chart(st.session_state.esg_finance_hub_data_df['domain'].value_counts())
         st.write("Total domains:", len(unique_domains))
