@@ -30,6 +30,7 @@ class EsgfinanceNewsScraper(NewsScraper):
         self.news_board_url = urls['news_board_url']
         self.esg_finance_hub_scraper = EsgFinanceHubScraper(scraper_name=self.scraper_name)
         self.media = load_yaml(FILE_PATHS.get('esg_finance_media')).get('media')
+        self.media_name = None
 
 
     def get_all_links_and_save_to_csv(self):
@@ -90,7 +91,8 @@ class EsgfinanceNewsScraper(NewsScraper):
     def get_news_urls(self):
         try:
             for link in self.esg_finance_hub_scraper.get_first_page_links():
-                self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name=self.media.get(link.split('/')[2]))
+                self.media_name = self.media.get(link.split('/')[2])
+                self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name=self.media_name)
                 yield link
         except Exception as e:
             stack_trace = traceback.format_exc()
@@ -107,7 +109,16 @@ class EsgfinanceNewsScraper(NewsScraper):
             async with aiohttp.ClientSession() as session:
                 async with session.get(news_url, headers=self.headers) as response:
                     if response.status == 200:
-                        text = await response.text()
+                        try:
+                            text = await response.text()
+                        except UnicodeDecodeError:
+                            info_message = f"ENCODING ERROR FOR {news_url}"
+                            self.process_info_log_msg(info_message, type="info")
+                            text = await response.read()
+                            if self.media_name in ["dt", "wsobi"]:
+                                text = text.decode('euc-kr', 'ignore')
+                            elif self.media_name in ["digitalchosun"]:
+                                text = text.decode('utf-8', 'ignore')
                         soup = BeautifulSoup(text, 'html.parser')
                     else:
                         err_message = f"RESPONSE STATUS: {response.status} {response.reason} FOR URL: {news_url}"
@@ -130,24 +141,27 @@ class EsgfinanceNewsScraper(NewsScraper):
                 self.process_err_log_msg(err_message, "scrape_each_news", "", "")
                 return None
 
-            if self.scraper_name == "dt":
+            if self.media_name == "dt":
                 image_url = f"https:{image_url}"
             
-            if self.scraper_name == "dnews":
+            if self.media_name == "dnews":
                 create_date = create_date.split('\xa0')[0][5:]
 
-            if self.scraper_name == "wsobi":
+            if self.media_name == "wsobi":
                 create_date = create_date.split('승인')[-1].strip()
 
-            if self.scraper_name == "digitalchosun":
+            if self.media_name == "digitalchosun":
                 create_date = create_date[5:]
 
-            if self.scraper_name == "bizchosun":
+            if self.media_name == "bizchosun":
                 create_date = create_date.split('.')[0]
+            
+            if self.media_name == "newstong":
+                create_date = create_date.split('|')[-1].strip()
 
             url_md5 = hashlib.md5(news_url.encode()).hexdigest()
             preprocessed_create_date = self.preprocess_datetime(create_date)
-            kind_id = self.category_dict.get(self.portal_name).get("etc")
+            kind_id = self.category_dict.get(self.scraper_name).get("etc")
 
             news_data = EsgNews(
                 url=news_url,
