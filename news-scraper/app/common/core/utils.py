@@ -16,7 +16,7 @@ def load_yaml(path):
 def preprocess_datetime_standard(date_str):
     """표준 날짜 형식 처리"""
     try:
-        return datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+        return datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return None
 
@@ -24,15 +24,18 @@ def preprocess_datetime_standard(date_str):
 def preprocess_datetime_compact(date_str):
     """압축된 날짜 형식 처리"""
     try:
-        return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
+        return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return None
 
 
 def preprocess_datetime_iso(date_str):
     """ISO 8601 날짜 형식 처리"""
+    # ISO 8601 날짜 형식은 +00:00, +0000, +00 으로 끝날 수 있음
+    if '+' in date_str:
+        date_str = date_str.split('+')[0]
     try:
-        return datetime.datetime.fromisoformat(date_str)
+        return datetime.datetime.fromisoformat(date_str).strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return None
 
@@ -40,6 +43,6 @@ def preprocess_datetime_iso(date_str):
 def preprocess_datetime_rfc2822(date_str):
     """RFC 2822 날짜 형식 처리"""
     try:
-        return email.utils.parsedate_to_datetime(date_str)
+        return email.utils.parsedate_to_datetime(date_str).strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return None

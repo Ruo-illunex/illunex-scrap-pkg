@@ -3,6 +3,7 @@ import random
 import hashlib
 import traceback
 import types
+import datetime
 
 import aiohttp
 import requests
@@ -23,7 +24,7 @@ class EsgfinanceNewsScraper(NewsScraper):
     def __init__(self, scraper_name: str):
         super().__init__(scraper_name)
         self.interval_time_sleep = 7200
-        esgfinance_urls = URLs(scraper_name)
+        esgfinance_urls = URLs(self.scraper_name)
         self.headers = esgfinance_urls.headers
         urls = esgfinance_urls.urls
         self.news_board_url = urls['news_board_url']
@@ -39,6 +40,14 @@ class EsgfinanceNewsScraper(NewsScraper):
             stack_trace = traceback.format_exc()
             err_message = "THERE WAS AN ERROR WHILE GETTING ALL LINKS AND SAVING TO CSV.\nCHECK THE ESG FINANCE HUB SCRAPER LOGS FOR MORE DETAILS"
             self.process_err_log_msg(err_message, "get_all_links_and_save_to_csv", stack_trace, e)
+
+
+    def preprocess_datetime_custom1(self, date_str):
+        """커스텀 날짜 형식 처리"""
+        try:
+            return datetime.datetime.strptime(date_str, "%Y.%m.%d %H:%M").strftime("%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            return None
 
 
     def preprocess_datetime(self, unprocessed_date):
@@ -65,6 +74,10 @@ class EsgfinanceNewsScraper(NewsScraper):
         if processed_date:
             return processed_date
         
+        processed_date = self.preprocess_datetime_custom1(unprocessed_date)
+        if processed_date:
+            return processed_date
+
         try:
             raise ValueError(f"Invalid date format: {unprocessed_date}")
         except Exception as e:
@@ -77,9 +90,8 @@ class EsgfinanceNewsScraper(NewsScraper):
     def get_news_urls(self):
         try:
             for link in self.esg_finance_hub_scraper.get_first_page_links():
-                # 미디어가 일치하는 링크만 반환
-                if self.scraper_name == self.media.get(link.split('/')[2]):
-                    yield link
+                self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name=self.media.get(link.split('/')[2]))
+                yield link
         except Exception as e:
             stack_trace = traceback.format_exc()
             err_message = f"THERE WAS AN ERROR WHILE GETTING NEWS URLS FROM {self.news_board_url}\nCHECK THE ESG FINANCE HUB SCRAPER LOGS FOR MORE DETAILS"
@@ -92,9 +104,15 @@ class EsgfinanceNewsScraper(NewsScraper):
             info_message = f"SCRAPING STARTED FOR {news_url}"
             self.process_info_log_msg(info_message, type="info")
 
-            async with aiohttp.ClientSession(headers=self.headers) as session:
-                text = await self.fetch_url_with_retry(session, news_url)
-                soup = BeautifulSoup(text, 'html.parser')
+            async with aiohttp.ClientSession() as session:
+                async with session.get(news_url, headers=self.headers) as response:
+                    if response.status == 200:
+                        text = await response.text()
+                        soup = BeautifulSoup(text, 'html.parser')
+                    else:
+                        err_message = f"RESPONSE STATUS: {response.status} {response.reason} FOR URL: {news_url}"
+                        self.process_err_log_msg(err_message, "scrape_each_news", "", "")
+                        return None
 
             extracted_data = self.extract_news_details(
                 soup,
@@ -112,9 +130,24 @@ class EsgfinanceNewsScraper(NewsScraper):
                 self.process_err_log_msg(err_message, "scrape_each_news", "", "")
                 return None
 
+            if self.scraper_name == "dt":
+                image_url = f"https:{image_url}"
+            
+            if self.scraper_name == "dnews":
+                create_date = create_date.split('\xa0')[0][5:]
+
+            if self.scraper_name == "wsobi":
+                create_date = create_date.split('승인')[-1].strip()
+
+            if self.scraper_name == "digitalchosun":
+                create_date = create_date[5:]
+
+            if self.scraper_name == "bizchosun":
+                create_date = create_date.split('.')[0]
+
             url_md5 = hashlib.md5(news_url.encode()).hexdigest()
             preprocessed_create_date = self.preprocess_datetime(create_date)
-            kind_id = self.category_dict.get(self.scraper_name).get("etc")
+            kind_id = self.category_dict.get(self.portal_name).get("etc")
 
             news_data = EsgNews(
                 url=news_url,
@@ -123,7 +156,7 @@ class EsgfinanceNewsScraper(NewsScraper):
                 content=content,
                 create_date=preprocessed_create_date,
                 image_url=image_url,
-                portal=self.scraper_name,
+                portal='esg_finance',
                 media=media,
                 kind=kind_id,
                 category="ESG",
@@ -201,13 +234,9 @@ class EsgfinanceNewsScraper(NewsScraper):
 # ESG FINANCE 뉴스 스크래핑
 async def scrape_esg_finance_news():
     """ESG FINANCE 뉴스를 스크래핑하는 함수"""
-    # ESG FINANCE 미디어 정보를 가져옵니다.
-    media = load_yaml(FILE_PATHS.get('esg_finance_media')).get('media')
-    # ESG FINANCE 미디어별 뉴스를 스크래핑합니다.
-    for media_name in media.values():
-        esg_finance_news_scraper = EsgfinanceNewsScraper(scraper_name=media_name)
-        await esg_finance_news_scraper.scrape_news()
-
+    portal = "esg_finance_hub"
+    esgfinance_news_scraper = EsgfinanceNewsScraper(scraper_name=portal)
+    await esgfinance_news_scraper.scrape_news()
 
 if __name__ == "__main__":
     asyncio.run(scrape_esg_finance_news())

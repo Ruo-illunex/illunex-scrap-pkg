@@ -44,7 +44,7 @@ class TheBellNewsScraper(NewsScraper):
 
                 # datetime 객체로 변환 후 문자열로 반환
                 processed_date = datetime.datetime.strptime(unprocessed_date, "%Y-%m-%d %H:%M:%S")
-                return processed_date.strftime("%Y-%m-%d %H:%M:%S")
+                return processed_date
                 
         except Exception as e:
             stack_trace = traceback.format_exc()

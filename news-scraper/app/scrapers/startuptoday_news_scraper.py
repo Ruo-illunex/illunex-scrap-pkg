@@ -37,7 +37,7 @@ class StartuptodayNewsScraper(NewsScraper):
 
         processed_date = preprocess_datetime_iso(unprocessed_date)
         if processed_date:
-            return processed_date.strftime("%Y-%m-%d %H:%M:%S")
+            return processed_date
         
         try:
             raise ValueError(f"Invalid date format: {unprocessed_date}")

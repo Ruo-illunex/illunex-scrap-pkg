@@ -36,7 +36,7 @@ class PlatumNewsScraper(NewsScraper):
             
         processed_date = preprocess_datetime_rfc2822(unprocessed_date)
         if processed_date:
-            return processed_date.strftime("%Y-%m-%d %H:%M:%S")
+            return processed_date
         else:
             try:
                 raise ValueError(f"Invalid date format: {unprocessed_date}")
