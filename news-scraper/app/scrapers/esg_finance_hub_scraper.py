@@ -170,6 +170,45 @@ class EsgFinanceHubScraper:
             WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[onclick*='clickPaging']"))).click()
 
 
+    # 첫번째 페이지의 링크를 generator로 반환하는 함수
+    def get_first_page_links(self):
+        if self.driver is None:
+            err_message = "DRIVER IS NONE. EXITING."
+            self.logger.error(err_message)
+            return None
+        try:
+            self.logger.info("STARTING ESG_FINANCE_HUB_SCRAPER FIRST PAGE")
+
+            # 로딩 모달이 사라질 때까지 대기
+            self.wait_for_loading_to_disappear()
+
+            # 30개씩 보기 설정
+            WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.ID, "search_cnt_combo"))).click()
+            self.driver.find_element(By.CSS_SELECTOR, "option[value='30']").click()            
+
+            # 로딩 모달이 사라질 때까지 대기
+            self.wait_for_loading_to_disappear()
+
+            # 첫번째 페이지에 대해 반복
+            WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "span.word-item")))
+            word_items = self.driver.find_elements(By.CSS_SELECTOR, "span.word-item")
+            # 유효하지 않은 링크는 건너뛰고, 유효한 링크만 딕셔너리에 현재 페이지의 링크들을 저장
+            links = [self.get_link(item) for item in word_items if self.get_link(item)]
+            for link in links:
+                yield link
+
+        except Exception as e:
+            stack_trace = traceback.format_exc()
+            err_message = f"THERE WAS AN ERROR WHILE GETTING FIRST PAGE LINKS.\n{stack_trace}\n{e}"
+            self.logger.error(err_message)
+            return None
+
+        finally:
+            info_message = "CLOSING DRIVER"
+            self.logger.info(info_message)
+            self.driver.quit()
+
+
     # 모든 페이지의 링크를 추출하여 CSV 파일에 저장하는 함수
     def get_all_links_and_save_to_csv(self):
         if self.driver is None:
