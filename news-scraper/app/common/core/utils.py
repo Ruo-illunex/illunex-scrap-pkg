@@ -21,6 +21,14 @@ def preprocess_datetime_standard(date_str):
         return None
 
 
+def preprocess_datetime_standard_without_seconds(date_str):
+    """표준 날짜 형식 처리"""
+    try:
+        return datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M").strftime("%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return None
+
+
 def preprocess_datetime_compact(date_str):
     """압축된 날짜 형식 처리"""
     try:

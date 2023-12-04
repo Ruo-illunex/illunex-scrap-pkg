@@ -15,7 +15,7 @@ from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import EsgNews
 from app.scrapers.urls import URLs
 from app.scrapers.esg_finance_hub_scraper import EsgFinanceHubScraper
-from app.common.core.utils import preprocess_datetime_iso, preprocess_datetime_compact, preprocess_datetime_rfc2822, preprocess_datetime_standard
+from app.common.core.utils import preprocess_datetime_iso, preprocess_datetime_compact, preprocess_datetime_rfc2822, preprocess_datetime_standard, preprocess_datetime_standard_without_seconds
 from app.config.settings import FILE_PATHS
 from app.common.core.utils import load_yaml
 
@@ -77,6 +77,10 @@ class EsgfinanceNewsScraper(NewsScraper):
         if processed_date:
             return processed_date
         
+        processed_date = preprocess_datetime_standard_without_seconds(unprocessed_date)
+        if processed_date:
+            return processed_date
+
         processed_date = self.preprocess_datetime_custom1(unprocessed_date)
         if processed_date:
             return processed_date
@@ -148,7 +152,7 @@ class EsgfinanceNewsScraper(NewsScraper):
                             text = await response.read()
                             if self.media_name in ["dt", "wsobi"]:
                                 text = text.decode('euc-kr', 'ignore')
-                            elif self.media_name in ["digitalchosun"]:
+                            elif self.media_name in ["digitalchosun", "news1"]:
                                 text = text.decode('utf-8', 'ignore')
                         soup = BeautifulSoup(text, 'html.parser')
                     else:
@@ -189,6 +193,15 @@ class EsgfinanceNewsScraper(NewsScraper):
             
             if self.media_name == "newstong":
                 create_date = create_date.split('|')[-1].strip()
+            
+            if self.media_name == "ceoscoredaily":
+                image_url = f"https://www.ceoscoredaily.com{image_url}"
+
+            if self.media_name in ["guardian", "news_yahoo"]:
+                create_date = create_date.split('.')[0]
+            
+            if self.media_name == "news2day":
+                create_date = create_date.split(' : ')[-1].strip()
 
             url_md5 = hashlib.md5(news_url.encode()).hexdigest()
             preprocessed_create_date = self.preprocess_datetime(create_date)
