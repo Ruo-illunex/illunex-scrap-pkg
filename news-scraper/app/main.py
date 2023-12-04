@@ -196,12 +196,13 @@ async def scrape_greenpost_news_endpoint():
         return {"message": f"Error: {e}"}
 
 
+# get_all_news 파라미터를 True로 설정하면, 뉴스 데이터베이스에 저장된 모든 뉴스를 스크래핑합니다.
+# 사용법 예시: http://localhost:8000/scrape/esg_finance_news?get_all_news=True
 @app.get("/scrape/esg_finance_news")
-async def scrape_esg_finance_news_endpoint():
+async def scrape_esg_finance_news_endpoint(get_all_news: bool = False):
     """ESG 파이낸스 뉴스 스크래핑을 시작하는 엔드포인트"""
-
     try:
-        await scraper.scrape_esg_finance_news()
+        await scraper.scrape_esg_finance_news(get_all_news_urls=get_all_news)
         return {"message": "ESG Finance News Scraping Started"}
     
     except Exception as e:

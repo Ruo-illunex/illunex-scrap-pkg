@@ -35,8 +35,7 @@ class EsgFinanceHubScraper:
         else:
             self.chrome_options.add_argument("--disable-gpu")
 
-        self.current_date = datetime.datetime.now().strftime("%Y%m%d")
-        self.filename = f"app/data/{self.scraper_name}_links_{self.current_date}.csv"
+        self.filename = f"app/data/{self.scraper_name}_links_{self.current_datetime}.csv"
         self.news_board_url = URLs(self.scraper_name).urls['news_board_url']
         self.driver_path = FILE_PATHS['chromedriver']
         self.driver = None
@@ -44,8 +43,6 @@ class EsgFinanceHubScraper:
 
         self.last_page = 172
         self.current_page = 1
-        self.go_to_last_page_and_find_last_page_number()    # 게시판의 마지막 페이지로 이동하여 실제 마지막 페이지 번호를 찾음
-        self.find_last_saved_page()                        # CSV 파일에서 마지막으로 저장된 페이지 번호를 찾음 (없으면 1)
 
         self.all_links = {}    # {페이지 번호: [링크1, 링크2, ...]} 형태의 딕셔너리
 
@@ -91,26 +88,12 @@ class EsgFinanceHubScraper:
             self.logger.error(e)
 
 
-    # 마지막으로 저장된 페이지 번호를 찾는 함수
-    def find_last_saved_page(self):
-        try:
-            with open(self.filename, 'r', newline='', encoding='utf-8') as file:
-                for row in csv.reader(file):
-                    if row:  # 빈 줄이 아닌 경우에만 처리
-                        self.current_page = int(row[0]) + 1
-                info_message = f"LAST PAGE NUMBER: {self.current_page - 1}\nCONTINUE FROM THE NEXT PAGE"
-                self.logger.info(info_message)
-        except FileNotFoundError:
-            info_message = f"FILE NOT FOUND: {self.filename}. STARTING FROM THE FIRST PAGE."
-            self.logger.info(info_message)
-
-
     # 마지막 페이지로 이동하여 실제 마지막 페이지 번호를 찾는 함수
     def go_to_last_page_and_find_last_page_number(self):
         try:
             # '마지막으로' 버튼을 클릭하여 마지막 페이지로 이동
             last_page_button = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "a.last"))
+                EC.element_to_be_clickable((By.XPATH, "//img[@alt='마지막']/ancestor::button"))
             )
             last_page_button.click()
 
@@ -118,10 +101,9 @@ class EsgFinanceHubScraper:
             self.wait_for_loading_to_disappear()
 
             # 페이지 로드 후, 페이지네이션에서 실제 마지막 페이지 번호를 찾음
-            WebDriverWait(self.driver, 10).until(
+            page_numbers = WebDriverWait(self.driver, 10).until(
                 EC.presence_of_all_elements_located((By.CSS_SELECTOR, "ul.paging > li > a"))
             )
-            page_numbers = self.driver.find_elements_by_css_selector("ul.paging > li > a")
             # 페이지 번호가 숫자인 요소만 필터링
             numeric_page_numbers = [elem.text for elem in page_numbers if elem.text.isdigit()]
             
@@ -140,6 +122,12 @@ class EsgFinanceHubScraper:
             self.logger.error(err_message)
             self.logger.error(stack_trace)
             self.logger.error(e)
+        finally:
+            WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//img[@alt='맨처음']/ancestor::button"))
+            ).click()
+            info_message = "RETURNED TO FIRST PAGE"
+            self.logger.info(info_message)
 
 
     # 요소에서 URL을 추출하는 함수
@@ -166,8 +154,23 @@ class EsgFinanceHubScraper:
 
     # 다음 페이지로 이동하는 함수
     def go_to_next_page(self):
-        if self.current_page <= self.last_page:
-            WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[onclick*='clickPaging']"))).click()
+        try:
+            if self.current_page <= self.last_page:
+                if self.current_page % 5 == 0:
+                    # '다음'이라는 alt 속성을 가진 이미지를 찾고 이를 클릭하여 다음 페이지로 이동
+                    next_page_button = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.CSS_SELECTOR, f"button[onclick*='clickPaging({self.current_page});']"))
+                    )
+                else:
+                    next_page_button = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, f"//*[@href='javascript:topapp.clickPaging({self.current_page});']"))
+                    )
+                next_page_button.click()
+                self.logger.info(f"Moving to page {self.current_page + 1}")
+        except Exception as e:
+            self.logger.error(f"Could not move to page {self.current_page + 1}: {e}")
+        finally:
+            self.current_page += 1  # 현재 페이지 번호 증가
 
 
     # 첫번째 페이지의 링크를 generator로 반환하는 함수
@@ -225,6 +228,8 @@ class EsgFinanceHubScraper:
             WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.ID, "search_cnt_combo"))).click()
             self.driver.find_element(By.CSS_SELECTOR, "option[value='30']").click()            
 
+            self.go_to_last_page_and_find_last_page_number()    # 마지막 페이지로 이동하여 실제 마지막 페이지 번호를 찾음
+
             # 모든 페이지에 대해 반복
             while self.current_page <= self.last_page:
                 try:
@@ -242,22 +247,16 @@ class EsgFinanceHubScraper:
                     # 현재 페이지의 링크들을 CSV 파일에 저장
                     self.save_links_to_csv()
 
-                    # 다음 페이지로 이동
-                    self.current_page += 1
                     self.go_to_next_page()
 
                 except TimeoutException:
-                    err_message = "TIMEOUT EXCEPTION: PAGE DID NOT LOAD"
+                    err_message = "TIMEOUT EXCEPTION: {self.current_page} PAGE DID NOT LOAD"
                     self.logger.error(err_message)
-                    # 다음 페이지로 이동
-                    self.current_page += 1
                     self.go_to_next_page()
                 
                 except NoSuchElementException:
-                    err_message = "NO SUCH ELEMENT EXCEPTION: PAGE DID NOT LOAD"
+                    err_message = "NO SUCH ELEMENT EXCEPTION: {self.current_page} PAGE DID NOT LOAD"
                     self.logger.error(err_message)
-                    # 다음 페이지로 이동
-                    self.current_page += 1
                     self.go_to_next_page()
 
         except Exception as e:

@@ -4,10 +4,12 @@ import hashlib
 import traceback
 import types
 import datetime
+import glob
+import os
 
 import aiohttp
-import requests
 from bs4 import BeautifulSoup
+import pandas as pd
 
 from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import EsgNews
@@ -101,6 +103,35 @@ class EsgfinanceNewsScraper(NewsScraper):
             return None
 
 
+    def get_all_news_urls(self):
+        try:
+            # CSV 파일 경로
+            file_path = FILE_PATHS.get(f'{self.scraper_name}_links_csv')
+            file_list = glob.glob(file_path)
+
+            # CSV 파일이 존재하는 경우
+            if file_list:
+                file_list.sort(key=lambda x: os.path.splitext(os.path.basename(x))[0][-14:])
+                latest_file = file_list[-1]
+                df = pd.read_csv(latest_file)
+                df.columns = ['page', 'url']
+                df = df.drop_duplicates(subset=['url'], keep='first')
+                for url in df['url'].tolist():
+                    self.media_name = self.media.get(url.split('/')[2])
+                    self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name=self.media_name)
+                    yield url
+            # CSV 파일이 존재하지 않는 경우
+            else:
+                self.get_all_links_and_save_to_csv()
+                yield from self.get_all_news_urls()
+        
+        except Exception as e:
+            stack_trace = traceback.format_exc()
+            err_message = f"THERE WAS AN ERROR WHILE GETTING ALL NEWS URLS FROM {self.news_board_url}\nCHECK THE ESG FINANCE HUB SCRAPER LOGS FOR MORE DETAILS"
+            self.process_err_log_msg(err_message, "get_all_news_urls", stack_trace, e)
+            return None
+
+
     async def scrape_each_news(self, news_url):
         try:
             info_message = f"SCRAPING STARTED FOR {news_url}"
@@ -186,7 +217,7 @@ class EsgfinanceNewsScraper(NewsScraper):
             return None
 
 
-    async def scrape_news(self):
+    async def scrape_news(self, get_all_news_urls=False):
         while True:
             try:
                 # 세션 로그 초기화
@@ -196,7 +227,11 @@ class EsgfinanceNewsScraper(NewsScraper):
                 # 뉴스 데이터 리스트 초기화
                 self.news_data_list = []
 
-                news_urls = self.get_news_urls()
+                if get_all_news_urls:
+                    news_urls = self.get_all_news_urls()
+                else:
+                    news_urls = self.get_news_urls()
+
                 if not isinstance(news_urls, types.GeneratorType):
                     err_message = "GET_NEWS_URLS DOES NOT RETURN A GENERATOR. CHECK THE 'news_board_url' OR THE RETURN VALUE OF FUNCTION 'get_news_urls'"
                     self.process_err_log_msg(err_message, "scrape_news", "", "")
@@ -246,11 +281,11 @@ class EsgfinanceNewsScraper(NewsScraper):
 
 
 # ESG FINANCE 뉴스 스크래핑
-async def scrape_esg_finance_news():
+async def scrape_esg_finance_news(get_all_news_urls=False):
     """ESG FINANCE 뉴스를 스크래핑하는 함수"""
     portal = "esg_finance_hub"
     esgfinance_news_scraper = EsgfinanceNewsScraper(scraper_name=portal)
-    await esgfinance_news_scraper.scrape_news()
+    await esgfinance_news_scraper.scrape_news(get_all_news_urls=get_all_news_urls)
 
 if __name__ == "__main__":
     asyncio.run(scrape_esg_finance_news())
