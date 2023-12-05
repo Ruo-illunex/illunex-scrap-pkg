@@ -15,7 +15,7 @@ from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import EsgNews
 from app.scrapers.urls import URLs
 from app.scrapers.esg_finance_hub_scraper import EsgFinanceHubScraper
-from app.common.core.utils import preprocess_datetime_iso, preprocess_datetime_compact, preprocess_datetime_rfc2822, preprocess_datetime_standard, preprocess_datetime_standard_without_seconds
+from app.common.core.utils import preprocess_datetime_iso, preprocess_datetime_compact, preprocess_datetime_rfc2822, preprocess_datetime_standard, preprocess_datetime_standard_without_seconds, preprocess_datetime_korean_without_seconds, preprocess_datetime_period_without_seconds, preprocess_date_period
 from app.config.settings import FILE_PATHS
 from app.common.core.utils import load_yaml
 
@@ -45,14 +45,6 @@ class EsgfinanceNewsScraper(NewsScraper):
             self.process_err_log_msg(err_message, "get_all_links_and_save_to_csv", stack_trace, e)
 
 
-    def preprocess_datetime_custom1(self, date_str):
-        """커스텀 날짜 형식 처리"""
-        try:
-            return datetime.datetime.strptime(date_str, "%Y.%m.%d %H:%M").strftime("%Y-%m-%d %H:%M:%S")
-        except ValueError:
-            return None
-
-
     def preprocess_datetime(self, unprocessed_date):
         """날짜 전처리 함수
         Args:
@@ -80,8 +72,16 @@ class EsgfinanceNewsScraper(NewsScraper):
         processed_date = preprocess_datetime_standard_without_seconds(unprocessed_date)
         if processed_date:
             return processed_date
+        
+        processed_date = preprocess_datetime_korean_without_seconds(unprocessed_date)
+        if processed_date:
+            return processed_date
 
-        processed_date = self.preprocess_datetime_custom1(unprocessed_date)
+        processed_date = preprocess_datetime_period_without_seconds(unprocessed_date)
+        if processed_date:
+            return processed_date
+        
+        processed_date = preprocess_date_period(unprocessed_date)
         if processed_date:
             return processed_date
 
@@ -126,8 +126,11 @@ class EsgfinanceNewsScraper(NewsScraper):
                     yield url
             # CSV 파일이 존재하지 않는 경우
             else:
+                info_message = f"CSV FILE DOES NOT EXIST FOR {self.scraper_name}"
+                self.process_info_log_msg(info_message, type="info")
+
                 self.get_all_links_and_save_to_csv()
-                yield from self.get_all_news_urls()
+                return None
         
         except Exception as e:
             stack_trace = traceback.format_exc()
@@ -150,9 +153,9 @@ class EsgfinanceNewsScraper(NewsScraper):
                             info_message = f"ENCODING ERROR FOR {news_url}"
                             self.process_info_log_msg(info_message, type="info")
                             text = await response.read()
-                            if self.media_name in ["dt", "wsobi"]:
+                            if self.media_name in ["dt", "wsobi", "munhwa"]:
                                 text = text.decode('euc-kr', 'ignore')
-                            elif self.media_name in ["digitalchosun", "news1"]:
+                            elif self.media_name in ["digitalchosun", "news1", "seoul", "newsworks"]:
                                 text = text.decode('utf-8', 'ignore')
                         soup = BeautifulSoup(text, 'html.parser')
                     else:
@@ -178,14 +181,11 @@ class EsgfinanceNewsScraper(NewsScraper):
 
             if self.media_name == "dt":
                 image_url = f"https:{image_url}"
-            
-            if self.media_name == "dnews":
-                create_date = create_date.split('\xa0')[0][5:]
 
-            if self.media_name == "wsobi":
+            if self.media_name in ["wsobi", "paxetv"]:
                 create_date = create_date.split('승인')[-1].strip()
 
-            if self.media_name == "digitalchosun":
+            if self.media_name in ["digitalchosun", "dnews"]:
                 create_date = create_date[5:]
 
             if self.media_name == "bizchosun":
@@ -194,14 +194,38 @@ class EsgfinanceNewsScraper(NewsScraper):
             if self.media_name == "newstong":
                 create_date = create_date.split('|')[-1].strip()
             
+            if self.media_name == "metroseoul":
+                create_date = create_date.split('ㅣ')[-1].strip()
+            
+            if self.media_name == "mediapen":
+                create_date = create_date.split(' | ')[0].strip()
+            
             if self.media_name == "ceoscoredaily":
                 image_url = f"https://www.ceoscoredaily.com{image_url}"
 
-            if self.media_name in ["guardian", "news_yahoo"]:
+            if self.media_name in ["guardian", "news_yahoo", "uk_news_yahoo", "bbc"]:
                 create_date = create_date.split('.')[0]
             
             if self.media_name == "news2day":
                 create_date = create_date.split(' : ')[-1].strip()
+
+            if self.media_name == "busan":
+                create_date = create_date.replace('[', '').replace(']', '')
+
+            if self.media_name == "munhwa":
+                create_date = create_date.replace('입력 ', '').strip()
+            
+            if self.media_name == "news_kbs":
+                create_date = create_date.replace('입력 ', '').replace('(', '').replace(')', '').strip()
+            
+            if self.media_name == "asiatime":
+                create_date = create_date.split('입력 ')[-1].split(' 수정')[0].strip()
+
+            if self.media_name == "economist":
+                create_date = create_date.replace('[이코노미스트] 입력 ', '')
+            
+            if self.media_name == "naeil":
+                create_date = create_date.replace(' 게재', '')
 
             url_md5 = hashlib.md5(news_url.encode()).hexdigest()
             preprocessed_create_date = self.preprocess_datetime(create_date)

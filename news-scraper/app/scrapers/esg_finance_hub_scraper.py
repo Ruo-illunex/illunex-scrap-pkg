@@ -139,6 +139,14 @@ class EsgFinanceHubScraper:
             url_match = re.search(r"window.open\('([^']*)'", onclick_script)
             if url_match:
                 link = url_match.group(1)
+                # 모바일 페이지로 이동하는 링크인 경우, PC 페이지로 변경
+                mobile_domains = [
+                    'm.lawtimes', 'm.segye', 'm.hankookilbo', 'm.news2day',
+                    'm.ekn', 'm.etnews', 'm.yna', 'm.socialvalue',
+                    'm.ajunews', 'm.moneys', 'm.me.go', 'm.dailian', 'm.newspim'
+                ]
+                if any(domain in link for domain in mobile_domains):
+                    link = link.replace('//m.', '//www.')
                 info_message = f"URL WAS FOUND FROM {onclick_script}"
                 self.logger.info(info_message)
                 return link
@@ -239,6 +247,16 @@ class EsgFinanceHubScraper:
                     # 로딩 모달이 사라질 때까지 대기
                     self.wait_for_loading_to_disappear()
 
+                    # 현재 페이지의 첫번째 기사의 연도를 추출하여 2022년 이전인 경우 반복 중단
+                    WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "span.view-info-item > em:nth-child(2)")))
+                    datetime_text = self.driver.find_element(By.CSS_SELECTOR, "span.view-info-item > em:nth-child(2)").text
+                    article_year_str = int(datetime_text.split('-')[0])
+                    if article_year_str < 2022:
+                        info_message = f"ARTICLE YEAR IS {article_year_str}. STOPPING ITERATION."
+                        self.logger.info(info_message)
+                        break
+                    
+                    # 현재 페이지에서 링크들을 추출
                     WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "span.word-item")))
                     word_items = self.driver.find_elements(By.CSS_SELECTOR, "span.word-item")
                     # 유효하지 않은 링크는 건너뛰고, 유효한 링크만 딕셔너리에 현재 페이지의 링크들을 저장
