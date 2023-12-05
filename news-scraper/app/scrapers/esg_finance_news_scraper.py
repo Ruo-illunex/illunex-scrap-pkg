@@ -293,6 +293,12 @@ class EsgfinanceNewsScraper(NewsScraper):
                     # 뉴스 데이터에 에러가 있으면, 에러 로그를 append하고, 그렇지 않으면 뉴스 데이터를 리스트에 추가
                     self.check_error(news_data, news_url)
 
+                    if get_all_news_urls:
+                        # 매 100개의 뉴스마다 데이터 베이스에 저장
+                        if len(self.news_data_list) == 100:
+                            self.save_news_data_bulk(self.news_data_list)
+                            self.news_data_list = []
+
                 # 뉴스 데이터베이스에 한 번에 저장
                 self.save_news_data_bulk(self.news_data_list)
                 
@@ -305,7 +311,7 @@ class EsgfinanceNewsScraper(NewsScraper):
                     break
 
                 # 모든 스크래핑이 끝나면 일정 시간 대기
-                await asyncio.sleep(self.interval_time_sleep)
+                await asyncio.sleep(self.interval_time_sleep)\
 
             except Exception as e:
                 stack_trace = traceback.format_exc()
