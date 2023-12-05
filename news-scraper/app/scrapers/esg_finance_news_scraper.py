@@ -299,6 +299,11 @@ class EsgfinanceNewsScraper(NewsScraper):
                 # 최종 세션 로그 저장
                 self.finalize_session_log()
 
+                if get_all_news_urls:
+                    success_message = f"SCRAPING COMPLETED FOR {self.scraper_name} WITH {self.session_log['total_records_processed']} RECORDS"
+                    self.process_success_log_msg(success_message, "scrape_news")
+                    break
+
                 # 모든 스크래핑이 끝나면 일정 시간 대기
                 await asyncio.sleep(self.interval_time_sleep)
 
