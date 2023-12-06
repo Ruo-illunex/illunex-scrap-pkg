@@ -13,6 +13,10 @@ media:
   # kr.investing.com: kr_investing
   # www.korcham.net: korcham
   # vip.mk.co.kr: vip_mk
+  # www.fsc.go.kr: fsc
+  # www.insnews.co.kr: insnews
+  # www.ikld.kr: ikld
+  # www.korea.kr: korea
   news.naver.com: naver
   n.news.naver.com: naver
   www.impacton.net: impacton
@@ -169,42 +173,38 @@ media:
   www.asiatime.co.kr: asiatime
   www.newsfreezone.co.kr: newsfreezone
   www.bizwnews.com: bizwnews
+  www.kjdaily.com: kjdaily
+  www.foodneconomy.com: foodneconomy
+  www.thevaluenews.co.kr: thevaluenews
+  it.chosun.com: it_chosun
+  www.updownnews.co.kr: updownnews
+  www.wowtv.co.kr: wowtv
+  www.intn.co.kr: intn
+  ca.news.yahoo.com: ca_news_yahoo
+  cm.asiae.co.kr: cm_asiae
+  www.jnilbo.com: jnilbo
+  www.incheonilbo.com: incheonilbo
+  www.job-post.co.kr: job-post
+  www.joongboo.com: joongboo
+  dealsite.co.kr: dealsite
+  au.news.yahoo.com: au_news_yahoo
+  www.womentimes.co.kr: womentimes
+  www.thekpm.com: thekpm
+  www.jjan.kr: jjan
+  www.safetimes.co.kr: safetimes
+  www.nongmin.com: nongmin
+  www.kpinews.co.kr: kpinews
+  news.imaeil.com: news_imaeil
+  news.bizwatch.co.kr: news_bizwatch
+  www.cstimes.com: cstimes
+  www.newswire.co.kr: newswire
+  www.lifein.news: lifein
+  www.asiaa.co.kr: asiaa
+  www.sisaon.co.kr: sisaon
+  www.newscj.com: newscj
+  www.thebigdata.co.kr: thebigdata
+  www.ksmnews.co.kr: ksmnews
 
-  # www.kjdaily.com: kjdaily
-  # www.foodneconomy.com: foodneconomy
-  # www.fsc.go.kr: fsc
-  # www.thevaluenews.co.kr: thevaluenews
-  # it.chosun.com: it_chosun
-  # www.updownnews.co.kr: updownnews
-  # www.wowtv.co.kr: wowtv
-  # www.intn.co.kr: intn
-  # www.insnews.co.kr: insnews
-  # ca.news.yahoo.com: ca_news_yahoo
-  # cm.asiae.co.kr: cm_asiae
-  # www.jnilbo.com: jnilbo
-  # www.incheonilbo.com: incheonilbo
-  # www.job-post.co.kr: job-post
-  # www.joongboo.com: joongboo
-  # www.ikld.kr: ikld
-  # dealsite.co.kr: dealsite
-  # au.news.yahoo.com: au_news_yahoo
-  # www.womentimes.co.kr: womentimes
-  # www.thekpm.com: thekpm
-  # www.jjan.kr: jjan
-  # www.korea.kr: korea
-  # www.safetimes.co.kr: safetimes
-  # www.nongmin.com: nongmin
-  # www.kpinews.co.kr: kpinews
-  # news.imaeil.com: news_imaeil
-  # news.bizwatch.co.kr: news_bizwatch
-  # www.cstimes.com: cstimes
-  # www.newswire.co.kr: newswire
-  # www.lifein.news: lifein
-  # www.asiaa.co.kr: asiaa
-  # www.sisaon.co.kr: sisaon
-  # www.newscj.com: newscj
-  # www.thebigdata.co.kr: thebigdata
-  # www.ksmnews.co.kr: ksmnews
   # www.worktoday.co.kr: worktoday
   # www.yeongnam.com: yeongnam
   # www.youthdaily.co.kr: youthdaily

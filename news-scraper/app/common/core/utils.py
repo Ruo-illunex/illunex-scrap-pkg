@@ -43,7 +43,15 @@ def preprocess_datetime_compact(date_str):
         return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return None
-    
+
+
+def preprocess_datetime_compact_with_seperator(date_str):
+    """압축된 날짜 형식 처리"""
+    try:
+        return datetime.datetime.strptime(date_str, "%Y%m%dT%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return None
+
 
 def preprocess_datetime_period_without_seconds(date_str):
     """표준 날짜 형식 처리"""

@@ -3,19 +3,19 @@ import random
 import hashlib
 import traceback
 import types
-import datetime
 import glob
 import os
 
 import aiohttp
 from bs4 import BeautifulSoup
 import pandas as pd
+from trafilatura import fetch_url, bare_extraction
 
 from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import EsgNews
 from app.scrapers.urls import URLs
 from app.scrapers.esg_finance_hub_scraper import EsgFinanceHubScraper
-from app.common.core.utils import preprocess_datetime_iso, preprocess_datetime_compact, preprocess_datetime_rfc2822, preprocess_datetime_standard, preprocess_datetime_standard_without_seconds, preprocess_datetime_korean_without_seconds, preprocess_datetime_period_without_seconds, preprocess_date_period
+from app.common.core.utils import *
 from app.config.settings import FILE_PATHS
 from app.common.core.utils import load_yaml
 
@@ -56,23 +56,27 @@ class EsgfinanceNewsScraper(NewsScraper):
         processed_date = preprocess_datetime_iso(unprocessed_date)
         if processed_date:
             return processed_date
-        
+
         processed_date = preprocess_datetime_compact(unprocessed_date)
         if processed_date:
             return processed_date
-        
+
+        processed_date = preprocess_datetime_compact_with_seperator(unprocessed_date)
+        if processed_date:
+            return processed_date
+
         processed_date = preprocess_datetime_rfc2822(unprocessed_date)
         if processed_date:
             return processed_date
-        
+
         processed_date = preprocess_datetime_standard(unprocessed_date)
         if processed_date:
             return processed_date
-        
+
         processed_date = preprocess_datetime_standard_without_seconds(unprocessed_date)
         if processed_date:
             return processed_date
-        
+
         processed_date = preprocess_datetime_korean_without_seconds(unprocessed_date)
         if processed_date:
             return processed_date
@@ -80,7 +84,7 @@ class EsgfinanceNewsScraper(NewsScraper):
         processed_date = preprocess_datetime_period_without_seconds(unprocessed_date)
         if processed_date:
             return processed_date
-        
+
         processed_date = preprocess_date_period(unprocessed_date)
         if processed_date:
             return processed_date
@@ -185,7 +189,7 @@ class EsgfinanceNewsScraper(NewsScraper):
             if self.media_name in ["wsobi", "paxetv"]:
                 create_date = create_date.split('승인')[-1].strip()
 
-            if self.media_name in ["digitalchosun", "dnews"]:
+            if self.media_name in ["digitalchosun", "dnews", "thevaluenews"]:
                 create_date = create_date[5:]
 
             if self.media_name == "bizchosun":
@@ -203,10 +207,10 @@ class EsgfinanceNewsScraper(NewsScraper):
             if self.media_name == "ceoscoredaily":
                 image_url = f"https://www.ceoscoredaily.com{image_url}"
 
-            if self.media_name in ["guardian", "news_yahoo", "uk_news_yahoo", "bbc"]:
+            if self.media_name in ["guardian", "news_yahoo", "uk_news_yahoo", "sg_news_yahoo", "bbc", "ca_news_yahoo"]:
                 create_date = create_date.split('.')[0]
             
-            if self.media_name == "news2day":
+            if self.media_name in ["news2day", "nongmin"]:
                 create_date = create_date.split(' : ')[-1].strip()
 
             if self.media_name == "busan":
@@ -226,6 +230,9 @@ class EsgfinanceNewsScraper(NewsScraper):
             
             if self.media_name == "naeil":
                 create_date = create_date.replace(' 게재', '')
+
+            if self.media_name == "kjdaily":
+                create_date = create_date[:11].replace(' ', '') + create_date[14:]
 
             url_md5 = hashlib.md5(news_url.encode()).hexdigest()
             preprocessed_create_date = self.preprocess_datetime(create_date)
@@ -251,6 +258,46 @@ class EsgfinanceNewsScraper(NewsScraper):
             stack_trace = traceback.format_exc()
             err_message = f"THERE WAS AN ERROR WHILE SCRAPING: {news_url}"
             self.process_err_log_msg(err_message, "scrape_each_news", stack_trace, e)
+            return None
+
+
+    async def scrape_each_news_with_trafilatura(self, news_url):
+        try:
+            info_message = f"SCRAPING STARTED FOR {news_url} WITH TRAFILATURA"
+            self.process_info_log_msg(info_message, type="info")
+
+            downloaded = fetch_url(news_url)
+            result = bare_extraction(downloaded, with_metadata=True)
+            title = result.get('title')
+            create_date = result.get('date')
+            content = result.get('text')
+            image_url = result.get('image')
+            media = result.get('sitename')
+
+            url_md5 = hashlib.md5(news_url.encode()).hexdigest()
+            preprocessed_create_date = self.preprocess_datetime(create_date)
+            kind_id = self.category_dict.get(self.scraper_name).get("etc")
+
+            news_data = EsgNews(
+                url=news_url,
+                url_md5=url_md5,
+                title=title,
+                content=content,
+                create_date=preprocessed_create_date,
+                image_url=image_url,
+                portal='esg_finance',
+                media=media,
+                kind=kind_id,
+                category="ESG",
+                esg_analysis="",
+                )
+
+            return news_data
+        
+        except Exception as e:
+            stack_trace = traceback.format_exc()
+            err_message = f"THERE WAS AN ERROR WHILE SCRAPING: {news_url}"
+            self.process_err_log_msg(err_message, "scrape_each_news_with_trafilatura", stack_trace, e)
             return None
 
 
@@ -284,8 +331,11 @@ class EsgfinanceNewsScraper(NewsScraper):
                     if not self.is_already_scraped(news_url):
                         await asyncio.sleep(random.randint(1, 5))
 
-                        # 각 뉴스 URL에 대해 세부 정보 스크랩
-                        news_data = await self.scrape_each_news(news_url)
+                        if not self.media_name:
+                            news_data = await self.scrape_each_news_with_trafilatura(news_url)
+                        else:
+                            # 각 뉴스 URL에 대해 세부 정보 스크랩
+                            news_data = await self.scrape_each_news(news_url)
                     else:
                         err_message = f"NEWS ALREADY EXISTS IN DATABASE: {news_url}"
                         self.process_err_log_msg(err_message, "scrape_news", "", "")
