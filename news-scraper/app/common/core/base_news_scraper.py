@@ -1,6 +1,6 @@
 import abc
 import datetime
-from typing import Generator, Optional, Tuple
+from typing import Generator, Optional
 import traceback
 import json
 import asyncio
@@ -8,12 +8,11 @@ from collections import deque
 import hashlib
 
 import aiohttp
-import requests
 
 from app.common.log.log_config import setup_logger
 from app.common.db.news_database import NewsDatabase
 from app.common.db.scraper_manager_database import ScraperManagerDatabase
-from app.models_init import ScrapSessionLog, ScrapErrorLog
+from app.models_init import ScrapSessionLog, ScrapErrorLog, ScrapManager
 from app.config import settings
 from app.common.messages import Messages
 from app.common.core.utils import load_yaml
@@ -41,6 +40,7 @@ class NewsScraper(abc.ABC):
 
         self.news_db = NewsDatabase()
         self.scraper_manager_db = ScraperManagerDatabase()
+        self.session = self.scraper_manager_db.SessionLocal()
         self.news_data_list = []    # 뉴스 데이터 리스트
 
         self.interval_time_sleep = 600   # 10분(600초)
@@ -123,43 +123,26 @@ class NewsScraper(abc.ABC):
         self.error_log['error_message'] += log_message
 
 
-    # 파싱 규칙 가져오기
-    def get_parsing_rules(self, scraper_name: str) -> Tuple[dict, dict]:
-        try:
-            response = requests.get(f"{settings.API_SERVER_URL}?portal={scraper_name}")
-            if response.status_code == 200:
-                success_message = f"PARSING RULES RETRIEVED FOR {scraper_name} FROM API SERVER."
-                self.process_info_log_msg(success_message, "success")
-                return response.json()
-            else:
-                err_message = f"STATUS CODE: {response.status_code} FOR {scraper_name}. CHECK IF THE PORTAL NAME IS CORRECT OR IF THE API SERVER IS RUNNING."
-                self.process_err_log_msg(err_message, "get_parsing_rules")
-                return None
-        except Exception as e:
-            stack_trace = traceback.format_exc()
-            err_message = f"THERE WAS AN ERROR WHILE GETTING PARSING RULES FOR {scraper_name}"
-            self.process_err_log_msg(err_message, "get_parsing_rules", stack_trace, e)
-            return None
-
-
     # 파싱 규칙 딕셔너리 가져오기
-    def get_parsing_rules_dict(self, scraper_name: str) -> dict:
+    def get_parsing_rules_dict(self, scraper_name: str = None) -> dict:
         parsing_rules_dict = {}
         try:
-            parsing_rules = self.get_parsing_rules(scraper_name)
+            parsing_rules = self.session.query(ScrapManager).filter(ScrapManager.portal == scraper_name).all()
             if not parsing_rules:
                 err_message = f"PARSING RULES IS EMPTY FOR {scraper_name}"
                 self.process_err_log_msg(err_message, "get_parsing_rules_dict")
                 return None
 
             for parsing_rule in parsing_rules:
-                # JSON 문자열을 딕셔너리로 변환
-                parsing_rule_dict = json.loads(parsing_rule['parsing_rule']) if isinstance(parsing_rule['parsing_rule'], str) else parsing_rule['parsing_rule']
+                parsing_rule_dict = json.loads(parsing_rule.parsing_rule) if isinstance(parsing_rule.parsing_rule, str) else parsing_rule.parsing_rule
 
-                parsing_rules_dict[parsing_rule['parsing_target_name']] = (
-                    parsing_rule['parsing_method'],
+                parsing_rules_dict[parsing_rule.parsing_target_name] = (
+                    parsing_rule.parsing_method,
                     parsing_rule_dict,
                 )
+            info_message = f"PARSING RULES SUCCESSFULLY LOADED FOR {scraper_name}"
+            self.process_info_log_msg(info_message, "success")
+            print(info_message)
             return parsing_rules_dict
 
         except Exception as e:
