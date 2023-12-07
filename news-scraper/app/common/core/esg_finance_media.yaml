@@ -18,6 +18,7 @@ media:
   # www.ikld.kr: ikld
   # www.korea.kr: korea
   # www.hankyung.com: hankyung
+  # www.lawtimes.co.kr: lawtimes
   news.naver.com: naver
   n.news.naver.com: naver
   www.impacton.net: impacton
@@ -89,7 +90,6 @@ media:
   newsis.com: newsis
   www.newsis.com: newsis
   www.hani.co.kr: hani
-  www.lawtimes.co.kr: lawtimes
   www.straightnews.co.kr: straightnews
   news.mk.co.kr: news_mk
   www.newspim.com: newspim
@@ -204,6 +204,7 @@ media:
   www.newscj.com: newscj
   www.thebigdata.co.kr: thebigdata
   www.ksmnews.co.kr: ksmnews
+  www.dailypharm.com: dailypharm
 
   # www.worktoday.co.kr: worktoday
   # www.yeongnam.com: yeongnam
@@ -389,6 +390,5 @@ media:
   # www.delighti.co.kr: delighti
   # www.ddaily.co.kr: ddaily
   # www.dailysmart.co.kr: dailysmart
-  # www.dailypharm.com: dailypharm
   # www.cupnews.kr: cupnews
   # amenews.kr: amenews_kr

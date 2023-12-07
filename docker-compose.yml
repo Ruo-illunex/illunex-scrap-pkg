@@ -3,6 +3,7 @@ version: '3.8'
 services:
   scrap_mng_streamlit:
     build: ./scrap_mng_streamlit
+    restart: unless-stopped # 컨테이너가 종료되지 않는 한 항상 재시작
     ports:
       - "8501:8080"  # 포트 변경
     env_file:
@@ -11,6 +12,7 @@ services:
 
   news_scraper:
     build: ./news-scraper
+    restart: unless-stopped # 컨테이너가 종료되지 않는 한 항상 재시작
     ports:
       - "8500:8080"  # 포트 변경
     env_file:

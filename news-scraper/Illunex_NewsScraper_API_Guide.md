@@ -12,7 +12,7 @@
   - **Description**: 서비스 상태 확인 엔드포인트.
   - **Response**: 서비스 상태 메시지.
 
-- **GET `/scrape/{source}_news`** (여기서 `{source}`는 `daum`, `naver`, `zdnet`, `vs`, `thebell`, `startupn`, `startuptoday`, `platum` 중 하나)
+- **GET `/scrape/{source}_news`** (여기서 `{source}`는 `daum`, `naver`, `zdnet`, `vs`, `thebell`, `startupn`, `startuptoday`, `platum`, `esg_news`, `greenpost_news`, `esg_finance_news`, `esg_finance_hub` 중 하나)
   - **Description**: 지정된 뉴스 소스에서 뉴스를 스크래핑하는 엔드포인트.
   - **Response**: 스크래핑 시작 메시지 또는 에러 메시지.
 

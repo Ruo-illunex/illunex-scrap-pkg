@@ -52,7 +52,6 @@ class EsgfinanceNewsScraper(NewsScraper):
         Returns:
             str: 전처리된 날짜
         """
-
         processed_date = preprocess_datetime_iso(unprocessed_date)
         if processed_date:
             return processed_date
@@ -275,16 +274,23 @@ class EsgfinanceNewsScraper(NewsScraper):
             info_message = f"SCRAPING STARTED FOR {news_url} WITH TRAFILATURA"
             self.process_info_log_msg(info_message, type="info")
 
-            downloaded = fetch_url(news_url)
+            media_name_dict = {
+                "www.lawtimes.co.kr": "법률신문",
+            }
+
+            downloaded = fetch_url(
+                news_url,
+                no_ssl=True,
+                )
 
             domain = news_url.split('/')[2]
-            if domain in ["www.lawtimes.co.kr"]:
+            if domain in media_name_dict.keys():
                 result = bare_extraction(downloaded)
                 title = result.get('title')
                 create_date = result.get('date')
                 content = result.get('description')
                 image_url = result.get('image')
-                media = domain
+                media = media_name_dict[domain]
             else:
                 result = bare_extraction(downloaded, with_metadata=True)
                 title = result.get('title')
@@ -375,21 +381,21 @@ class EsgfinanceNewsScraper(NewsScraper):
                 
                 # 최종 세션 로그 저장
                 self.finalize_session_log()
-
-                if get_all_news_urls:
-                    success_message = f"SCRAPING COMPLETED FOR {self.scraper_name} WITH {self.session_log['total_records_processed']} RECORDS"
-                    self.process_success_log_msg(success_message, "scrape_news")
-                    is_loop = False
-                    break
-
-                # 모든 스크래핑이 끝나면 일정 시간 대기
-                await asyncio.sleep(self.interval_time_sleep)
+                success_message = f"SCRAPING COMPLETED FOR {self.scraper_name} WITH {self.session_log['total_records_processed']} RECORDS"
+                self.process_success_log_msg(success_message, "scrape_news")
 
             except Exception as e:
                 stack_trace = traceback.format_exc()
                 err_message = "THERE WAS AN ERROR WHILE SCRAPING NEWS"
                 self.process_err_log_msg(err_message, "scrape_news", stack_trace, e)
                 await asyncio.sleep(60)
+
+            finally:
+                if get_all_news_urls:
+                    is_loop = False
+                else:
+                    # 모든 스크래핑이 끝나면 일정 시간 대기
+                    await asyncio.sleep(self.interval_time_sleep)
 
 
     def get_feed_entries(self):
@@ -406,6 +412,7 @@ async def scrape_esg_finance_news(get_all_news_urls=False):
     portal = "esg_finance_hub"
     esgfinance_news_scraper = EsgfinanceNewsScraper(scraper_name=portal)
     await esgfinance_news_scraper.scrape_news(get_all_news_urls=get_all_news_urls)
+
 
 if __name__ == "__main__":
     asyncio.run(scrape_esg_finance_news())

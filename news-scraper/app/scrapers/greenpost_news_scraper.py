@@ -173,7 +173,7 @@ class GreenpostNewsScraper(NewsScraper):
                 stack_trace = traceback.format_exc()
                 err_message = "THERE WAS AN ERROR WHILE SCRAPING NEWS"
                 self.process_err_log_msg(err_message, "scrape_news", stack_trace, e)
-                await asyncio.sleep(60)
+                await asyncio.sleep(self.retry_delay)
 
 
     def get_feed_entries(self):

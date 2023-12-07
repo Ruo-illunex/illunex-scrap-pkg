@@ -3,6 +3,7 @@ import schedule
 import time
 import datetime
 import threading
+import asyncio
 
 from app.scrap_manager.api.router import router as scrap_manager_router
 from app.common.db.news_database import NewsDatabase
@@ -39,6 +40,11 @@ BaseManager.metadata.create_all(bind=scraper_mng_engine)
 
 app = FastAPI()
 app.include_router(scrap_manager_router, tags=["scrap_manager"], prefix="/api")
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 
 @app.get("/scrape")
@@ -227,8 +233,26 @@ def scrape_esg_finance_hub_endpoint():
         return {"message": f"Error: {e}"}
 
 
+@app.on_event("startup")
+async def start_scrapers():
+    """서비스가 시작되면, 스크래퍼들을 별도의 스레드에서 실행"""
+    asyncio.create_task(scraper.scrape_daum_news())
+    asyncio.create_task(scraper.scrape_naver_news())
+    asyncio.create_task(scraper.scrape_zdnet_news())
+    asyncio.create_task(scraper.scrape_vs_news())
+    asyncio.create_task(scraper.scrape_thebell_news())
+    asyncio.create_task(scraper.scrape_startupn_news())
+    asyncio.create_task(scraper.scrape_startuptoday_news())
+    asyncio.create_task(scraper.scrape_platum_news())
+    asyncio.create_task(scraper.scrape_esg_news())
+    asyncio.create_task(scraper.scrape_greenpost_news())
+    asyncio.create_task(scraper.scrape_esg_finance_news())
+    asyncio.create_task(scraper.scrape_esg_finance_hub())
+
+
 # 스케줄러 관련 코드
-def scheduled_job():
+def scheduled_job_send_statistics_message():
+    """매일 00:00에 실행되는 스케줄러"""
     try:
         message = create_daily_message()
         send_message_to_synology_chat(message, prod_token)    # 실제 운영 환경에서는 prod_token 사용
@@ -238,14 +262,18 @@ def scheduled_job():
     except Exception as e:
         logger.error(f"Error: {e}")
 
-schedule.every().day.at("00:00").do(scheduled_job)
+
+# 매일 00:00에 스케줄러 실행
+schedule.every().day.at("00:00").do(scheduled_job_send_statistics_message)
 # schedule.every(1).minutes.do(scheduled_job) # 테스트용
 
 
+# 스케줄러 실행 함수
 def run_scheduler():
     while True:
         schedule.run_pending()
         time.sleep(1)
+
 
 # 스케줄러를 별도의 스레드에서 실행
 scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)

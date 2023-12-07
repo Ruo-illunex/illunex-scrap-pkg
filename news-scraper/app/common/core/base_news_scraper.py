@@ -44,6 +44,7 @@ class NewsScraper(abc.ABC):
         self.news_data_list = []    # 뉴스 데이터 리스트
 
         self.interval_time_sleep = 600   # 10분(600초)
+        self.retry_delay = 5    # 5초
 
         self.scraped_md5s = deque(maxlen=10000)  # 최근 스크래핑한 URL MD5 저장
 

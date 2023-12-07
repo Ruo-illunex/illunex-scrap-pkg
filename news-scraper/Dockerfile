@@ -32,6 +32,10 @@ RUN apt update -y && apt upgrade -y && \
 COPY . /usr/src/app
 WORKDIR /usr/src/app/
 
+# 헬스체크 명령 추가
+HEALTHCHECK --interval=5m --timeout=30s \
+    CMD curl -f http://localhost:8080/health || exit 1
+
 # 포트 설정
 EXPOSE 8080
 
