@@ -183,13 +183,13 @@ class EsgfinanceNewsScraper(NewsScraper):
                 self.process_err_log_msg(err_message, "scrape_each_news", "", "")
                 return None
 
-            if self.media_name == "dt":
+            if self.media_name in ["dt", "metroseoul"]:
                 image_url = f"https:{image_url}"
 
             if self.media_name in ["wsobi", "paxetv"]:
                 create_date = create_date.split('승인')[-1].strip()
 
-            if self.media_name in ["digitalchosun", "dnews", "thevaluenews"]:
+            if self.media_name in ["digitalchosun_dizzo", "dnews", "thevaluenews"]:
                 create_date = create_date[5:]
 
             if self.media_name == "bizchosun":
@@ -207,7 +207,7 @@ class EsgfinanceNewsScraper(NewsScraper):
             if self.media_name == "ceoscoredaily":
                 image_url = f"https://www.ceoscoredaily.com{image_url}"
 
-            if self.media_name in ["guardian", "news_yahoo", "uk_news_yahoo", "sg_news_yahoo", "bbc", "ca_news_yahoo"]:
+            if self.media_name in ["theguardian", "news_yahoo", "uk_news_yahoo", "sg_news_yahoo", "bbc", "ca_news_yahoo"]:
                 create_date = create_date.split('.')[0]
             
             if self.media_name in ["news2day", "nongmin"]:
@@ -215,6 +215,9 @@ class EsgfinanceNewsScraper(NewsScraper):
 
             if self.media_name == "busan":
                 create_date = create_date.replace('[', '').replace(']', '')
+            
+            if self.media_name == "the bell":
+                create_date = create_date.replace('공개 ', '').strip()
 
             if self.media_name == "munhwa":
                 create_date = create_date.replace('입력 ', '').strip()
@@ -233,6 +236,12 @@ class EsgfinanceNewsScraper(NewsScraper):
 
             if self.media_name == "kjdaily":
                 create_date = create_date[:11].replace(' ', '') + create_date[14:]
+            
+            if self.media_name == "jnilbo":
+                create_date = create_date.split(' : ')[-1][:11].replace(' ', '') + create_date.split(' : ')[-1][14:]
+
+            if self.media_name in ["news_mtn", "wowtv", "cnn"]:
+                create_date = create_date[:-1]
 
             url_md5 = hashlib.md5(news_url.encode()).hexdigest()
             preprocessed_create_date = self.preprocess_datetime(create_date)
@@ -267,12 +276,22 @@ class EsgfinanceNewsScraper(NewsScraper):
             self.process_info_log_msg(info_message, type="info")
 
             downloaded = fetch_url(news_url)
-            result = bare_extraction(downloaded, with_metadata=True)
-            title = result.get('title')
-            create_date = result.get('date')
-            content = result.get('text')
-            image_url = result.get('image')
-            media = result.get('sitename')
+
+            domain = news_url.split('/')[2]
+            if domain in ["www.lawtimes.co.kr"]:
+                result = bare_extraction(downloaded)
+                title = result.get('title')
+                create_date = result.get('date')
+                content = result.get('description')
+                image_url = result.get('image')
+                media = domain
+            else:
+                result = bare_extraction(downloaded, with_metadata=True)
+                title = result.get('title')
+                create_date = result.get('date')
+                content = result.get('text')
+                image_url = result.get('image')
+                media = result.get('sitename')
 
             url_md5 = hashlib.md5(news_url.encode()).hexdigest()
             preprocessed_create_date = self.preprocess_datetime(create_date)
@@ -302,7 +321,9 @@ class EsgfinanceNewsScraper(NewsScraper):
 
 
     async def scrape_news(self, get_all_news_urls=False):
-        while True:
+        """뉴스를 스크래핑하는 함수"""
+        is_loop = True
+        while is_loop:
             try:
                 # 세션 로그 초기화
                 self.is_error = False
@@ -358,10 +379,11 @@ class EsgfinanceNewsScraper(NewsScraper):
                 if get_all_news_urls:
                     success_message = f"SCRAPING COMPLETED FOR {self.scraper_name} WITH {self.session_log['total_records_processed']} RECORDS"
                     self.process_success_log_msg(success_message, "scrape_news")
+                    is_loop = False
                     break
 
                 # 모든 스크래핑이 끝나면 일정 시간 대기
-                await asyncio.sleep(self.interval_time_sleep)\
+                await asyncio.sleep(self.interval_time_sleep)
 
             except Exception as e:
                 stack_trace = traceback.format_exc()
