@@ -382,13 +382,13 @@ class EsgfinanceNewsScraper(NewsScraper):
                 # 최종 세션 로그 저장
                 self.finalize_session_log()
                 success_message = f"SCRAPING COMPLETED FOR {self.scraper_name} WITH {self.session_log['total_records_processed']} RECORDS"
-                self.process_success_log_msg(success_message, "scrape_news")
+                self.process_info_log_msg(success_message, "scrape_news")
 
             except Exception as e:
                 stack_trace = traceback.format_exc()
                 err_message = "THERE WAS AN ERROR WHILE SCRAPING NEWS"
                 self.process_err_log_msg(err_message, "scrape_news", stack_trace, e)
-                await asyncio.sleep(60)
+                await asyncio.sleep(self.retry_delay)
 
             finally:
                 if get_all_news_urls:
