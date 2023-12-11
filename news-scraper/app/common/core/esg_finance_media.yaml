@@ -1,394 +1,394 @@
-media:
-  # 'kr.news.cn': 'kr_news_cn'
-  # biz.chosun.com: biz_chosun
-  # www.yna.co.kr: yna
-  # www.msn.com: msn
-  # www.chosun.com: chosun
-  # biz.sbs.co.kr: biz_sbs
-  # www.usatoday.com: usatoday
-  # esgfinancehub.or.kr: esgfinancehub
-  # dream.kotra.or.kr: dream_kotra
-  # it.donga.com: it_donga
-  # www.fss.or.kr: fss
-  # kr.investing.com: kr_investing
-  # www.korcham.net: korcham
-  # vip.mk.co.kr: vip_mk
-  # www.fsc.go.kr: fsc
-  # www.insnews.co.kr: insnews
-  # www.ikld.kr: ikld
-  # www.korea.kr: korea
-  # www.hankyung.com: hankyung
-  # www.lawtimes.co.kr: lawtimes
-  news.naver.com: naver
-  n.news.naver.com: naver
-  www.impacton.net: impacton
-  www.greened.kr: greened
-  www.esgeconomy.com: esg_economy
-  www.sedaily.com: sedaily
-  www.fntimes.com: fntimes
-  www.dt.co.kr: dt
-  www.etoday.co.kr: etoday
-  www.businesspost.co.kr: businesspost
-  www.donga.com: donga
-  www.seoulfn.com: seoulfn
-  www.ekn.kr: ekn
-  www.newstree.kr: newstree
-  news.heraldcorp.com: news_heraldcorp
-  www.tfmedia.co.kr: tfmedia
-  tfmedia.co.kr: tfmedia
-  greenium.kr: greenium_kr
-  www.dnews.co.kr: dnews
-  www.viva100.com: viva100
-  www.dhdaily.co.kr: dhdaily
-  www.newsworks.co.kr: newsworks
-  www.pinpointnews.co.kr: pinpointnews
-  www.wsobi.com: wsobi
-  www.fetv.co.kr: fetv
-  fetv.co.kr: fetv
-  www.e2news.com: e2news
-  www.lcnews.co.kr: lcnews
-  www.hkbs.co.kr: hkbs
-  www.lecturernews.com: lecturernews
-  www.goodkyung.com: goodkyung
-  www.wolyo.co.kr: wolyo
-  www.womancs.co.kr: womancs
-  theviewers.co.kr: theviewers
-  www.consumernews.co.kr: consumernews
-  www.fetimes.co.kr: fetimes
-  www.weeklyseoul.net: weeklyseoul
-  www.koit.co.kr: koit
-  ilyo.co.kr: ilyo
-  www.theguru.co.kr: theguru
-  www.newstong.co.kr: newstong
-  www.newsian.co.kr: newsian
-  sateconomy.co.kr: sateconomy
-  www.hankooki.com: hankooki
-  digitalchosun.dizzo.com: digitalchosun_dizzo
-  www.it-b.co.kr: it-b
-  4th.kr: 4th
-  www.4th.kr: 4th
-  biz.heraldcorp.com: biz_heraldcorp
-  www.greenpostkorea.co.kr: greenpostkorea
-  www.fnnews.com: fnnews
-  www.sporbiz.co.kr: sporbiz
-  www.ceoscoredaily.com: ceoscoredaily
-  www.etnews.com: etnews
-  news.mt.co.kr: news_mt
-  www.mk.co.kr: mk
-  www.ajunews.com: ajunews
-  view.asiae.co.kr: view_asiae
-  www.theguardian.com: theguardian
-  www.edaily.co.kr: edaily
-  news.einfomax.co.kr: news_einfomax
-  news.yahoo.com: news_yahoo
-  uk.news.yahoo.com: uk_news_yahoo
-  sg.news.yahoo.com: sg_news_yahoo
-  news.moneytoday.co.kr: news_moneytoday
-  www.news1.kr: news1
-  www.dailyimpact.co.kr: dailyimpact
-  www.news2day.co.kr: news2day
-  newsis.com: newsis
-  www.newsis.com: newsis
-  www.hani.co.kr: hani
-  www.straightnews.co.kr: straightnews
-  news.mk.co.kr: news_mk
-  www.newspim.com: newspim
-  www.asiae.co.kr: asiae
-  www.econovill.com: econovill
-  www.asiatoday.co.kr: asiatoday
-  www.kbanker.co.kr: kbanker
-  www.fortunekorea.co.kr: fortunekorea
-  magazine.hankyung.com: magazine_hankyung
-  www.hansbiz.co.kr: hansbiz
-  www.segye.com: segye
-  www.cnn.com: cnn
-  www.seoul.co.kr: seoul
-  www.g-enews.com: g-enews
-  g-enews.com: g-enews
-  news.g-enews.com: g-enews
-  www.newsway.co.kr: newsway
-  moneys.mt.co.kr: moneys
-  www.moneys.co.kr: moneys
-  www.busan.com: busan
-  hankookilbo.com: hankookilbo
-  www.hankookilbo.com: hankookilbo
-  www.ebn.co.kr: ebn
-  ebn.co.kr: ebn
-  www.meconomynews.com: meconomynews
-  www.dailian.co.kr: dailian
-  dailian.co.kr: dailian
-  economist.co.kr: economist
-  www.ekoreanews.co.kr: ekoreanews
-  www.joongang.co.kr: joongang
-  www.enewstoday.co.kr: enewstoday
-  www.paxetv.com: paxetv
-  www.khan.co.kr: khan
-  www.businessplus.kr: businessplus
-  www.m-i.kr: m-i
-  zdnet.co.kr: zdnet
-  www.thebell.co.kr: the bell
-  www.seoulwire.com: seoulwire
-  news.mtn.co.kr: news_mtn
-  www.ngetnews.com: ngetnews
-  www.naeil.com: naeil
-  biz.newdaily.co.kr: newdaily
-  www.newdaily.co.kr: newdaily
-  www.shinailbo.co.kr: shinailbo
-  www.insightkorea.co.kr: insightkorea
-  www.choicenews.co.kr: choicenews
-  www.energydaily.co.kr: energydaily
-  www.inews24.com: inews24
-  www.joseilbo.com: joseilbo
-  www.gukjenews.com: gukjenews
-  www.whitepaper.co.kr: whitepaper
-  www.metroseoul.co.kr: metroseoul
-  www.domin.co.kr: domin
-  www.newspost.kr: newspost
-  www.getnews.co.kr: getnews
-  www.newslock.co.kr: newslock
-  www.insidevina.com: insidevina
-  www.digitaltoday.co.kr: digitaltoday
-  www.infostockdaily.co.kr: infostockdaily
-  www.kukinews.com: kukinews
-  www.bbc.com: bbc
-  www.polinews.co.kr: polinews
-  polinews.co.kr: polinews
-  www.thereport.co.kr: thereport
+type1:
   daily.hankooki.com: daily_hankooki
-  www.newswatch.kr: newswatch
-  www.gasnews.com: gasnews
-  www.electimes.com: electimes
-  news.kbs.co.kr: news_kbs
-  www.mediapen.com: mediapen
-  www.newsquest.co.kr: newsquest
-  www.ccdailynews.com: ccdailynews
-  www.bloter.net: bloter
-  thepublic.kr: thepublic_kr
-  www.wikileaks-kr.org: wikileaks-kr
-  www.munhwa.com: munhwa
-  www.cctoday.co.kr: cctoday
-  www.dailycnc.com: dailycnc
-  www.biztribune.co.kr: biztribune
-  www.ftoday.co.kr: ftoday
-  www.asiatime.co.kr: asiatime
-  www.newsfreezone.co.kr: newsfreezone
-  www.bizwnews.com: bizwnews
-  www.kjdaily.com: kjdaily
-  www.foodneconomy.com: foodneconomy
-  www.thevaluenews.co.kr: thevaluenews
   it.chosun.com: it_chosun
-  www.updownnews.co.kr: updownnews
-  www.wowtv.co.kr: wowtv
-  www.intn.co.kr: intn
-  ca.news.yahoo.com: ca_news_yahoo
-  cm.asiae.co.kr: cm_asiae
-  www.jnilbo.com: jnilbo
+  news.einfomax.co.kr: news_einfomax
+  news.unn.net: news_unn_net
+  polinews.co.kr: polinews
+  thepublic.kr: thepublic_kr
+  www.1conomynews.co.kr: 1conomynews
+  www.4th.kr: 4th
+  www.aflnews.co.kr: aflnews
+  www.apnews.kr: apnews
+  www.asiaa.co.kr: asiaa
+  www.biztribune.co.kr: biztribune
+  www.bizwnews.com: bizwnews
+  www.bloter.net: bloter
+  www.businesskorea.co.kr: businesskorea
+  www.businessplus.kr: businessplus
+  www.bzeronews.com: bzeronews
+  www.cbci.co.kr: cbci
+  www.ccdailynews.com: ccdailynews
+  www.cctimes.kr: cctimes
+  www.cctoday.co.kr: cctoday
+  www.choicenews.co.kr: choicenews
+  www.coindeskkorea.com: coindeskkorea
+  www.constimes.co.kr: constimes
+  www.consumernews.co.kr: consumernews
+  www.consumerwide.com: consumerwide
+  www.consumuch.com: consumuch
+  www.cstimes.com: cstimes
+  www.cupnews.kr: cupnews
+  www.dailycnc.com: dailycnc
+  www.dailyimpact.co.kr: dailyimpact
+  www.dailysmart.co.kr: dailysmart
+  www.delighti.co.kr: delighti
+  www.dhdaily.co.kr: dhdaily
+  www.digitaltoday.co.kr: digitaltoday
+  www.domin.co.kr: domin
+  www.e2news.com: e2news
+  www.economytalk.kr: economytalk
+  www.econovill.com: econovill
+  www.efnews.co.kr: efnews
+  www.ekoreanews.co.kr: ekoreanews
+  www.electimes.com: electimes
+  www.energy-news.co.kr: energy-news
+  www.energydaily.co.kr: energydaily
+  www.enewstoday.co.kr: enewstoday
+  www.engdaily.com: engdaily
+  www.epnc.co.kr: epnc
+  www.eroun.net: eroun
+  www.esgeconomy.com: esg_economy
+  www.ezyeconomy.com: ezyeconomy
+  www.fetimes.co.kr: fetimes
+  www.financialreview.co.kr: financialreview
+  www.finomy.com: finomy
+  www.fintechpost.co.kr: fintechpost
+  www.firenzedt.com: firenzedt
+  www.fntoday.co.kr: fntoday
+  www.foodneconomy.com: foodneconomy
+  www.fortunekorea.co.kr: fortunekorea
+  www.ftoday.co.kr: ftoday
+  www.gasnews.com: gasnews
+  www.getnews.co.kr: getnews
+  www.ggilbo.com: ggilbo
+  www.globalnewsagency.kr: globalnewsagency
+  www.goodkyung.com: goodkyung
+  www.goodnews1.com: goodnews1
+  www.greened.kr: greened
+  www.greenpostkorea.co.kr: greenpostkorea
+  www.gukjenews.com: gukjenews
+  www.hankooki.com: hankooki
+  www.hansbiz.co.kr: hansbiz
+  www.headlinejeju.co.kr: headlinejeju
+  www.hkbs.co.kr: hkbs
+  www.ikpnews.net: ikpnews
+  www.iloveorganic.co.kr: iloveorganic
+  www.iminju.net: iminju
+  www.impacton.net: impacton
   www.incheonilbo.com: incheonilbo
+  www.industrynews.co.kr: industrynews
+  www.infostockdaily.co.kr: infostockdaily
+  www.insidevina.com: insidevina
+  www.insightkorea.co.kr: insightkorea
+  www.intn.co.kr: intn
+  www.it-b.co.kr: it-b
+  www.itbiznews.com: itbiznews
+  www.itdaily.kr: itdaily
+  www.iusm.co.kr: iusm
+  www.jbnews.com: jbnews
+  www.jejudomin.co.kr: jejudomin
+  www.jejuilbo.net: jejuilbo
+  www.jejumaeil.net: jejumaeil
+  www.jemin.com: jemin
+  www.jeonmae.co.kr: jeonmae
+  www.jeonmin.co.kr: jeonmin
   www.job-post.co.kr: job-post
   www.joongboo.com: joongboo
-  dealsite.co.kr: dealsite
-  au.news.yahoo.com: au_news_yahoo
-  www.womentimes.co.kr: womentimes
-  www.thekpm.com: thekpm
-  www.jjan.kr: jjan
-  www.safetimes.co.kr: safetimes
-  www.nongmin.com: nongmin
+  www.kbanker.co.kr: kbanker
+  www.kbiznews.co.kr: kbiznews
+  www.kbmaeil.com: kbmaeil
+  www.kgdm.co.kr: kgdm
+  www.kihoilbo.co.kr: kihoilbo
+  www.koit.co.kr: koit
+  www.kongje.or.kr: kongje
+  www.koreaittimes.com: koreaittimes
+  www.koscaj.com: koscaj
   www.kpinews.co.kr: kpinews
-  news.imaeil.com: news_imaeil
-  news.bizwatch.co.kr: news_bizwatch
-  www.cstimes.com: cstimes
-  www.newswire.co.kr: newswire
+  www.kunews.ac.kr: kunews
+  www.laborplus.co.kr: laborplus
+  www.latimes.kr: latimes
+  www.lawleader.co.kr: lawleader
+  www.lcnews.co.kr: lcnews
+  www.lecturernews.com: lecturernews
+  www.legaltimes.co.kr: legaltimes
   www.lifein.news: lifein
-  www.asiaa.co.kr: asiaa
-  www.sisaon.co.kr: sisaon
+  www.m-i.kr: m-i
+  www.meconomynews.com: meconomynews
+  www.mhns.co.kr: mhns
+  www.nbnnews.co.kr: nbnnews
+  www.newscape.co.kr: newscape
   www.newscj.com: newscj
-  www.thebigdata.co.kr: thebigdata
-  www.ksmnews.co.kr: ksmnews
-  www.dailypharm.com: dailypharm
+  www.newsclaim.co.kr: newsclaim
+  www.newsfreezone.co.kr: newsfreezone
+  www.newsggam.com: newsggam
+  www.newsian.co.kr: newsian
+  www.newskr.kr: newskr
+  www.newslock.co.kr: newslock
+  www.newspenguin.com: newspenguin
+  www.newspost.kr: newspost
+  www.newsquest.co.kr: newsquest
+  www.newswatch.kr: newswatch
+  www.newsworker.co.kr: newsworker
+  www.newsworks.co.kr: newsworks
+  www.ngetnews.com: ngetnews
+  www.ntoday.co.kr: ntoday
+  www.obsnews.co.kr: obsnews
+  www.opinionnews.co.kr: opinionnews
+  www.outsourcing.co.kr: outsourcing
+  www.pennmike.com: pennmike
+  www.pharmnews.com: pharmnews
+  www.policetv.co.kr: policetv
+  www.polinews.co.kr: polinews
+  www.popcornnews.net: popcornnews
+  www.pressm.kr: pressm
+  www.psnews.co.kr: psnews
+  www.rcast.co.kr: rcast
+  www.s-journal.co.kr: s-journal
+  www.safetimes.co.kr: safetimes
+  www.safetynews.co.kr: safetynews
+  www.sejungilbo.com: sejungilbo
+  www.seoulfn.com: seoulfn
+  www.seoulwire.com: seoulwire
+  www.shinailbo.co.kr: shinailbo
+  www.shippingnewsnet.com: shippingnewsnet
+  www.siminsori.com: siminsori
+  www.sisafocus.co.kr: sisafocus
+  www.sisajournal-e.com: sisajournal-e
+  www.sisaon.co.kr: sisaon
+  www.smartcitytoday.co.kr: smartcitytoday
+  www.smedaily.co.kr: smedaily
+  www.snmnews.com: snmnews
+  www.speconomy.com: speconomy
+  www.sporbiz.co.kr: sporbiz
+  www.startuptoday.co.kr: startuptoday
+  www.startuptoday.kr: startuptoday1
+  www.straightnews.co.kr: straightnews
+  www.thedailypost.kr: thedailypost
+  www.thefirstmedia.net: thefirstmedia
+  www.thekpm.com: thekpm
+  www.thereport.co.kr: thereport
+  www.updownnews.co.kr: updownnews
+  www.veritas-a.com: veritas-a
+  www.weeklyseoul.net: weeklyseoul
+  www.weeklytoday.com: weeklytoday
+  www.whitepaper.co.kr: whitepaper
+  www.wikileaks-kr.org: wikileaks-kr
+  www.wiseenews.com: wiseenews
+  www.wolyo.co.kr: wolyo
+  www.womancs.co.kr: womancs
+  www.womentimes.co.kr: womentimes
+  www.worktoday.co.kr: worktoday
+  www.ziksir.com: ziksir
 
-  # www.worktoday.co.kr: worktoday
-  # www.yeongnam.com: yeongnam
-  # www.youthdaily.co.kr: youthdaily
-  # www.nocutnews.co.kr: nocutnews
-  # www.jeonmae.co.kr: jeonmae
-  # www.nspna.com: nspna
-  # www.obsnews.co.kr: obsnews
-  # www.moef.go.kr: moef
-  # www.sentv.co.kr: sentv
-  # www.kbmaeil.com: kbmaeil
-  # www.outsourcing.co.kr: outsourcing
-  # www.kgdm.co.kr: kgdm
-  # www.rcast.co.kr: rcast
-  # www.segyebiz.com: segyebiz
-  # www.wiseenews.com: wiseenews
-  # www.sisafocus.co.kr: sisafocus
-  # www.kihoilbo.co.kr: kihoilbo
-  # www.smartcitytoday.co.kr: smartcitytoday
-  # www.kongje.or.kr: kongje
-  # www.speconomy.com: speconomy
-  # www.startuptoday.co.kr: startuptoday
-  # www.kookje.co.kr: kookje
-  # www.lawleader.co.kr: lawleader
-  # www.kyeongin.com: kyeongin
-  # www.newstomato.com: newstomato
-  # www.headlinejeju.co.kr: headlinejeju
-  # www.ezyeconomy.com: ezyeconomy
-  # paxnetnews.com: paxnetnews
-  # www.efnews.co.kr: efnews
-  # kpenews.com: kpenews
-  # sports.donga.com: sports_donga
-  # www.consumerwide.com: consumerwide
-  # www.eroun.net: eroun
-  # www.fki.or.kr: fki
-  # futurechosun.com: futurechosun
-  # www.boannews.com: boannews
-  # www.investchosun.com: investchosun
-  # cnews.fntimes.com: cnews_fntimes
-  # www.sisajournal-e.com: sisajournal-e
-  # me.go.kr: me_go_kr
-  # www.sisa-news.com: sisa-news
-  # www.siminsori.com: siminsori
-  # open.krx.co.kr: open_krx
-  # www.sejungilbo.com: sejungilbo
-  # nz.news.yahoo.com: nz_news_yahoo
-  # news.unn.net: news_unn_net
-  # news.sktelecom.com: news_sktelecom
-  # news.kmib.co.kr: news_kmib
-  # www.shippingnewsnet.com: shippingnewsnet
-  # www.shinkim.com: shinkim
-  # www.pressm.kr: pressm
-  # www.safetynews.co.kr: safetynews
-  # www.paxnetnews.com: paxnetnews
-  # weekly.donga.com: weekly_donga
-  # www.ntoday.co.kr: ntoday
-  # weekly.cnbnews.com: weekly_cnbnews
-  # www.opinionnews.co.kr: opinionnews
-  # www.opm.go.kr: opm
-  # theguru.co.kr: theguru
-  # sustinvest.com: sustinvest
-  # www.pennmike.com: pennmike
-  # science.ytn.co.kr: science_ytn
-  # www.pharmnews.com: pharmnews
-  # www.policetv.co.kr: policetv
-  # shindonga.donga.com: shindonga_donga
-  # www.popcornnews.net: popcornnews
-  # www.psnews.co.kr: psnews
-  # sedaily.com: sedaily
-  # www.s-journal.co.kr: s-journal
-  # www.itbiznews.com: itbiznews
-  # www.skyedaily.com: skyedaily
-  # www.todayenergy.kr: todayenergy
-  # www.upinews.kr: upinews
-  # knnws.com: knnws
-  # www.veritas-a.com: veritas-a
-  # junggi.co.kr: junggi
-  # joseplus.com: joseplus
-  # www.weeklytoday.com: weeklytoday
-  # www.weeklytrade.co.kr: weeklytrade
-  # inthenews.co.kr: inthenews
-  # imnews.imbc.com: imnews_imbc
-  # www.winwingrowth.or.kr: winwingrowth
-  # eiec.kdi.re.kr: eiec_kdi_re_kr
-  # cgs.or.kr: cgs
-  # byline.network: byline_network
-  # businessnews.chosun.com: businessnews_chosun
-  # www.youtube.com: youtube
-  # www.ziksir.com: ziksir
-  # likms.assembly.go.kr: likms_assembly_go_kr
-  # www.standardchartered.co.kr: standardchartered
-  # www.smedaily.co.kr: smedaily
-  # www.snmnews.com: snmnews
-  # www.socialvalue.kr: socialvalue
-  # www.1conomynews.co.kr: 1conomynews
-  # www.sportsseoul.com: sportsseoul
-  # m.lawissue.co.kr: m_lawissue
-  # m.bikorea.net: m_bikorea_net
-  # www.startuptoday.kr: startuptoday1
-  # m.kmib.co.kr: m_kmib
-  # www.taxtimes.co.kr: taxtimes
-  # m.kasb.or.kr: m_kasb
-  # www.thedailypost.kr: thedailypost
-  # www.thefirstmedia.net: thefirstmedia
-  # woman.donga.com: woman_donga
-  # www.apnews.kr: apnews
-  # www.2050cnc.go.kr: 2050cnc
-  # www.koreaittimes.com: koreaittimes
-  # www.kidd.co.kr: kidd
-  # www.goodnews1.com: goodnews1
-  # www.kita.net: kita
-  # www.globalnewsagency.kr: globalnewsagency
-  # www.ggilbo.com: ggilbo
-  # www.geconomy.co.kr: geconomy
-  # www.ft.com: ft
-  # www.fntoday.co.kr: fntoday
-  # www.koscaj.com: koscaj
-  # www.lak.co.kr: lak
-  # www.kpenews.com: kpenews
-  # www.firenzedt.com: firenzedt
-  # www.fintechpost.co.kr: fintechpost
-  # www.finomy.com: finomy
-  # www.kunews.ac.kr: kunews
-  # www.kwnews.co.kr: kwnews
-  # www.financialreview.co.kr: financialreview
-  # www.laborplus.co.kr: laborplus
-  # www.kharn.kr: kharn
-  # www.kgnews.co.kr: kgnews
-  # www.hellot.net: hellot
-  # www.kbsm.net: kbsm
-  # www.iusm.co.kr: iusm
-  # www.jbnews.com: jbnews
-  # www.jejudomin.co.kr: jejudomin
-  # www.jejuilbo.net: jejuilbo
-  # www.jejumaeil.net: jejumaeil
-  # www.jemin.com: jemin
-  # www.jeonmin.co.kr: jeonmin
-  # www.industrynews.co.kr: industrynews
-  # www.iminju.net: iminju
-  # www.iloveorganic.co.kr: iloveorganic
-  # www.ikpnews.net: ikpnews
-  # www.ihalla.com: ihalla
-  # www.junggi.co.kr: junggi
-  # www.ifm.kr: ifm
-  # www.kbiznews.co.kr: kbiznews
-  # www.idaegu.com: idaegu
-  # www.lafent.com: lafent
-  # www.latimes.kr: latimes
-  # www.newsworker.co.kr: newsworker
-  # www.cgs.or.kr: cgs
-  # www.constimes.co.kr: constimes
-  # www.newsclaim.co.kr: newsclaim
-  # www.coindeskkorea.com: coindeskkorea
-  # www.newsggam.com: newsggam
-  # www.newsgn.com: newsgn
-  # www.cnbnews.com: cnbnews
-  # www.chiefexe.com: chiefexe
-  # www.newskr.kr: newskr
-  # www.newspenguin.com: newspenguin
-  # www.epnc.co.kr: epnc
-  # www.cctimes.kr: cctimes
-  # www.cbci.co.kr: cbci
-  # www.bzeronews.com: bzeronews
-  # www.businesskorea.co.kr: businesskorea
-  # www.breaknews.com: breaknews
-  # www.beyondpost.co.kr: beyondpost
-  # www.itdaily.kr: itdaily
-  # www.aflnews.co.kr: aflnews
-  # www.newscape.co.kr: newscape
-  # www.consumuch.com: consumuch
-  # www.nbnnews.co.kr: nbnnews
-  # www.engdaily.com: engdaily
-  # www.legaltimes.co.kr: legaltimes
-  # www.lexology.com: lexology
-  # www.energy-news.co.kr: energy-news
-  # www.mbn.co.kr: mbn
-  # www.me.go.kr: me
-  # www.economytalk.kr: economytalk
-  # www.ecomedia.co.kr: ecomedia
-  # www.megaeconomy.co.kr: megaeconomy
-  # www.dentalnews.or.kr: dentalnews
-  # www.mhns.co.kr: mhns
-  # www.delighti.co.kr: delighti
-  # www.ddaily.co.kr: ddaily
-  # www.dailysmart.co.kr: dailysmart
-  # www.cupnews.kr: cupnews
-  # amenews.kr: amenews_kr
+type2:
+  biz.heraldcorp.com: biz_heraldcorp
+  biz.newdaily.co.kr: newdaily
+  cnews.fntimes.com: cnews_fntimes
+  dealsite.co.kr: dealsite
+  g-enews.com: g-enews
+  hankookilbo.com: hankookilbo
+  ilyo.co.kr: ilyo
+  imnews.imbc.com: imnews_imbc
+  m.kmib.co.kr: m_kmib
+  m.lawissue.co.kr: m_lawissue
+  moneys.mt.co.kr: moneys
+  news.bizwatch.co.kr: news_bizwatch
+  news.g-enews.com: g-enews
+  news.heraldcorp.com: news_heraldcorp
+  news.imaeil.com: news_imaeil
+  news.kmib.co.kr: news_kmib
+  news.mk.co.kr: news_mk
+  news.moneytoday.co.kr: news_moneytoday
+  news.mt.co.kr: news_mt
+  news.mtn.co.kr: news_mtn
+  newsis.com: newsis
+  paxnetnews.com: paxnetnews
+  sedaily.com: sedaily
+  sports.donga.com: sports_donga
+  theviewers.co.kr: theviewers
+  view.asiae.co.kr: view_asiae
+  woman.donga.com: woman_donga
+  www.ajunews.com: ajunews
+  www.asiae.co.kr: asiae
+  www.ceoscoredaily.com: ceoscoredaily
+  www.cnn.com: cnn
+  www.donga.com: donga
+  www.edaily.co.kr: edaily
+  www.etnews.com: etnews
+  www.etoday.co.kr: etoday
+  www.fntimes.com: fntimes
+  www.g-enews.com: g-enews
+  www.hankookilbo.com: hankookilbo
+  www.hankyung.com: hankyung
+  www.joongang.co.kr: joongang
+  www.kbsm.net: kbsm
+  www.khan.co.kr: khan
+  www.ksmnews.co.kr: ksmnews
+  www.kukinews.com: kukinews
+  www.kwnews.co.kr: kwnews
+  www.mbn.co.kr: mbn
+  www.mk.co.kr: mk
+  www.newdaily.co.kr: newdaily
+  www.news1.kr: news1
+  www.newsis.com: newsis
+  www.paxnetnews.com: paxnetnews
+  www.sedaily.com: sedaily
+  www.segye.com: segye
+  www.seoul.co.kr: seoul
+  www.thebigdata.co.kr: thebigdata
+  www.viva100.com: viva100
+  www.yeongnam.com: yeongnam
+
+type3:
+  news.yahoo.com: news_yahoo
+  sg.news.yahoo.com: sg_news_yahoo
+  uk.news.yahoo.com: uk_news_yahoo
+  au.news.yahoo.com: au_news_yahoo
+  ca.news.yahoo.com: ca_news_yahoo
+  nz.news.yahoo.com: nz_news_yahoo
+
+media:
+  zdnet.co.kr: zdnet
+  n.news.naver.com: naver
+  news.naver.com: naver
+  www.thebell.co.kr: the bell
+  www.theguardian.com: theguardian
+  www.kjdaily.com: kjdaily
+  www.jnilbo.com: jnilbo
+  www.wowtv.co.kr: wowtv
+
+etc:
+  amenews.kr: amenews_kr
+  biz.chosun.com: biz_chosun
+  biz.sbs.co.kr: biz_sbs
+  businessnews.chosun.com: businessnews_chosun
+  byline.network: byline_network
+  cgs.or.kr: cgs
+  cm.asiae.co.kr: cm_asiae
+  dailian.co.kr: dailian
+  digitalchosun.dizzo.com: digitalchosun_dizzo
+  dream.kotra.or.kr: dream_kotra
+  ebn.co.kr: ebn
+  economist.co.kr: economist
+  esgfinancehub.or.kr: esgfinancehub
+  fetv.co.kr: fetv
+  futurechosun.com: futurechosun
+  greenium.kr: greenium_kr
+  inthenews.co.kr: inthenews
+  it.donga.com: it_donga
+  joseplus.com: joseplus
+  junggi.co.kr: junggi
+  knnws.com: knnws
+  kpenews.com: kpenews
+  kr.investing.com: kr_investing
+  kr.news.cn: kr_news_cn
+  likms.assembly.go.kr: likms_assembly_go_kr
+  m.bikorea.net: m_bikorea_net
+  m.kasb.or.kr: m_kasb
+  magazine.hankyung.com: magazine_hankyung
+  me.go.kr: me_go_kr
+  news.kbs.co.kr: news_kbs
+  news.sktelecom.com: news_sktelecom
+  open.krx.co.kr: open_krx
+  sateconomy.co.kr: sateconomy
+  science.ytn.co.kr: science_ytn
+  shindonga.donga.com: shindonga_donga
+  sustinvest.com: sustinvest
+  tfmedia.co.kr: tfmedia
+  theguru.co.kr: theguru
+  weekly.cnbnews.com: weekly_cnbnews
+  weekly.donga.com: weekly_donga
+  www.2050cnc.go.kr: 2050cnc
+  www.asiatime.co.kr: asiatime
+  www.asiatoday.co.kr: asiatoday
+  www.bbc.com: bbc
+  www.beyondpost.co.kr: beyondpost
+  www.boannews.com: boannews
+  www.busan.com: busan
+  www.businesspost.co.kr: businesspost
+  www.cgs.or.kr: cgs
+  www.chiefexe.com: chiefexe
+  www.chosun.com: chosun
+  www.cnbnews.com: cnbnews
+  www.dailian.co.kr: dailian
+  www.dailypharm.com: dailypharm
+  www.ddaily.co.kr: ddaily
+  www.dentalnews.or.kr: dentalnews
+  www.dnews.co.kr: dnews
+  www.dt.co.kr: dt
+  www.ebn.co.kr: ebn
+  www.ecomedia.co.kr: ecomedia
+  www.ekn.kr: ekn
+  www.fetv.co.kr: fetv
+  www.fki.or.kr: fki
+  www.fnnews.com: fnnews
+  www.fsc.go.kr: fsc
+  www.fss.or.kr: fss
+  www.ft.com: ft
+  www.geconomy.co.kr: geconomy
+  www.hani.co.kr: hani
+  www.hellot.net: hellot
+  www.idaegu.com: idaegu
+  www.ifm.kr: ifm
+  www.ihalla.com: ihalla
+  www.inews24.com: inews24
+  www.insnews.co.kr: insnews
+  www.investchosun.com: investchosun
+  www.jjan.kr: jjan
+  www.joseilbo.com: joseilbo
+  www.junggi.co.kr: junggi
+  www.kgnews.co.kr: kgnews
+  www.kharn.kr: kharn
+  www.kidd.co.kr: kidd
+  www.kita.net: kita
+  www.kookje.co.kr: kookje
+  www.korcham.net: korcham
+  www.korea.kr: korea
+  www.kpenews.com: kpenews
+  www.kyeongin.com: kyeongin
+  www.lafent.com: lafent
+  www.lak.co.kr: lak
+  www.lawtimes.co.kr: lawtimes
+  www.lexology.com: lexology
+  www.me.go.kr: me
+  www.mediapen.com: mediapen
+  www.megaeconomy.co.kr: megaeconomy
+  www.metroseoul.co.kr: metroseoul
+  www.moef.go.kr: moef
+  www.moneys.co.kr: moneys
+  www.msn.com: msn
+  www.munhwa.com: munhwa
+  www.naeil.com: naeil
+  www.news2day.co.kr: news2day
+  www.newsgn.com: newsgn
+  www.newspim.com: newspim
+  www.newstomato.com: newstomato
+  www.newstong.co.kr: newstong
+  www.newstree.kr: newstree
+  www.newsway.co.kr: newsway
+  www.newswire.co.kr: newswire
+  www.nocutnews.co.kr: nocutnews
+  www.nongmin.com: nongmin
+  www.nspna.com: nspna
+  www.opm.go.kr: opm
+  www.paxetv.com: paxetv
+  www.pinpointnews.co.kr: pinpointnews
+  www.segyebiz.com: segyebiz
+  www.sentv.co.kr: sentv
+  www.sisa-news.com: sisa-news
+  www.skyedaily.com: skyedaily
+  www.socialvalue.kr: socialvalue
+  www.sportsseoul.com: sportsseoul
+  www.standardchartered.co.kr: standardchartered
+  www.taxtimes.co.kr: taxtimes
+  www.tfmedia.co.kr: tfmedia
+  www.theguru.co.kr: theguru
+  www.thevaluenews.co.kr: thevaluenews
+  www.todayenergy.kr: todayenergy
+  www.upinews.kr: upinews
+  www.usatoday.com: usatoday
+  www.weeklytrade.co.kr: weeklytrade
+  www.winwingrowth.or.kr: winwingrowth
+  www.wsobi.com: wsobi
+  www.youthdaily.co.kr: youthdaily
+  www.youtube.com: youtube

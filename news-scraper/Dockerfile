@@ -43,4 +43,4 @@ EXPOSE 8080
 RUN chmod +x app/config/chromedriver
 
 # 서버 실행
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "1"]
