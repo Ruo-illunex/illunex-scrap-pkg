@@ -17,4 +17,4 @@ services:
       - "8500:8080"  # 포트 변경
     env_file:
       - ./news-scraper/.env
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --workers 5
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --workers 1

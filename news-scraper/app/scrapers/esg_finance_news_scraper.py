@@ -31,11 +31,11 @@ class EsgfinanceNewsScraper(NewsScraper):
         urls = esgfinance_urls.urls
         self.news_board_url = urls['news_board_url']
         self.esg_finance_hub_scraper = EsgFinanceHubScraper(scraper_name=self.scraper_name)
-        self.media = load_yaml(FILE_PATHS.get('esg_finance_media')).get('media')
         self.media_name = None
         self.type1 = load_yaml(FILE_PATHS.get('esg_finance_media')).get('type1')
         self.type2 = load_yaml(FILE_PATHS.get('esg_finance_media')).get('type2')
         self.type3 = load_yaml(FILE_PATHS.get('esg_finance_media')).get('type3')
+        self.media = load_yaml(FILE_PATHS.get('esg_finance_media')).get('media')
         # self.type1 = ['www.impacton.net', 'www.greened.kr', 'www.greenpostkorea.co.kr', 'www.esgeconomy.com', 'www.sporbiz.co.kr', 'news.einfomax.co.kr', 'www.dailyimpact.co.kr', 'www.straightnews.co.kr', 'www.kbanker.co.kr', 'www.econovill.com', 'www.seoulfn.com', 'www.fortunekorea.co.kr', 'www.hansbiz.co.kr', 'www.meconomynews.com', 'www.ekoreanews.co.kr', 'www.enewstoday.co.kr', 'www.dhdaily.co.kr', 'www.m-i.kr', 'www.newsworks.co.kr', 'www.seoulwire.com', 'www.ngetnews.com', 'www.energydaily.co.kr', 'www.shinailbo.co.kr', 'www.whitepaper.co.kr', 'www.insightkorea.co.kr', 'www.e2news.com', 'daily.hankooki.com', 'www.insidevina.com', 'www.electimes.com', 'www.digitaltoday.co.kr', 'www.newspost.kr', 'www.domin.co.kr', 'www.infostockdaily.co.kr', 'www.getnews.co.kr', 'www.thereport.co.kr', 'www.polinews.co.kr', 'www.ccdailynews.com', 'www.gasnews.com', 'thepublic.kr', 'www.hkbs.co.kr', 'www.lcnews.co.kr', 'www.biztribune.co.kr', 'www.consumernews.co.kr', 'www.newsfreezone.co.kr', 'www.bloter.net', 'www.goodkyung.com', 'www.newswatch.kr', 'www.businessplus.kr', 'www.choicenews.co.kr', 'www.wikileaks-kr.org', 'www.cctoday.co.kr', 'www.gukjenews.com', 'www.lecturernews.com', 'www.koit.co.kr', 'www.joongboo.com', 'www.fetimes.co.kr', 'www.ftoday.co.kr', 'www.incheonilbo.com', 'www.kpinews.co.kr', 'www.intn.co.kr', 'www.lifein.news', 'www.thekpm.com', 'www.updownnews.co.kr', 'www.sisaon.co.kr', 'it.chosun.com', 'www.safetimes.co.kr', 'www.wolyo.co.kr', 'www.newsquest.co.kr', 'www.newslock.co.kr', 'www.dailycnc.com', 'www.cstimes.com', 'www.newscj.com', 'www.kbmaeil.com', 'www.worktoday.co.kr', 'www.jeonmae.co.kr', 'www.wiseenews.com', 'www.job-post.co.kr', 'www.womancs.co.kr', 'www.womentimes.co.kr', 'www.weeklyseoul.net', 'www.smartcitytoday.co.kr', 'www.startuptoday.co.kr', 'www.speconomy.com', 'www.obsnews.co.kr', 'www.sisafocus.co.kr', 'www.kihoilbo.co.kr', 'www.ezyeconomy.com', 'www.asiaa.co.kr', 'www.efnews.co.kr', 'polinews.co.kr', 'www.foodneconomy.com', 'www.consumerwide.com', 'www.eroun.net', 'www.bizwnews.com', 'www.sejungilbo.com', 'www.4th.kr', 'www.aflnews.co.kr', 'www.shippingnewsnet.com', 'www.siminsori.com', 'www.ntoday.co.kr', 'www.1conomynews.co.kr', 'www.pennmike.com', 'www.pharmnews.com', 'www.policetv.co.kr', 'www.popcornnews.net', 'www.outsourcing.co.kr', 'www.pressm.kr', 'www.opinionnews.co.kr', 'www.rcast.co.kr', 'www.s-journal.co.kr', 'www.safetynews.co.kr', 'www.psnews.co.kr', 'www.snmnews.com', 'www.sisajournal-e.com', 'www.veritas-a.com', 'www.weeklytoday.com', 'www.ziksir.com', 'www.smedaily.co.kr', 'news.unn.net', 'www.startuptoday.kr', 'www.thedailypost.kr', 'www.thefirstmedia.net', 'www.apnews.kr', 'www.it-b.co.kr', 'www.hankooki.com', 'www.goodnews1.com', 'www.globalnewsagency.kr', 'www.ggilbo.com', 'www.kongje.or.kr', 'www.kgdm.co.kr', 'www.koreaittimes.com', 'www.koscaj.com', 'www.fntoday.co.kr', 'www.firenzedt.com', 'www.kunews.ac.kr', 'www.fintechpost.co.kr', 'www.jeonmin.co.kr', 'www.itdaily.kr', 'www.iusm.co.kr', 'www.jbnews.com', 'www.jejudomin.co.kr', 'www.jejuilbo.net', 'www.jejumaeil.net', 'www.jemin.com', 'www.industrynews.co.kr', 'www.iminju.net', 'www.headlinejeju.co.kr', 'www.iloveorganic.co.kr', 'www.ikpnews.net', 'www.kbiznews.co.kr', 'www.laborplus.co.kr', 'www.newsworker.co.kr', 'www.newscape.co.kr', 'www.newsclaim.co.kr', 'www.constimes.co.kr', 'www.newsggam.com', 'www.newsian.co.kr', 'www.coindeskkorea.com', 'www.newskr.kr', 'www.newspenguin.com', 'www.cupnews.kr', 'www.cctimes.kr', 'www.cbci.co.kr', 'www.bzeronews.com', 'www.businesskorea.co.kr', 'www.itbiznews.com', 'www.consumuch.com', 'www.latimes.kr', 'www.energy-news.co.kr', 'www.lawleader.co.kr', 'www.finomy.com', 'www.financialreview.co.kr', 'www.legaltimes.co.kr', 'www.epnc.co.kr', 'www.engdaily.com', 'www.nbnnews.co.kr', 'www.economytalk.kr', 'www.mhns.co.kr', 'www.delighti.co.kr', 'www.dailysmart.co.kr']
 
     def get_all_links_and_save_to_csv(self):
@@ -162,7 +162,7 @@ class EsgfinanceNewsScraper(NewsScraper):
 
                 self.get_all_links_and_save_to_csv()
                 return None
-        
+
         except Exception as e:
             stack_trace = traceback.format_exc()
             err_message = f"THERE WAS AN ERROR WHILE GETTING ALL NEWS URLS FROM {self.news_board_url}\nCHECK THE ESG FINANCE HUB SCRAPER LOGS FOR MORE DETAILS"
@@ -209,6 +209,27 @@ class EsgfinanceNewsScraper(NewsScraper):
                 err_message = f"TITLE OR CONTENT IS EMPTY FOR URL: {news_url}"
                 self.process_err_log_msg(err_message, "scrape_each_news", "", "")
                 return None
+
+            if self.media_name in ["dt", "metroseoul"]:
+                image_url = f"https:{image_url}"
+
+            if self.media_name in ["paxetv"]:
+                create_date = create_date.split('승인')[-1].strip()
+
+            if self.media_name in ["digitalchosun_dizzo", "dnews", "thevaluenews"]:
+                create_date = create_date[5:]
+
+            # if self.media_name == "biz_chosun":
+            #     create_date = create_date.split('.')[0]
+            
+            # if self.media_name == "newstong":
+            #     create_date = create_date.split('|')[-1].strip()
+            
+            if self.media_name == "metroseoul":
+                create_date = create_date.split('ㅣ')[-1].strip()
+            
+            # if self.media_name == "mediapen":
+            #     create_date = create_date.split(' | ')[0].strip()
             
             if self.media_name == "ceoscoredaily":
                 image_url = f"https://www.ceoscoredaily.com{image_url}"
@@ -216,8 +237,29 @@ class EsgfinanceNewsScraper(NewsScraper):
             if self.media_name in ["theguardian", "news_yahoo", "uk_news_yahoo", "sg_news_yahoo", "bbc", "ca_news_yahoo", "au_news_yahoo", "nz_news_yahoo"]:
                 create_date = create_date.split('.')[0]
             
+            # if self.media_name in ["news2day", "nongmin"]:
+            #     create_date = create_date.split(' : ')[-1].strip()
+
+            # if self.media_name == "busan":
+            #     create_date = create_date.replace('[', '').replace(']', '')
+            
             if self.media_name == "the bell":
                 create_date = create_date.replace('공개 ', '').strip()
+
+            # if self.media_name == "munhwa":
+            #     create_date = create_date.replace('입력 ', '').strip()
+            
+            # if self.media_name == "news_kbs":
+            #     create_date = create_date.replace('입력 ', '').replace('(', '').replace(')', '').strip()
+            
+            # if self.media_name == "asiatime":
+            #     create_date = create_date.split('입력 ')[-1].split(' 수정')[0].strip()
+
+            # if self.media_name == "economist":
+            #     create_date = create_date.replace('[이코노미스트] 입력 ', '')
+            
+            # if self.media_name == "naeil":
+            #     create_date = create_date.replace(' 게재', '')
 
             if self.media_name == "kjdaily":
                 create_date = create_date[:11].replace(' ', '') + create_date[14:]
@@ -348,14 +390,14 @@ class EsgfinanceNewsScraper(NewsScraper):
                             info_message = f"SCRAPING STARTED FOR {news_url} WITH {self.media_name}"
                             self.process_info_log_msg(info_message, type="info")
                             news_data = await self.scrape_each_news(news_url)
-                            if not news_data:
-                                info_message = f"SCRAPING STARTED FOR {news_url} WITH TRAFILATURA BECAUSE OF ERROR"
-                                self.process_info_log_msg(info_message, type="info")
-                                news_data = await self.scrape_each_news_with_trafilatura(news_url)
-                        elif not self.media_name:
-                            info_message = f"SCRAPING STARTED FOR {news_url} WITH TRAFILATURA"
-                            self.process_info_log_msg(info_message, type="info")
-                            news_data = await self.scrape_each_news_with_trafilatura(news_url)
+                            # if not news_data:
+                            #     info_message = f"SCRAPING STARTED FOR {news_url} WITH TRAFILATURA BECAUSE OF ERROR"
+                            #     self.process_info_log_msg(info_message, type="info")
+                            #     news_data = await self.scrape_each_news_with_trafilatura(news_url)
+                        # elif not self.media_name:
+                        #     info_message = f"SCRAPING STARTED FOR {news_url} WITH TRAFILATURA"
+                        #     self.process_info_log_msg(info_message, type="info")
+                        #     news_data = await self.scrape_each_news_with_trafilatura(news_url)
                     else:
                         err_message = f"NEWS ALREADY EXISTS IN DATABASE: {news_url}"
                         self.process_err_log_msg(err_message, "scrape_news", "", "")

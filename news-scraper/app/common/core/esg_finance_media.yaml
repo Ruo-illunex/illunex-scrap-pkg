@@ -256,17 +256,24 @@ media:
   www.kjdaily.com: kjdaily
   www.jnilbo.com: jnilbo
   www.wowtv.co.kr: wowtv
+  www.dt.co.kr: dt
+  www.metroseoul.co.kr: metroseoul
+  www.wsobi.com: wsobi
+  www.paxetv.com: paxetv
+  digitalchosun.dizzo.com: digitalchosun_dizzo
+  www.dnews.co.kr: dnews
+  www.thevaluenews.co.kr: thevaluenews
+
 
 etc:
-  amenews.kr: amenews_kr
   biz.chosun.com: biz_chosun
+  amenews.kr: amenews_kr
   biz.sbs.co.kr: biz_sbs
   businessnews.chosun.com: businessnews_chosun
   byline.network: byline_network
   cgs.or.kr: cgs
   cm.asiae.co.kr: cm_asiae
   dailian.co.kr: dailian
-  digitalchosun.dizzo.com: digitalchosun_dizzo
   dream.kotra.or.kr: dream_kotra
   ebn.co.kr: ebn
   economist.co.kr: economist
@@ -314,8 +321,6 @@ etc:
   www.dailypharm.com: dailypharm
   www.ddaily.co.kr: ddaily
   www.dentalnews.or.kr: dentalnews
-  www.dnews.co.kr: dnews
-  www.dt.co.kr: dt
   www.ebn.co.kr: ebn
   www.ecomedia.co.kr: ecomedia
   www.ekn.kr: ekn
@@ -353,7 +358,6 @@ etc:
   www.me.go.kr: me
   www.mediapen.com: mediapen
   www.megaeconomy.co.kr: megaeconomy
-  www.metroseoul.co.kr: metroseoul
   www.moef.go.kr: moef
   www.moneys.co.kr: moneys
   www.msn.com: msn
@@ -371,7 +375,6 @@ etc:
   www.nongmin.com: nongmin
   www.nspna.com: nspna
   www.opm.go.kr: opm
-  www.paxetv.com: paxetv
   www.pinpointnews.co.kr: pinpointnews
   www.segyebiz.com: segyebiz
   www.sentv.co.kr: sentv
@@ -383,12 +386,10 @@ etc:
   www.taxtimes.co.kr: taxtimes
   www.tfmedia.co.kr: tfmedia
   www.theguru.co.kr: theguru
-  www.thevaluenews.co.kr: thevaluenews
   www.todayenergy.kr: todayenergy
   www.upinews.kr: upinews
   www.usatoday.com: usatoday
   www.weeklytrade.co.kr: weeklytrade
   www.winwingrowth.or.kr: winwingrowth
-  www.wsobi.com: wsobi
   www.youthdaily.co.kr: youthdaily
   www.youtube.com: youtube
