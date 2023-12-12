@@ -8,6 +8,8 @@ from collections import deque
 import hashlib
 
 import aiohttp
+from bs4 import BeautifulSoup
+from trafilatura import fetch_url, bare_extraction
 
 from app.common.log.log_config import setup_logger
 from app.common.db.news_database import NewsDatabase
@@ -38,6 +40,9 @@ class NewsScraper(abc.ABC):
             level='INFO'
             )
 
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
+            }
         self.news_db = NewsDatabase()
         self.scraper_manager_db = ScraperManagerDatabase()
         self.session = self.scraper_manager_db.SessionLocal()
@@ -260,7 +265,7 @@ class NewsScraper(abc.ABC):
         )
 
 
-    def extract_news_details(self, soup, additional_data: list = [], parsing_rules_dict: dict = None) -> dict:
+    def extract_news_details(self, soup, elements: list, parsing_rules_dict: dict = None) -> dict:
         """뉴스 상세 정보를 추출하는 함수
         Args:
             soup (BeautifulSoup): BeautifulSoup 객체
@@ -272,20 +277,17 @@ class NewsScraper(abc.ABC):
         if not parsing_rules_dict:
             parsing_rules_dict = self.parsing_rules_dict
 
-        elements_to_extract = ['title', 'content', 'create_date', 'image_url', 'media'] + additional_data
         extracted_data = {}
-
-        for element in elements_to_extract:
+        for element in elements:
             if parsing_rules_dict.get(element):
                 # 마지막 규칙을 사용하여 해당 요소를 추출합니다.
                 parsing_rule = parsing_rules_dict.get(element)[-1]
                 extracted_data[element] = self.extract_element(soup, parsing_rule)
+            else:
+                err_message = f"PARSING RULES NOT FOUND FOR {element}"
+                self.process_err_log_msg(err_message, "extract_news_details")
+                extracted_data[element] = None
 
-        if additional_data:
-            additional_data_dict = {}
-            for element in additional_data:
-                additional_data_dict[element] = extracted_data[element]
-        
         return extracted_data
 
 
@@ -372,6 +374,73 @@ class NewsScraper(abc.ABC):
                     await asyncio.sleep(2)  # 잠시 대기 후 재시도
                 else:
                     raise e
+
+
+    async def scrape_each_news_with_bs(self, news_url, elements, parsing_rules_dict=None):
+        try:
+            info_message = f"SCRAPING STARTED FOR {news_url}"
+            self.process_info_log_msg(info_message, type="info")
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(news_url, headers=self.headers) as response:
+                    if response.status == 200:
+                        try:
+                            text = await response.text()
+                        except UnicodeDecodeError:
+                            info_message = f"ENCODING ERROR FOR {news_url}"
+                            self.process_info_log_msg(info_message, type="info")
+                            text = await response.read()
+                            if self.media_name in ["dt", "wsobi", "munhwa"]:
+                                text = text.decode('euc-kr', 'ignore')
+                            elif self.media_name in ["digitalchosun", "news1", "seoul", "newsworks", "businessnews_chosun"]:
+                                text = text.decode('utf-8', 'ignore')
+                        soup = BeautifulSoup(text, 'html.parser')
+                    else:
+                        err_message = f"RESPONSE STATUS: {response.status} {response.reason} FOR URL: {news_url}"
+                        self.process_err_log_msg(err_message, "scrape_each_news", "", "")
+                        return None
+
+            extracted_data = self.extract_news_details(
+                soup, elements, parsing_rules_dict=parsing_rules_dict
+                )
+            return extracted_data
+
+        except Exception as e:
+            stack_trace = traceback.format_exc()
+            err_message = f"THERE WAS AN ERROR WHILE SCRAPING: {news_url}"
+            self.process_err_log_msg(err_message, "scrape_each_news", stack_trace, e)
+            return None
+
+
+    async def scrape_each_news_with_trafilatura(self, news_url, elements: list, parsing_rules_dict: dict = None, with_metadata=True):
+        extracted_data = {}
+        if not parsing_rules_dict:
+            parsing_rules_dict = self.parsing_rules_dict
+        try:
+            info_message = f"SCRAPING STARTED FOR {news_url} WITH TRAFILATURA"
+            self.process_info_log_msg(info_message, type="info")
+
+            downloaded = fetch_url(
+                news_url,
+                no_ssl=True,
+                )
+            for element in elements:
+                result = bare_extraction(downloaded, with_metadata=with_metadata)
+                parsing_rule = parsing_rules_dict.get(element)[-1]
+                if parsing_rule:
+                    for path in parsing_rule.values():
+                        result = result.get(path)
+                    extracted_data[element] = result
+                else:
+                    extracted_data[element] = None
+            
+            return extracted_data
+
+        except Exception as e:
+            stack_trace = traceback.format_exc()
+            err_message = f"THERE WAS AN ERROR WHILE SCRAPING: {news_url}"
+            self.process_err_log_msg(err_message, "scrape_each_news_with_trafilatura", stack_trace, e)
+            return None
 
 
     @abc.abstractmethod

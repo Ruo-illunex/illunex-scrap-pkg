@@ -179,6 +179,10 @@ type1:
   www.womentimes.co.kr: womentimes
   www.worktoday.co.kr: worktoday
   www.ziksir.com: ziksir
+  www.econonews.co.kr: econonews
+  www.gbprimenews.com: gbprimenews
+  www.nextdaily.co.kr: nextdaily
+  www.pinpointnews.co.kr: pinpointnews
 
 type2:
   biz.heraldcorp.com: biz_heraldcorp
@@ -238,6 +242,7 @@ type2:
   www.thebigdata.co.kr: thebigdata
   www.viva100.com: viva100
   www.yeongnam.com: yeongnam
+  www.ekn.kr: ekn
 
 type3:
   news.yahoo.com: news_yahoo
@@ -246,6 +251,18 @@ type3:
   au.news.yahoo.com: au_news_yahoo
   ca.news.yahoo.com: ca_news_yahoo
   nz.news.yahoo.com: nz_news_yahoo
+
+type4:
+  dailian.co.kr: dailian
+  g9inside.com: g9inside
+  greenium.kr: greenium_kr
+  www.asiatoday.co.kr: asiatoday
+  theguru.co.kr: theguru
+  www.joseilbo.com: joseilbo
+  tfmedia.co.kr: tfmedia
+  www.inews24.com: inews24
+  www.hani.co.kr: hani
+  magazine.hankyung.com: magazine_hankyung
 
 media:
   zdnet.co.kr: zdnet
@@ -263,24 +280,24 @@ media:
   digitalchosun.dizzo.com: digitalchosun_dizzo
   www.dnews.co.kr: dnews
   www.thevaluenews.co.kr: thevaluenews
-
+  www.news2day.co.kr: news2day
+  www.kidd.co.kr: kidd
+  businessnews.chosun.com: businessnews_chosun
 
 etc:
+  www.lawtimes.co.kr: lawtimes
   biz.chosun.com: biz_chosun
   amenews.kr: amenews_kr
   biz.sbs.co.kr: biz_sbs
-  businessnews.chosun.com: businessnews_chosun
   byline.network: byline_network
   cgs.or.kr: cgs
   cm.asiae.co.kr: cm_asiae
-  dailian.co.kr: dailian
   dream.kotra.or.kr: dream_kotra
   ebn.co.kr: ebn
   economist.co.kr: economist
   esgfinancehub.or.kr: esgfinancehub
   fetv.co.kr: fetv
   futurechosun.com: futurechosun
-  greenium.kr: greenium_kr
   inthenews.co.kr: inthenews
   it.donga.com: it_donga
   joseplus.com: joseplus
@@ -292,7 +309,6 @@ etc:
   likms.assembly.go.kr: likms_assembly_go_kr
   m.bikorea.net: m_bikorea_net
   m.kasb.or.kr: m_kasb
-  magazine.hankyung.com: magazine_hankyung
   me.go.kr: me_go_kr
   news.kbs.co.kr: news_kbs
   news.sktelecom.com: news_sktelecom
@@ -301,13 +317,10 @@ etc:
   science.ytn.co.kr: science_ytn
   shindonga.donga.com: shindonga_donga
   sustinvest.com: sustinvest
-  tfmedia.co.kr: tfmedia
-  theguru.co.kr: theguru
   weekly.cnbnews.com: weekly_cnbnews
   weekly.donga.com: weekly_donga
   www.2050cnc.go.kr: 2050cnc
   www.asiatime.co.kr: asiatime
-  www.asiatoday.co.kr: asiatoday
   www.bbc.com: bbc
   www.beyondpost.co.kr: beyondpost
   www.boannews.com: boannews
@@ -323,7 +336,6 @@ etc:
   www.dentalnews.or.kr: dentalnews
   www.ebn.co.kr: ebn
   www.ecomedia.co.kr: ecomedia
-  www.ekn.kr: ekn
   www.fetv.co.kr: fetv
   www.fki.or.kr: fki
   www.fnnews.com: fnnews
@@ -331,20 +343,16 @@ etc:
   www.fss.or.kr: fss
   www.ft.com: ft
   www.geconomy.co.kr: geconomy
-  www.hani.co.kr: hani
   www.hellot.net: hellot
   www.idaegu.com: idaegu
   www.ifm.kr: ifm
   www.ihalla.com: ihalla
-  www.inews24.com: inews24
   www.insnews.co.kr: insnews
   www.investchosun.com: investchosun
   www.jjan.kr: jjan
-  www.joseilbo.com: joseilbo
   www.junggi.co.kr: junggi
   www.kgnews.co.kr: kgnews
   www.kharn.kr: kharn
-  www.kidd.co.kr: kidd
   www.kita.net: kita
   www.kookje.co.kr: kookje
   www.korcham.net: korcham
@@ -353,7 +361,6 @@ etc:
   www.kyeongin.com: kyeongin
   www.lafent.com: lafent
   www.lak.co.kr: lak
-  www.lawtimes.co.kr: lawtimes
   www.lexology.com: lexology
   www.me.go.kr: me
   www.mediapen.com: mediapen
@@ -363,7 +370,6 @@ etc:
   www.msn.com: msn
   www.munhwa.com: munhwa
   www.naeil.com: naeil
-  www.news2day.co.kr: news2day
   www.newsgn.com: newsgn
   www.newspim.com: newspim
   www.newstomato.com: newstomato
@@ -375,7 +381,6 @@ etc:
   www.nongmin.com: nongmin
   www.nspna.com: nspna
   www.opm.go.kr: opm
-  www.pinpointnews.co.kr: pinpointnews
   www.segyebiz.com: segyebiz
   www.sentv.co.kr: sentv
   www.sisa-news.com: sisa-news

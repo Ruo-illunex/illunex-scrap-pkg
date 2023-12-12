@@ -1,19 +1,17 @@
 import asyncio
 import datetime
 import random
-import hashlib
 import traceback
 import types
 import re
 
-import aiohttp
 import requests
 from bs4 import BeautifulSoup
 
 from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import NaverNews
 from app.scrapers.urls import URLs
-from app.common.core.utils import preprocess_datetime_standard, preprocess_datetime_compact
+from app.common.core.utils import *
 
 
 class NaverNewsScraper(NewsScraper):
@@ -63,6 +61,10 @@ class NaverNewsScraper(NewsScraper):
         processed_date = preprocess_datetime_compact(unprocessed_date)
         if processed_date:
             return processed_date
+        
+        processed_date = preprocess_datetime_compact(unprocessed_date)
+        if processed_date:
+            return processed_date
 
         processed_date = self.preprocess_datetime_custom(unprocessed_date)
         if processed_date:
@@ -109,60 +111,62 @@ class NaverNewsScraper(NewsScraper):
 
 
     async def scrape_each_news(self, news_url, category, parsing_rules_dict=None):
-        try:
-            info_message = f"SCRAPING STARTED FOR {news_url}"
-            self.process_info_log_msg(info_message, type="info")
+        total_extracted_data = {}
+        elements = self.parsing_rules_dict.keys()
+        elements_for_bs = []
+        elements_for_trafilatura = []
 
-            async with aiohttp.ClientSession() as session:
-                text = await self.fetch_url_with_retry(session, news_url)
-                soup = BeautifulSoup(text, 'html.parser')
+        for element in elements:
+            method = self.parsing_rules_dict.get(element)[0]
+            if method == "bs":
+                elements_for_bs.append(element)
+            elif method == "trafilatura":
+                elements_for_trafilatura.append(element)
 
-            extracted_data = self.extract_news_details(
-                soup,
-                additional_data=[],
-                parsing_rules_dict=parsing_rules_dict
-                )
+        if elements_for_bs:
+            extracted_data_with_bs = await self.scrape_each_news_with_bs(news_url, elements_for_bs, parsing_rules_dict=parsing_rules_dict)
+            if extracted_data_with_bs:
+                total_extracted_data.update(extracted_data_with_bs)
+        if elements_for_trafilatura:
+            extracted_data_with_trafilatura = await self.scrape_each_news_with_trafilatura(news_url, elements_for_trafilatura)
+            if extracted_data_with_trafilatura:
+                total_extracted_data.update(extracted_data_with_trafilatura)
 
-            title = extracted_data.get('title')
-            content = extracted_data.get('content')
-            create_date = extracted_data.get('create_date')
-            image_url = extracted_data.get('image_url')
-            media = extracted_data.get('media')
+        title = total_extracted_data.get('title')
+        content = total_extracted_data.get('content')
+        create_date = total_extracted_data.get('create_date')
+        image_url = total_extracted_data.get('image_url')
+        media = total_extracted_data.get('media')
 
-            # title이나 content가 없으면 다음 데이터로 넘어갑니다.
-            if not title or not content:
-                err_message = f"TITLE OR CONTENT IS EMPTY FOR URL: {news_url}"
-                self.process_err_log_msg(err_message, "scrape_each_news", "", "")
-                return None
-
-            url_md5 = self.generate_md5(news_url)
-            create_date = self.preprocess_datetime(create_date)
-            if self.category_dict.get(self.scraper_name).get(category):
-                kind_id = self.category_dict.get(self.scraper_name).get(category)
-            else:
-                kind_id = self.category_dict.get(self.scraper_name).get("etc")
-
-            news_data = NaverNews(
-                url=news_url,
-                url_md5=url_md5,
-                title=title,
-                content=content,
-                create_date=create_date,
-                image_url=image_url,
-                portal=self.scraper_name,
-                media=media,
-                kind=kind_id,
-                category="",
-                )
-
-            return news_data
-
-        except Exception as e:
-            stack_trace = traceback.format_exc()
-            err_message = f"THERE WAS AN ERROR WHILE SCRAPING: {news_url}"
-            self.process_err_log_msg(err_message, "scrape_each_news", stack_trace, e)
+        # title이나 content, create_date가 없으면 다음 데이터로 넘어갑니다.
+        if any([not title, not content, not create_date]):
+            none_elements = [element for element in [title, content, create_date] if not element]
+            err_message = f"{none_elements} IS EMPTY FOR URL: {news_url}"
+            self.process_err_log_msg(err_message, "scrape_each_news", "", "")
             return None
-        
+
+        url_md5 = self.generate_md5(news_url)
+        create_date = self.preprocess_datetime(create_date)
+        if self.category_dict.get(self.scraper_name).get(category):
+            kind_id = self.category_dict.get(self.scraper_name).get(category)
+        else:
+            kind_id = self.category_dict.get(self.scraper_name).get("etc")
+
+        news_data = NaverNews(
+            url=news_url,
+            url_md5=url_md5,
+            title=title,
+            content=content,
+            create_date=create_date,
+            image_url=image_url,
+            portal=self.scraper_name,
+            media=media,
+            kind=kind_id,
+            category="",
+            )
+
+        return news_data
+
 
     async def scrape_news(self):
         while True:

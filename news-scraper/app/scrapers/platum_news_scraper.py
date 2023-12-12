@@ -3,7 +3,6 @@ import random
 import hashlib
 import traceback
 import types
-import email.utils
 
 import feedparser
 from bs4 import BeautifulSoup
@@ -21,7 +20,6 @@ class PlatumNewsScraper(NewsScraper):
         super().__init__(scraper_name)
         self.interval_time_sleep = 7200
         platum_urls = URLs(scraper_name)
-        self.headers = platum_urls.headers
         urls = platum_urls.urls
         self.news_board_url = urls['news_board_url']
 
@@ -88,7 +86,7 @@ class PlatumNewsScraper(NewsScraper):
             # 기사 HTML을 가져옵니다.
             soup = BeautifulSoup(content_html, 'html.parser')
             content = soup.get_text()
-            extracted_data = self.extract_news_details(soup)
+            extracted_data = self.extract_news_details(soup, ['image_url'])
             image_url = extracted_data.get('image_url')
 
             # title이나 content가 없으면 다음 데이터로 넘어갑니다.

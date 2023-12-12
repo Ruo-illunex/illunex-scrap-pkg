@@ -242,7 +242,7 @@ async def start_scrapers():
     print(info_msg)
     # asyncio.create_task(scraper.scrape_zdnet_news())
     # asyncio.create_task(scraper.scrape_daum_news())
-    # asyncio.create_task(scraper.scrape_naver_news())
+    asyncio.create_task(scraper.scrape_naver_news())
     # asyncio.create_task(scraper.scrape_vs_news())
     # asyncio.create_task(scraper.scrape_thebell_news())
     # asyncio.create_task(scraper.scrape_startupn_news())

@@ -2,9 +2,6 @@ class URLs:
 
     def __init__(self, portal) -> None:
         self.portal = portal
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
-            }
         self.urls = {}
         self.retrieve_news_urls()
     
