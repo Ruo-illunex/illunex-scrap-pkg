@@ -95,3 +95,33 @@ def preprocess_datetime_rfc3339(date_str):
         return dt.strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return None
+
+
+def preprocess_datetime_eng_without_seconds(date_str):
+    """영문 날짜 형식 처리"""
+    """'Published' 형식의 날짜 문자열을 표준 날짜 형식으로 변환"""
+    try:
+        # 정규 표현식을 사용하여 날짜와 시간 정보 추출
+        match = re.search(r'(\d+):(\d+) (a\.m\.|p\.m\.) ET (\w+)\. (\d+), (\d+)', date_str)
+        if not match:
+            return None
+        
+        hour, minute, am_pm, month, day, year = match.groups()
+
+        # 12시간제 시간을 24시간제로 변환
+        hour = int(hour)
+        if am_pm == 'p.m.' and hour != 12:
+            hour += 12
+        elif am_pm == 'a.m.' and hour == 12:
+            hour = 0
+
+        # 월을 숫자로 변환
+        month = datetime.datetime.strptime(month, '%b').month
+
+        # datetime 객체 생성
+        dt = datetime.datetime(int(year), month, int(day), hour, int(minute))
+
+        # 원하는 형식으로 출력
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+    except Exception as e:
+        return None

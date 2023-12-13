@@ -8,6 +8,7 @@ from collections import deque
 import hashlib
 
 import aiohttp
+import requests
 from bs4 import BeautifulSoup
 from trafilatura import fetch_url, bare_extraction
 
@@ -390,7 +391,7 @@ class NewsScraper(abc.ABC):
                             info_message = f"ENCODING ERROR FOR {news_url}"
                             self.process_info_log_msg(info_message, type="info")
                             text = await response.read()
-                            if self.media_name in ["dt", "wsobi", "munhwa"]:
+                            if self.media_name in ["dt", "wsobi", "munhwa", "dailypharm", "boannews"]:
                                 text = text.decode('euc-kr', 'ignore')
                             elif self.media_name in ["digitalchosun", "news1", "seoul", "newsworks", "businessnews_chosun"]:
                                 text = text.decode('utf-8', 'ignore')
@@ -420,9 +421,14 @@ class NewsScraper(abc.ABC):
             info_message = f"SCRAPING STARTED FOR {news_url} WITH TRAFILATURA"
             self.process_info_log_msg(info_message, type="info")
 
-            downloaded = fetch_url(
-                news_url,
-                no_ssl=True,
+            if self.media_name in ["dt", "wsobi", "munhwa", "dailypharm", "boannews"]:
+                response = requests.get(news_url)
+                response.encoding = 'euc-kr'
+                downloaded = response.text
+            else:
+                downloaded = fetch_url(
+                    news_url,
+                    no_ssl=True,
                 )
             for element in elements:
                 result = bare_extraction(downloaded, with_metadata=with_metadata)

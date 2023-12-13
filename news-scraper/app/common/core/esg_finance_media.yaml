@@ -243,6 +243,7 @@ type2:
   www.viva100.com: viva100
   www.yeongnam.com: yeongnam
   www.ekn.kr: ekn
+  www.breaknews.com: breaknews
 
 type3:
   news.yahoo.com: news_yahoo
@@ -275,6 +276,9 @@ type4:
   www.beyondpost.co.kr: beyondpost
   kpenews.com: kpenews
   www.newswire.co.kr: newswire
+  www.hellot.net: hellot
+  www.megaeconomy.co.kr: megaeconomy
+  www.jjan.kr: jjan
 
 media:
   zdnet.co.kr: zdnet
@@ -308,6 +312,15 @@ media:
   www.segyebiz.com: segyebiz
   shindonga.donga.com: shindonga_donga
   www.taxtimes.co.kr: taxtimes
+  www.newspim.com: newspim
+  www.dailypharm.com: dailypharm
+  www.mediapen.com: mediapen
+  www.lak.co.kr: lak
+  www.usatoday.com: usatoday
+  www.boannews.com: boannews
+  www.cnbnews.com: cnbnews
+  www.asiatime.co.kr: asiatime
+  www.kyeongin.com: kyeongin
 
 etc:
   www.lawtimes.co.kr: lawtimes
@@ -338,14 +351,10 @@ etc:
   sustinvest.com: sustinvest
   weekly.donga.com: weekly_donga
   www.2050cnc.go.kr: 2050cnc
-  www.asiatime.co.kr: asiatime
   www.bbc.com: bbc
-  www.boannews.com: boannews
   www.cgs.or.kr: cgs
   www.chiefexe.com: chiefexe
   www.chosun.com: chosun
-  www.cnbnews.com: cnbnews
-  www.dailypharm.com: dailypharm
   www.ddaily.co.kr: ddaily
   www.dentalnews.or.kr: dentalnews
   www.ecomedia.co.kr: ecomedia
@@ -354,11 +363,9 @@ etc:
   www.fss.or.kr: fss
   www.ft.com: ft
   www.geconomy.co.kr: geconomy
-  www.hellot.net: hellot
   www.ihalla.com: ihalla
   www.insnews.co.kr: insnews
   www.investchosun.com: investchosun
-  www.jjan.kr: jjan
   www.junggi.co.kr: junggi
   www.kgnews.co.kr: kgnews
   www.kharn.kr: kharn
@@ -367,19 +374,14 @@ etc:
   www.korcham.net: korcham
   www.korea.kr: korea
   www.kpenews.com: kpenews
-  www.kyeongin.com: kyeongin
   www.lafent.com: lafent
-  www.lak.co.kr: lak
   www.lexology.com: lexology
   www.me.go.kr: me
-  www.mediapen.com: mediapen
-  www.megaeconomy.co.kr: megaeconomy
   www.moef.go.kr: moef
   www.moneys.co.kr: moneys
   www.msn.com: msn
   www.munhwa.com: munhwa
   www.newsgn.com: newsgn
-  www.newspim.com: newspim
   www.newstomato.com: newstomato
   www.newstree.kr: newstree
   www.nocutnews.co.kr: nocutnews
@@ -394,7 +396,6 @@ etc:
   www.theguru.co.kr: theguru
   www.todayenergy.kr: todayenergy
   www.upinews.kr: upinews
-  www.usatoday.com: usatoday
   www.weeklytrade.co.kr: weeklytrade
   www.winwingrowth.or.kr: winwingrowth
   www.youtube.com: youtube
