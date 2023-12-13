@@ -86,3 +86,12 @@ def preprocess_datetime_rfc2822(date_str):
         return email.utils.parsedate_to_datetime(date_str).strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return None
+
+
+def preprocess_datetime_rfc3339(date_str):
+    """GMT 기반 날짜 문자열을 표준 날짜 형식으로 변환"""
+    try:
+        dt = datetime.datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S %Z')
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return None

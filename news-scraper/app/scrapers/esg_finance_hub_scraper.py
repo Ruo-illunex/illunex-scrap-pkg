@@ -39,7 +39,6 @@ class EsgFinanceHubScraper:
         self.news_board_url = URLs(self.scraper_name).urls['news_board_url']
         self.driver_path = FILE_PATHS['chromedriver']
         self.driver = None
-        self.get_driver()
 
         self.last_page = 172
         self.current_page = 1
@@ -147,6 +146,8 @@ class EsgFinanceHubScraper:
                 ]
                 if any(domain in link for domain in mobile_domains):
                     link = link.replace('//m.', '//www.')
+                if 'ekn.kr' in link and 'web' not in link:
+                    link = link.replace('ekn.kr', 'ekn.kr/web')
                 info_message = f"URL WAS FOUND FROM {onclick_script}"
                 self.logger.info(info_message)
                 return link
@@ -183,6 +184,8 @@ class EsgFinanceHubScraper:
 
     # 첫번째 페이지의 링크를 generator로 반환하는 함수
     def get_first_page_links(self):
+        # 드라이버 초기화
+        self.get_driver()
         if self.driver is None:
             err_message = "DRIVER IS NONE. EXITING."
             self.logger.error(err_message)
@@ -222,6 +225,8 @@ class EsgFinanceHubScraper:
 
     # 모든 페이지의 링크를 추출하여 CSV 파일에 저장하는 함수
     def get_all_links_and_save_to_csv(self):
+        # 드라이버 초기화
+        self.get_driver()
         if self.driver is None:
             err_message = "DRIVER IS NONE. EXITING."
             self.logger.error(err_message)

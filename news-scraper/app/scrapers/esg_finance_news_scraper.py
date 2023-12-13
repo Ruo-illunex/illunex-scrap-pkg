@@ -67,6 +67,10 @@ class EsgfinanceNewsScraper(NewsScraper):
         processed_date = preprocess_datetime_rfc2822(unprocessed_date)
         if processed_date:
             return processed_date
+        
+        processed_date = preprocess_datetime_rfc3339(unprocessed_date)
+        if processed_date:
+            return processed_date
 
         processed_date = preprocess_datetime_standard(unprocessed_date)
         if processed_date:
@@ -244,23 +248,35 @@ class EsgfinanceNewsScraper(NewsScraper):
         if self.media_name in ["news_mtn", "wowtv", "cnn"]:
             create_date = create_date[:-1]
 
-        if self.media_name in ["news2day", "nongmin", "dt"]:
+        if self.media_name in ["busan", "news2day", "nongmin", "dt"]:
             create_date = create_date.split(': ')[-1].strip()
         
-        if self.media_name in ["businessnews_chosun"]:
+        if self.media_name in ["businessnews_chosun", "taxtimes"]:
             create_date = create_date.split('등록 ')[-1].strip()
+
+        if self.media_name == "weekly_cnbnews":
+            create_date = create_date.split('⁄ ')[-1].strip()
+
+        if self.media_name == "kwnews":
+            image_url = f"https://www.kwnews.co.kr{image_url}"
+
+        if self.media_name == "busan":
+            image_url = f"https://www.busan.com{image_url}"
+
+        if self.media_name in ["kwnews"]:
+            create_date = create_date.replace('[', '').replace(']', '')
+
+        if self.media_name in ["newstong"]:
+            create_date = create_date.split('\t')[-1].strip()
+
+        if self.media_name == "naeil":
+            create_date = create_date.replace(' 게재', '').strip()
 
         # if self.media_name == "biz_chosun":
         #     create_date = create_date.split('.')[0]
-
-        # if self.media_name == "newstong":
-        #     create_date = create_date.split('|')[-1].strip()
         
         # if self.media_name == "mediapen":
         #     create_date = create_date.split(' | ')[0].strip()
-
-        # if self.media_name == "busan":
-        #     create_date = create_date.replace('[', '').replace(']', '')
 
         # if self.media_name == "munhwa":
         #     create_date = create_date.replace('입력 ', '').strip()
@@ -273,9 +289,6 @@ class EsgfinanceNewsScraper(NewsScraper):
 
         # if self.media_name == "economist":
         #     create_date = create_date.replace('[이코노미스트] 입력 ', '')
-
-        # if self.media_name == "naeil":
-        #     create_date = create_date.replace(' 게재', '')
 
         url_md5 = hashlib.md5(news_url.encode()).hexdigest()
         preprocessed_create_date = self.preprocess_datetime(create_date)
