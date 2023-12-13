@@ -238,18 +238,18 @@ async def start_scrapers():
     """서비스가 시작되면, 스크래퍼들을 별도의 스레드에서 실행"""
     info_msg = "News Scraper Service Started"
     logger.info(info_msg)
-    # send_message_to_synology_chat(info_msg, prod_token)
+    send_message_to_synology_chat(info_msg, prod_token)
     print(info_msg)
-    # asyncio.create_task(scraper.scrape_zdnet_news())
-    # asyncio.create_task(scraper.scrape_daum_news())
+    asyncio.create_task(scraper.scrape_zdnet_news())
+    asyncio.create_task(scraper.scrape_daum_news())
     asyncio.create_task(scraper.scrape_naver_news())
-    # asyncio.create_task(scraper.scrape_vs_news())
-    # asyncio.create_task(scraper.scrape_thebell_news())
-    # asyncio.create_task(scraper.scrape_startupn_news())
-    # asyncio.create_task(scraper.scrape_startuptoday_news())
-    # asyncio.create_task(scraper.scrape_platum_news())
-    # asyncio.create_task(scraper.scrape_esg_news())
-    # asyncio.create_task(scraper.scrape_greenpost_news())
+    asyncio.create_task(scraper.scrape_vs_news())
+    asyncio.create_task(scraper.scrape_thebell_news())
+    asyncio.create_task(scraper.scrape_startupn_news())
+    asyncio.create_task(scraper.scrape_startuptoday_news())
+    asyncio.create_task(scraper.scrape_platum_news())
+    asyncio.create_task(scraper.scrape_esg_news())
+    asyncio.create_task(scraper.scrape_greenpost_news())
     asyncio.create_task(scraper.scrape_esg_finance_news())
 
 

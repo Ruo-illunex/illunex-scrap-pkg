@@ -1,17 +1,17 @@
 version: '3.8'
 
 services:
-  scrap_mng_streamlit:
+  ai_scrap_mng_streamlit:
     build: ./ai_scrap_mng_streamlit
     restart: unless-stopped # 컨테이너가 종료되지 않는 한 항상 재시작
     ports:
       - "8501:8080"  # 포트 변경
     env_file:
-      - ./scrap_mng_streamlit/.env
+      - ./scrap_mng_streamlit/.env.prod
     command: streamlit run run.py --server.port 8080 --server.address 0.0.0.0
 
-  news_scraper:
-    build: ./ai_news-scraper
+  ai_news_scraper:
+    build: ./ai_news_scraper
     restart: unless-stopped # 컨테이너가 종료되지 않는 한 항상 재시작
     ports:
       - "8500:8080"  # 포트 변경
