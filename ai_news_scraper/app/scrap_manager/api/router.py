@@ -274,9 +274,8 @@ async def delete_scrap_manager_endpoint(
     await delete_scrap_manager(id, db)
 
 
-# scrap_session_log 에서 최근 1일 데이터를 조회하는 함수
 def get_scrap_session_logs_by_date(db: Session):
-    """scrap_session_log 에서 최근 1일 데이터를 조회하는 함수
+    """scrap_session_log 에서 최근 6시간 데이터를 조회하는 함수
     args:
         db (Session): DB 세션
     returns:
@@ -287,7 +286,7 @@ def get_scrap_session_logs_by_date(db: Session):
         # 현재 시간
         current_time = datetime.now()
         # 1일 전 시간
-        one_day_before = current_time - timedelta(days=1)
+        one_day_before = current_time - timedelta(hours=6)
 
         # scrap_session_log 테이블에서 1일 전부터 현재까지의 데이터를 조회
         scrap_session_logs = db.query(ScrapSessionLog).filter(ScrapSessionLog.start_time >= one_day_before).all()
@@ -298,9 +297,8 @@ def get_scrap_session_logs_by_date(db: Session):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-# scrap_error_log 에서 최근 1일 데이터를 조회하는 함수
 def get_scrap_error_logs_by_date(db: Session):
-    """scrap_error_log 에서 최근 1일 데이터를 조회하는 함수
+    """scrap_error_log 에서 최근 6시간 데이터를 조회하는 함수
     args:
         db (Session): DB 세션
     returns:
@@ -311,7 +309,7 @@ def get_scrap_error_logs_by_date(db: Session):
         # 현재 시간
         current_time = datetime.now()
         # 1일 전 시간
-        one_day_before = current_time - timedelta(days=1)
+        one_day_before = current_time - timedelta(hours=6)
 
         # scrap_error_log 테이블에서 1일 전부터 현재까지의 데이터를 조회
         scrap_error_logs = db.query(ScrapErrorLog).filter(ScrapErrorLog.error_time >= one_day_before).all()

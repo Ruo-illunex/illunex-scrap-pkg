@@ -34,6 +34,7 @@ class NewsScraper(abc.ABC):
             scraper_name (str): 스크래퍼 이름
         """
         self.scraper_name = scraper_name
+        self.media_name = ''
         self.current_time = self.get_current_time()
         self.logger = setup_logger(
             scraper_name,

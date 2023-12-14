@@ -2,9 +2,7 @@ import os
 from dotenv import load_dotenv
 
 # 실행 환경 결정 (예: 'dev', 'prod')
-# 환경 변수에서 실행 환경을 읽거나, 기본값으로 'dev'를 사용
-env = os.getenv('ENVIRONMENT', 'dev')
-# env = os.getenv('ENVIRONMENT', 'prod')
+env = os.getenv('ENVIRONMENT')
 
 # .env 파일 경로 설정
 env_file = f'.env.{env}'
