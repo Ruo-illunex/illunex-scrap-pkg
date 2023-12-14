@@ -60,7 +60,7 @@ def create_form():
                 "path1": path1,
             }
 
-    submit_button = st.form_submit_button("Create")
+    submit_button = st.button("Create")
     if submit_button:
 
         scrap_manager_data = {
