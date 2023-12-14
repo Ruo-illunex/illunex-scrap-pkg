@@ -12,13 +12,15 @@ import json
 
 
 def create_form():
-    with st.form(key='create_form'):
-        portal = st.text_input("Portal")
-        parsing_target_name = st.selectbox("Parsing Target Name", ["title", "content", "create_date", "image_url", "media", "kind"])
-        parsing_method = st.selectbox("Parsing Method", ["BeautifulSoup", "Selenium(Not Supported Yet)"])
+    portal = st.text_input("Portal")
+    parsing_target_name = st.selectbox("Parsing Target Name", ["title", "content", "create_date", "image_url", "media", "kind"])
+    parsing_method = st.selectbox("Parsing Method", ["bs", "trafilatura"])
 
+    next_button = st.button("Parsing Rule 입력")
+
+    if next_button:
         # 파싱 메소드에 따라 입력 필드 표시
-        if parsing_method == "BeautifulSoup":
+        if parsing_method == "bs":
             with st.expander("Parsing Rule", expanded=True):
                 default = st.text_input("Default", help="파싱 실패시 기본 반환 값을 입력하세요.")
                 find_option = st.radio("Find Options", ('Select One', 'Find', 'Find All'), help="특정 태그를 찾거나 모든 일치하는 요소를 찾을지 선택하세요.")
@@ -52,24 +54,26 @@ def create_form():
                     "find_attributes": find_attributes,
                 }
 
-        elif parsing_method == "Selenium(Not Supported Yet)":
-            st.warning("Selenium is not supported yet.")
-
-        submit_button = st.form_submit_button("Create")
-
-        if submit_button:
-
-            scrap_manager_data = {
-                "portal": portal,
-                "parsing_target_name": parsing_target_name,
-                "parsing_method": parsing_method,
-                "parsing_rule": parsing_rule
+        elif parsing_method == "trafilatura":
+            path1 = st.text_input("Path1")
+            parsing_rule = {
+                "path1": path1,
             }
 
-            if create_scrap_manager(scrap_manager_data):
-                st.success("Scrap Manager created successfully!")
-            else:
-                st.error("Failed to create Scrap Manager.")
+    submit_button = st.form_submit_button("Create")
+    if submit_button:
+
+        scrap_manager_data = {
+            "portal": portal,
+            "parsing_target_name": parsing_target_name,
+            "parsing_method": parsing_method,
+            "parsing_rule": parsing_rule
+        }
+
+        if create_scrap_manager(scrap_manager_data):
+            st.success("Scrap Manager created successfully!")
+        else:
+            st.error("Failed to create Scrap Manager.")
 
 
 def update_form():
@@ -83,12 +87,15 @@ def update_form():
             st.error("Scrap Manager not found.")
 
     if 'scrap_manager' in st.session_state:
-        with st.form('update_form'):
-            portal = st.text_input("Portal", value=st.session_state.scrap_manager["portal"])
-            parsing_target_name = st.text_input("Parsing Target Name", value=st.session_state.scrap_manager["parsing_target_name"])
-            parsing_method = st.selectbox("Parsing Method", ("BeautifulSoup", "Selenium(Not Supported Yet)"), index=0 if st.session_state.scrap_manager["parsing_method"] == "BeautifulSoup" else 1)
-            
-            if parsing_method == "BeautifulSoup":
+        portal = st.text_input("Portal", value=st.session_state.scrap_manager["portal"])
+        parsing_target_name = st.text_input("Parsing Target Name", value=st.session_state.scrap_manager["parsing_target_name"])
+        parsing_method = st.selectbox("Parsing Method", ("bs", "trafilatura"), index=0 if st.session_state.scrap_manager["parsing_method"] == "BeautifulSoup" else 1)
+
+        # 파싱 메소드에 따라 입력 필드 표시
+        next_button = st.button("Parsing Rule 입력")
+
+        if next_button:
+            if parsing_method == "bs":
                 # 파싱 규칙 관련 필드
                 selector = st.text_input("Selector", value=st.session_state.scrap_manager["parsing_rule"]["selector"])
                 attribute_name = st.text_input("Attribute Name", value=st.session_state.scrap_manager["parsing_rule"]["attribute_name"])
@@ -107,20 +114,28 @@ def update_form():
                     "find_attributes": json.loads(find_attributes) if find_attributes else None,
                     "find_all": find_all
                 }
-
-            submitted = st.form_submit_button("Update")
-
-            if submitted:
-                updated_data = {
-                    "portal": portal,
-                    "parsing_target_name": parsing_target_name,
-                    "parsing_method": parsing_method,
-                    "parsing_rule": parsing_rule
+            
+            elif parsing_method == "trafilatura":
+                path1 = st.text_input("Path1", value=st.session_state.scrap_manager["parsing_rule"]["path1"])
+                parsing_rule = {
+                    "path1": path1,
                 }
-                if update_scrap_manager(scrap_manager_id, updated_data):
-                    st.success("Scrap Manager updated successfully!")
-                else:
-                    st.error("Failed to update Scrap Manager.")
+
+        submitted = st.button("Update")
+        if submitted:
+            updated_data = {
+                "portal": portal,
+                "parsing_target_name": parsing_target_name,
+                "parsing_method": parsing_method,
+                "parsing_rule": parsing_rule
+            }
+            if update_scrap_manager(scrap_manager_id, updated_data):
+                st.success("Scrap Manager updated successfully!")
+            else:
+                st.error("Failed to update Scrap Manager.")
+    
+    else:
+        st.warning("Please load Scrap Manager first.")
 
 
 def delete_form():

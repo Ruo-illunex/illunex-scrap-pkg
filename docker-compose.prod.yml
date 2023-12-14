@@ -2,19 +2,21 @@ version: '3.8'
 
 services:
   ai_scrap_mng_streamlit:
-    build: ./ai_scrap_mng_streamlit
+    build: ./ai_scrap_mng_streamlit\
+    image: ai_scrap_mng_streamlit:1.0.0
     restart: unless-stopped # 컨테이너가 종료되지 않는 한 항상 재시작
     ports:
       - "8501:8080"  # 포트 변경
     env_file:
-      - ./scrap_mng_streamlit/.env.prod
+      - ./ai_scrap_mng_streamlit/.env
     command: streamlit run run.py --server.port 8080 --server.address 0.0.0.0
 
   ai_news_scraper:
     build: ./ai_news_scraper
+    image: ai_news_scraper:1.0.0
     restart: unless-stopped # 컨테이너가 종료되지 않는 한 항상 재시작
     ports:
       - "8500:8080"  # 포트 변경
     env_file:
-      - ./news-scraper/.env
+      - ./ai_news_scraper/.env.prod
     command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --workers 1
