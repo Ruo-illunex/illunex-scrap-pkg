@@ -250,7 +250,7 @@ async def start_scrapers():
     asyncio.create_task(scraper.scrape_platum_news())
     asyncio.create_task(scraper.scrape_esg_news())
     asyncio.create_task(scraper.scrape_greenpost_news())
-    asyncio.create_task(scraper.scrape_esg_finance_news())
+    # asyncio.create_task(scraper.scrape_esg_finance_news())
 
 
 # 스케줄러 관련 코드

@@ -1,12 +1,12 @@
-version: '3.8'
+version: '3.3'
 
 services:
   ai_scrap_mng_streamlit:
-    build: ./ai_scrap_mng_streamlit\
+    build: ./ai_scrap_mng_streamlit
     image: ai_scrap_mng_streamlit:1.0.0
     restart: unless-stopped # 컨테이너가 종료되지 않는 한 항상 재시작
     ports:
-      - "8500:8080"  # 포트 변경
+      - "8500:8080"  # 포트 변경docke
     env_file:
       - ./ai_scrap_mng_streamlit/.env
     command: streamlit run run.py --server.port 8080 --server.address 0.0.0.0
