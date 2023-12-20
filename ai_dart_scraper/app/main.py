@@ -32,3 +32,18 @@ companies_db_engine = CompaniesDatabase().engine
 # DB 테이블 생성
 BaseCollections.metadata.create_all(bind=collections_db_engine)
 BaseCompanies.metadata.create_all(bind=companies_db_engine)
+
+
+app = FastAPI()
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
+
+@app.get("/scrape/dart_info")
+async def scrape_dart_info():
+    """OpenDartReader를 이용해 모든 기업의 기업 정보를 수집하는 함수"""
+    dart_info_scraper = DartInfoScraper()
+    await dart_info_scraper.scrape_dart_info()
