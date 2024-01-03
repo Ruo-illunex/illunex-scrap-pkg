@@ -5,14 +5,14 @@ import pandas as pd
 
 from app.common.log.log_config import setup_logger
 from app.config.settings import FILE_PATHS
-from app.common.core.utils import get_current_datetime, make_dir
+from app.common.core.utils import get_current_datetime, make_dir, get_current_date
 from app.models_init import NewCompanyFinancePydantic
 from app.database_init import companies_db
 
 
 class DartFinancePreprocessing:
     def __init__(self):
-        file_path = FILE_PATHS["log"] + f'preprocessing'
+        file_path = FILE_PATHS["log"] + 'preprocessing'
         make_dir(file_path)
         file_path += f'/dart_finance_preprocessing_{get_current_datetime()}.log'
         self._logger = setup_logger(
@@ -214,14 +214,15 @@ class DartFinancePreprocessing:
         try:
             company_id = df['company_id'][0]
             biz_num, corporation_num, illu_id = self._get_ids(company_id)
+            create_date, update_date = get_current_date(), get_current_date()
             # data를 연도별, fs_div별로 분리
             years = df['bsns_year'].unique().tolist()
             fs_divs = df['fs_div'].unique().tolist()
             for year in years:
                 for fs in fs_divs:
                     _df = df.loc[(df['bsns_year'] == year) & (df['fs_div'] == fs)]
-                    financial_decide_code=_df.fs_div.values[0]
-                    financial_decide_desc=_df.fs_nm.values[0]
+                    financial_decide_code = _df.fs_div.values[0]
+                    financial_decide_desc = _df.fs_nm.values[0]
                     thstrm_year, frmtrm_year, bfefrmtrm_year = year, str(int(year)-1), str(int(year)-2)
                     thstrm_sales, frmtrm_sales, bfefrmtrm_sales = self._search_values(_df, account_id='ifrs-full_Revenue', alt_account_nm_ls=['매출액'])
                     thstrm_sales_cost, frmtrm_sales_cost, bfefrmtrm_sales_cost = self._search_values(_df, account_id='ifrs-full_CostOfSales', alt_account_nm_ls=['매출원가'])
@@ -246,106 +247,112 @@ class DartFinancePreprocessing:
                     thstrm_net_worth, frmtrm_net_worth, bfefrmtrm_net_worth = self._get_net_worth(thstrm_assets_total, thstrm_dept_total), self._get_net_worth(frmtrm_assets_total, frmtrm_dept_total), self._get_net_worth(bfefrmtrm_assets_total, bfefrmtrm_dept_total)
                     thstrm_quick_asset, frmtrm_quick_asset, bfefrmtrm_quick_asset = self._get_quick_asset(thstrm_current_asset, thstrm_inventories_asset), self._get_quick_asset(frmtrm_current_asset, frmtrm_inventories_asset), self._get_quick_asset(bfefrmtrm_current_asset, bfefrmtrm_inventories_asset)
                     thstrm_networking_capital, frmtrm_networking_capital, bfefrmtrm_networking_capital = self._get_net_working_capital(thstrm_current_asset, thstrm_current_liabilities), self._get_net_working_capital(frmtrm_current_asset, frmtrm_current_liabilities), self._get_net_working_capital(bfefrmtrm_current_asset, bfefrmtrm_current_liabilities)
-                    
+
                     thstrm_company_finance = NewCompanyFinancePydantic(
-                        company_id = company_id,
-                        biz_num = biz_num,
-                        corporation_num = corporation_num,
-                        illu_id = illu_id,
-                        acct_dt=thstrm_year,
-                        financial_decide_code=financial_decide_code,
-                        financial_decide_desc=financial_decide_desc,
-                        sales = thstrm_sales,
-                        sales_cost = thstrm_sales_cost,
-                        operating_profit = thstrm_operating_profit,
-                        net_profit = thstrm_net_profit,
-                        capital_amount = thstrm_capital_amount,
-                        capital_total = thstrm_capital_total,
-                        debt_total = thstrm_dept_total,
-                        asset_total = thstrm_assets_total,
-                        comprehensive_income = thstrm_comprehensive_income,
-                        financial_debt_ratio = thstrm_financial_debt_ratio,
-                        tangible_asset = thstrm_tangible_asset,
-                        non_tangible_asset = thstrm_none_tangible_asset,
-                        current_asset = thstrm_current_asset,
-                        non_current_asset = thstrm_none_current_asset,
-                        current_liabilities = thstrm_current_liabilities,
-                        net_worth = thstrm_net_worth,
-                        quick_asset = thstrm_quick_asset,
-                        inventories_asset = thstrm_inventories_asset,
-                        accounts_payable = thstrm_accounts_payable,
-                        trade_receivable = thstrm_trade_receivable,
-                        short_term_loan = thstrm_short_term_loan,
-                        net_working_capital = thstrm_networking_capital,
-                        selling_general_administrative_expenses = thstrm_selling_general_administrative_expenses
+                        companyId=company_id,
+                        bizNum=biz_num,
+                        corporationNum=corporation_num,
+                        illuId=illu_id,
+                        acctDt=thstrm_year,
+                        financialDecideCode=financial_decide_code,
+                        financialDecideDesc=financial_decide_desc,
+                        sales=thstrm_sales,
+                        salesCost=thstrm_sales_cost,
+                        operatingProfit=thstrm_operating_profit,
+                        netProfit=thstrm_net_profit,
+                        capitalAmount=thstrm_capital_amount,
+                        capitalTotal=thstrm_capital_total,
+                        debtTotal=thstrm_dept_total,
+                        assetTotal=thstrm_assets_total,
+                        comprehensiveIncome=thstrm_comprehensive_income,
+                        financialDebtRatio=thstrm_financial_debt_ratio,
+                        tangibleAsset=thstrm_tangible_asset,
+                        nonTangibleAsset=thstrm_none_tangible_asset,
+                        currentAsset=thstrm_current_asset,
+                        nonCurrentAsset=thstrm_none_current_asset,
+                        currentLiabilities=thstrm_current_liabilities,
+                        netWorth=thstrm_net_worth,
+                        quickAsset=thstrm_quick_asset,
+                        inventoriesAsset=thstrm_inventories_asset,
+                        accountsPayable=thstrm_accounts_payable,
+                        tradeReceivable=thstrm_trade_receivable,
+                        shortTermLoan=thstrm_short_term_loan,
+                        netWorkingCapital=thstrm_networking_capital,
+                        sellingGeneralAdministrativeExpenses=thstrm_selling_general_administrative_expenses,
+                        createDate=create_date,
+                        updateDate=update_date
                     )
-                    
+
                     frmtrm_company_finance = NewCompanyFinancePydantic(
-                        company_id = company_id,
-                        biz_num = biz_num,
-                        corporation_num = corporation_num,
-                        illu_id = illu_id,
-                        acct_dt=frmtrm_year,
-                        financial_decide_code=financial_decide_code,
-                        financial_decide_desc=financial_decide_desc,
-                        sales = frmtrm_sales,
-                        sales_cost = frmtrm_sales_cost,
-                        operating_profit = frmtrm_operating_profit,
-                        net_profit = frmtrm_net_profit,
-                        capital_amount = frmtrm_capital_amount,
-                        capital_total = frmtrm_capital_total,
-                        debt_total = frmtrm_dept_total,
-                        asset_total = frmtrm_assets_total,
-                        comprehensive_income = frmtrm_comprehensive_income,
-                        financial_debt_ratio = frmtrm_financial_debt_ratio,
-                        tangible_asset = frmtrm_tangible_asset,
-                        non_tangible_asset = frmtrm_none_tangible_asset,
-                        current_asset = frmtrm_current_asset,
-                        non_current_asset = frmtrm_none_current_asset,
-                        current_liabilities = frmtrm_current_liabilities,
-                        net_worth = frmtrm_net_worth,
-                        quick_asset = frmtrm_quick_asset,
-                        inventories_asset = frmtrm_inventories_asset,
-                        accounts_payable = frmtrm_accounts_payable,
-                        trade_receivable = frmtrm_trade_receivable,
-                        short_term_loan = frmtrm_short_term_loan,
-                        net_working_capital = frmtrm_networking_capital,
-                        selling_general_administrative_expenses = frmtrm_selling_general_administrative_expenses
+                        companyId=company_id,
+                        bizNum=biz_num,
+                        corporationNum=corporation_num,
+                        illuId=illu_id,
+                        acctDt=frmtrm_year,
+                        financialDecideCode=financial_decide_code,
+                        financialDecideDesc=financial_decide_desc,
+                        sales=frmtrm_sales,
+                        salesCost=frmtrm_sales_cost,
+                        operatingProfit=frmtrm_operating_profit,
+                        netProfit=frmtrm_net_profit,
+                        capitalAmount=frmtrm_capital_amount,
+                        capitalTotal=frmtrm_capital_total,
+                        debtTotal=frmtrm_dept_total,
+                        assetTotal=frmtrm_assets_total,
+                        comprehensiveIncome=frmtrm_comprehensive_income,
+                        financialDebtRatio=frmtrm_financial_debt_ratio,
+                        tangibleAsset=frmtrm_tangible_asset,
+                        nonTangibleAsset=frmtrm_none_tangible_asset,
+                        currentAsset=frmtrm_current_asset,
+                        nonCurrentAsset=frmtrm_none_current_asset,
+                        currentLiabilities=frmtrm_current_liabilities,
+                        netWorth=frmtrm_net_worth,
+                        quickAsset=frmtrm_quick_asset,
+                        inventoriesAsset=frmtrm_inventories_asset,
+                        accountsPayable=frmtrm_accounts_payable,
+                        tradeReceivable=frmtrm_trade_receivable,
+                        shortTermLoan=frmtrm_short_term_loan,
+                        netWorkingCapital=frmtrm_networking_capital,
+                        sellingGeneralAdministrativeExpenses=frmtrm_selling_general_administrative_expenses,
+                        createDate=create_date,
+                        updateDate=update_date
                     )
-                    
+
                     bfefrmtrm_company_finance = NewCompanyFinancePydantic(
-                        company_id = company_id,
-                        biz_num = biz_num,
-                        corporation_num = corporation_num,
-                        illu_id = illu_id,
-                        acct_dt=bfefrmtrm_year,
-                        financial_decide_code=financial_decide_code,
-                        financial_decide_desc=financial_decide_desc,
-                        sales = bfefrmtrm_sales,
-                        sales_cost = bfefrmtrm_sales_cost,
-                        operating_profit = bfefrmtrm_operating_profit,
-                        net_profit = bfefrmtrm_net_profit,
-                        capital_amount = bfefrmtrm_capital_amount,
-                        capital_total = bfefrmtrm_capital_total,
-                        debt_total = bfefrmtrm_dept_total,
-                        asset_total = bfefrmtrm_assets_total,
-                        comprehensive_income = bfefrmtrm_comprehensive_income,
-                        financial_debt_ratio = bfefrmtrm_financial_debt_ratio,
-                        tangible_asset = bfefrmtrm_tangible_asset,
-                        non_tangible_asset = bfefrmtrm_none_tangible_asset,
-                        current_asset = bfefrmtrm_current_asset,
-                        non_current_asset = bfefrmtrm_none_current_asset,
-                        current_liabilities = bfefrmtrm_current_liabilities,
-                        net_worth = bfefrmtrm_net_worth,
-                        quick_asset = bfefrmtrm_quick_asset,
-                        inventories_asset = bfefrmtrm_inventories_asset,
-                        accounts_payable = bfefrmtrm_accounts_payable,
-                        trade_receivable = bfefrmtrm_trade_receivable,
-                        short_term_loan = bfefrmtrm_short_term_loan,
-                        net_working_capital = bfefrmtrm_networking_capital,
-                        selling_general_administrative_expenses = bfefrmtrm_selling_general_administrative_expenses
+                        companyId=company_id,
+                        bizNum=biz_num,
+                        corporationNum=corporation_num,
+                        illuId=illu_id,
+                        acctDt=bfefrmtrm_year,
+                        financialDecideCode=financial_decide_code,
+                        financialDecideDesc=financial_decide_desc,
+                        sales=bfefrmtrm_sales,
+                        salesCost=bfefrmtrm_sales_cost,
+                        operatingProfit=bfefrmtrm_operating_profit,
+                        netProfit=bfefrmtrm_net_profit,
+                        capitalAmount=bfefrmtrm_capital_amount,
+                        capitalTotal=bfefrmtrm_capital_total,
+                        debtTotal=bfefrmtrm_dept_total,
+                        assetTotal=bfefrmtrm_assets_total,
+                        comprehensiveIncome=bfefrmtrm_comprehensive_income,
+                        financialDebtRatio=bfefrmtrm_financial_debt_ratio,
+                        tangibleAsset=bfefrmtrm_tangible_asset,
+                        nonTangibleAsset=bfefrmtrm_none_tangible_asset,
+                        currentAsset=bfefrmtrm_current_asset,
+                        nonCurrentAsset=bfefrmtrm_none_current_asset,
+                        currentLiabilities=bfefrmtrm_current_liabilities,
+                        netWorth=bfefrmtrm_net_worth,
+                        quickAsset=bfefrmtrm_quick_asset,
+                        inventoriesAsset=bfefrmtrm_inventories_asset,
+                        accountsPayable=bfefrmtrm_accounts_payable,
+                        tradeReceivable=bfefrmtrm_trade_receivable,
+                        shortTermLoan=bfefrmtrm_short_term_loan,
+                        netWorkingCapital=bfefrmtrm_networking_capital,
+                        sellingGeneralAdministrativeExpenses=bfefrmtrm_selling_general_administrative_expenses,
+                        createDate=create_date,
+                        updateDate=update_date
                     )
-                    
+
                     results.append(thstrm_company_finance)
                     results.append(frmtrm_company_finance)
                     results.append(bfefrmtrm_company_finance)
