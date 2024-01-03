@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Optional
 
 from sqlalchemy import Column, Integer, String, Date
 from pydantic import BaseModel
@@ -31,8 +32,8 @@ class CollectDart(BaseCollections):
     induty_code = Column(String(50), comment='산업 코드')
     est_dt = Column(String(50), comment='설립 날짜')
     acc_mt = Column(String(10), comment='회계 월')
-    created_at = Column(Date, default=date.today, comment='생성 날짜')
-    updated_at = Column(Date, onupdate=date.today, comment='수정 날짜')
+    create_date = Column(Date, default=date.today, comment='생성 날짜')
+    update_date = Column(Date, default=date.today, onupdate=date.today, comment='수정일')
 
     # 인코딩 설정
     __table_args__ = {
@@ -45,26 +46,24 @@ class CollectDartPydantic(BaseModel):
     """DART에서 수집한 기업 정보 Pydantic 모델"""
 
     # 모델 필드 정의
-    company_id: int
-    corp_code: str
-    corp_name: str
-    corp_name_eng: str
-    stock_name: str
-    stock_code: str
-    ceo_nm: str
-    corp_cls: str
-    jurir_no: str
-    bizr_no: str
-    adres: str
-    hm_url: str
-    ir_url: str
-    phn_no: str
-    fax_no: str
-    induty_code: str
-    est_dt: str
-    acc_mt: str
-    created_at: date
-    updated_at: date
+    company_id: Optional[int] = None    
+    corp_code: Optional[str] = None
+    corp_name: Optional[str] = None
+    corp_name_eng: Optional[str] = None
+    stock_name: Optional[str] = None
+    stock_code: Optional[str] = None
+    ceo_nm: Optional[str] = None
+    corp_cls: Optional[str] = None
+    jurir_no: Optional[str] = None
+    bizr_no: Optional[str] = None
+    adres: Optional[str] = None
+    hm_url: Optional[str] = None
+    ir_url: Optional[str] = None
+    phn_no: Optional[str] = None
+    fax_no: Optional[str] = None
+    induty_code: Optional[str] = None
+    est_dt: Optional[str] = None
+    acc_mt: Optional[str] = None
 
     class Config:
         from_attributes = True
