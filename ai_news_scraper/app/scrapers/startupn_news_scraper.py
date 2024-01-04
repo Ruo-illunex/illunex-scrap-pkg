@@ -24,7 +24,6 @@ class StartupnNewsScraper(NewsScraper):
         self.news_board_url = urls['news_board_url']
         self.base_url = urls['base_url']
 
-
     def preprocess_datetime(self, unprocessed_date):
         """날짜 전처리 함수
         Args:
@@ -36,7 +35,6 @@ class StartupnNewsScraper(NewsScraper):
         processed_date = preprocess_datetime_iso(unprocessed_date)
         if processed_date:
             return processed_date
-        
         try:
             raise ValueError(f"Invalid date format: {unprocessed_date}")
         except Exception as e:
@@ -44,7 +42,6 @@ class StartupnNewsScraper(NewsScraper):
             err_message = f"THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
             self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
             return None
-
 
     def get_news_urls(self):
         try:
@@ -60,7 +57,6 @@ class StartupnNewsScraper(NewsScraper):
                 err_message = f"NO NEWS URLS WERE FOUND FROM {self.news_board_url}"
                 self.process_err_log_msg(err_message, "get_news_urls", None, None)
                 return None
-            
             else:
                 for link in links:
                     if '/news/articleView' in link['href']:
@@ -71,7 +67,6 @@ class StartupnNewsScraper(NewsScraper):
             err_message = "THERE WAS AN ERROR WHILE GETTING NEWS URLS"
             self.process_err_log_msg(err_message, "get_news_urls", stack_trace, e)
             return None
-
 
     async def scrape_each_news(self, news_url):
         total_extracted_data = {}
@@ -128,9 +123,7 @@ class StartupnNewsScraper(NewsScraper):
             kind=kind_id,
             category="",
             )
-
         return news_data
-
 
     async def scrape_news(self):
         while True:
@@ -183,10 +176,8 @@ class StartupnNewsScraper(NewsScraper):
                 self.process_err_log_msg(err_message, "scrape_news", stack_trace, e)
                 await asyncio.sleep(self.retry_delay)
 
-
     def get_feed_entries(self):
         pass
-
 
     async def scrape_each_feed_entry(self, entry):
         pass
@@ -199,7 +190,7 @@ async def scrape_startupn_news():
     portal = 'startupn'
     scraper = StartupnNewsScraper(scraper_name=portal)
     await scraper.scrape_news()
-        
+
 
 if __name__ == "__main__":
     asyncio.run(scrape_startupn_news())

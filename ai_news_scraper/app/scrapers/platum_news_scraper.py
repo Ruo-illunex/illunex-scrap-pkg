@@ -23,7 +23,6 @@ class PlatumNewsScraper(NewsScraper):
         urls = platum_urls.urls
         self.news_board_url = urls['news_board_url']
 
-
     def preprocess_datetime(self, unprocessed_date):
         """날짜 전처리 함수
         Args:
@@ -31,7 +30,7 @@ class PlatumNewsScraper(NewsScraper):
         Returns:
             str: 전처리된 날짜
         """
-            
+
         processed_date = preprocess_datetime_rfc2822(unprocessed_date)
         if processed_date:
             return processed_date
@@ -43,7 +42,6 @@ class PlatumNewsScraper(NewsScraper):
                 err_message = f"THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
                 self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
                 return None
-
 
     def get_feed_entries(self):
         try:
@@ -58,17 +56,14 @@ class PlatumNewsScraper(NewsScraper):
                 err_message = f"NO FEED ENTRIES WERE FOUND FROM {self.news_board_url}"
                 self.process_err_log_msg(err_message, "get_feed_entries", None, None)
                 return None
-            
             else:
                 for entry in entries:
                     yield entry
-
         except Exception as e:
             stack_trace = traceback.format_exc()
             err_message = "THERE WAS AN ERROR WHILE GETTING FEED ENTRIES"
             self.process_err_log_msg(err_message, "get_feed_entries", stack_trace, e)
             return None
-
 
     async def scrape_each_feed_entry(self, entry):
         try:
@@ -114,7 +109,6 @@ class PlatumNewsScraper(NewsScraper):
                 kind=kind_id,
                 category="",
                 )
-
             return news_data
 
         except Exception as e:
@@ -122,7 +116,6 @@ class PlatumNewsScraper(NewsScraper):
             err_message = f"THERE WAS AN ERROR WHILE SCRAPING: {url}"
             self.process_err_log_msg(err_message, "scrape_each_feed_entry", stack_trace, e)
             return None
-
 
     async def scrape_news(self):
         while True:
@@ -140,7 +133,7 @@ class PlatumNewsScraper(NewsScraper):
                     err_message = "FEED ENTRIES IS NOT A GENERATOR"
                     self.process_err_log_msg(err_message, "scrape_news", None, None)
                     return None
-                
+
                 # 피드 엔트리를 순회하며 기사를 스크랩합니다.
                 for entry in feed_entries:
                     news_data = None
@@ -178,10 +171,8 @@ class PlatumNewsScraper(NewsScraper):
                 self.process_err_log_msg(err_message, "scrape_news", stack_trace, e)
                 await asyncio.sleep(self.retry_delay)
 
-
     def get_news_urls(self):
         pass
-
 
     async def scrape_each_news(self, news_url):
         pass

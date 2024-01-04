@@ -23,13 +23,12 @@ class NaverNewsScraper(NewsScraper):
         naver_urls = URLs(scraper_name)
         urls = naver_urls.urls
         self.news_board_url = urls['news_board_url']
-        
+
         # naver는 naver 일반 뉴스 외에 sports.naver.com도 있습니다.
         # naver_sports 파싱 규칙 추가
         # 한 개 이상의 파싱 규칙을 사용할 경우, self.parsing_rules_dict2에 추가합니다.
         self.parsing_rules_dict2 = self.get_parsing_rules_dict(f"{self.scraper_name}_sports")
         self.all_parsing_rules_dicts = [self.parsing_rules_dict, self.parsing_rules_dict2]
-
 
     def preprocess_datetime_custom(self, date_str):
         """사용자 정의 날짜 형식 처리"""
@@ -50,7 +49,6 @@ class NaverNewsScraper(NewsScraper):
         except ValueError:
             return None
 
-
     def preprocess_datetime(self, unprocessed_date):
         """날짜 전처리 함수"""
         # 각 형식에 대해 순차적으로 시도
@@ -61,7 +59,7 @@ class NaverNewsScraper(NewsScraper):
         processed_date = preprocess_datetime_compact(unprocessed_date)
         if processed_date:
             return processed_date
-        
+
         processed_date = preprocess_datetime_compact(unprocessed_date)
         if processed_date:
             return processed_date
@@ -78,7 +76,6 @@ class NaverNewsScraper(NewsScraper):
             err_message = f"THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
             self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
             return None
-
 
     def get_news_urls(self, category):
         try:
@@ -98,7 +95,6 @@ class NaverNewsScraper(NewsScraper):
                 err_message = f"NO NEWS URLS WERE FOUND FROM {url}"
                 self.process_err_log_msg(err_message, "get_news_urls", None, None)
                 return None
-            
             else:
                 for news_url in news_urls:
                     yield news_url
@@ -108,7 +104,6 @@ class NaverNewsScraper(NewsScraper):
             err_message = "THERE WAS AN ERROR WHILE GETTING NEWS URLS"
             self.process_err_log_msg(err_message, "get_news_urls", stack_trace, e)
             return None
-
 
     async def scrape_each_news(self, news_url, category, parsing_rules_dict=None):
         total_extracted_data = {}
@@ -164,9 +159,7 @@ class NaverNewsScraper(NewsScraper):
             kind=kind_id,
             category="",
             )
-
         return news_data
-
 
     async def scrape_news(self):
         while True:
@@ -212,7 +205,6 @@ class NaverNewsScraper(NewsScraper):
                                 if not news_data and scraper_cursor == len(self.all_parsing_rules_dicts):
                                     err_message = f"NEWS DATA IS EMPTY FOR URL: {news_url}"
                                     self.process_err_log_msg(err_message, "scrape_news", "", "")
-
                         else:
                             err_message = f"NEWS ALREADY EXISTS IN DATABASE: {news_url}"
                             self.process_err_log_msg(err_message, "scrape_news", "", "")
@@ -234,13 +226,12 @@ class NaverNewsScraper(NewsScraper):
                 self.process_err_log_msg(err_message, "scrape_news", stack_trace, e)
                 await asyncio.sleep(self.retry_delay)
 
-
     def get_feed_entries(self):
         pass
 
-
     async def scrape_each_feed_entry(self, entry):
         pass
+
 
 # 네이버 뉴스 스크래핑 함수
 async def scrape_naver_news():

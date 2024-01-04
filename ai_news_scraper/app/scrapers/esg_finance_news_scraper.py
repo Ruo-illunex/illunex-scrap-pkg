@@ -33,7 +33,6 @@ class EsgfinanceNewsScraper(NewsScraper):
         self.type3 = load_yaml(FILE_PATHS.get('esg_finance_media')).get('type3')
         self.type4 = load_yaml(FILE_PATHS.get('esg_finance_media')).get('type4')
         self.media = load_yaml(FILE_PATHS.get('esg_finance_media')).get('media')
-        # self.type1 = ['www.impacton.net', 'www.greened.kr', 'www.greenpostkorea.co.kr', 'www.esgeconomy.com', 'www.sporbiz.co.kr', 'news.einfomax.co.kr', 'www.dailyimpact.co.kr', 'www.straightnews.co.kr', 'www.kbanker.co.kr', 'www.econovill.com', 'www.seoulfn.com', 'www.fortunekorea.co.kr', 'www.hansbiz.co.kr', 'www.meconomynews.com', 'www.ekoreanews.co.kr', 'www.enewstoday.co.kr', 'www.dhdaily.co.kr', 'www.m-i.kr', 'www.newsworks.co.kr', 'www.seoulwire.com', 'www.ngetnews.com', 'www.energydaily.co.kr', 'www.shinailbo.co.kr', 'www.whitepaper.co.kr', 'www.insightkorea.co.kr', 'www.e2news.com', 'daily.hankooki.com', 'www.insidevina.com', 'www.electimes.com', 'www.digitaltoday.co.kr', 'www.newspost.kr', 'www.domin.co.kr', 'www.infostockdaily.co.kr', 'www.getnews.co.kr', 'www.thereport.co.kr', 'www.polinews.co.kr', 'www.ccdailynews.com', 'www.gasnews.com', 'thepublic.kr', 'www.hkbs.co.kr', 'www.lcnews.co.kr', 'www.biztribune.co.kr', 'www.consumernews.co.kr', 'www.newsfreezone.co.kr', 'www.bloter.net', 'www.goodkyung.com', 'www.newswatch.kr', 'www.businessplus.kr', 'www.choicenews.co.kr', 'www.wikileaks-kr.org', 'www.cctoday.co.kr', 'www.gukjenews.com', 'www.lecturernews.com', 'www.koit.co.kr', 'www.joongboo.com', 'www.fetimes.co.kr', 'www.ftoday.co.kr', 'www.incheonilbo.com', 'www.kpinews.co.kr', 'www.intn.co.kr', 'www.lifein.news', 'www.thekpm.com', 'www.updownnews.co.kr', 'www.sisaon.co.kr', 'it.chosun.com', 'www.safetimes.co.kr', 'www.wolyo.co.kr', 'www.newsquest.co.kr', 'www.newslock.co.kr', 'www.dailycnc.com', 'www.cstimes.com', 'www.newscj.com', 'www.kbmaeil.com', 'www.worktoday.co.kr', 'www.jeonmae.co.kr', 'www.wiseenews.com', 'www.job-post.co.kr', 'www.womancs.co.kr', 'www.womentimes.co.kr', 'www.weeklyseoul.net', 'www.smartcitytoday.co.kr', 'www.startuptoday.co.kr', 'www.speconomy.com', 'www.obsnews.co.kr', 'www.sisafocus.co.kr', 'www.kihoilbo.co.kr', 'www.ezyeconomy.com', 'www.asiaa.co.kr', 'www.efnews.co.kr', 'polinews.co.kr', 'www.foodneconomy.com', 'www.consumerwide.com', 'www.eroun.net', 'www.bizwnews.com', 'www.sejungilbo.com', 'www.4th.kr', 'www.aflnews.co.kr', 'www.shippingnewsnet.com', 'www.siminsori.com', 'www.ntoday.co.kr', 'www.1conomynews.co.kr', 'www.pennmike.com', 'www.pharmnews.com', 'www.policetv.co.kr', 'www.popcornnews.net', 'www.outsourcing.co.kr', 'www.pressm.kr', 'www.opinionnews.co.kr', 'www.rcast.co.kr', 'www.s-journal.co.kr', 'www.safetynews.co.kr', 'www.psnews.co.kr', 'www.snmnews.com', 'www.sisajournal-e.com', 'www.veritas-a.com', 'www.weeklytoday.com', 'www.ziksir.com', 'www.smedaily.co.kr', 'news.unn.net', 'www.startuptoday.kr', 'www.thedailypost.kr', 'www.thefirstmedia.net', 'www.apnews.kr', 'www.it-b.co.kr', 'www.hankooki.com', 'www.goodnews1.com', 'www.globalnewsagency.kr', 'www.ggilbo.com', 'www.kongje.or.kr', 'www.kgdm.co.kr', 'www.koreaittimes.com', 'www.koscaj.com', 'www.fntoday.co.kr', 'www.firenzedt.com', 'www.kunews.ac.kr', 'www.fintechpost.co.kr', 'www.jeonmin.co.kr', 'www.itdaily.kr', 'www.iusm.co.kr', 'www.jbnews.com', 'www.jejudomin.co.kr', 'www.jejuilbo.net', 'www.jejumaeil.net', 'www.jemin.com', 'www.industrynews.co.kr', 'www.iminju.net', 'www.headlinejeju.co.kr', 'www.iloveorganic.co.kr', 'www.ikpnews.net', 'www.kbiznews.co.kr', 'www.laborplus.co.kr', 'www.newsworker.co.kr', 'www.newscape.co.kr', 'www.newsclaim.co.kr', 'www.constimes.co.kr', 'www.newsggam.com', 'www.newsian.co.kr', 'www.coindeskkorea.com', 'www.newskr.kr', 'www.newspenguin.com', 'www.cupnews.kr', 'www.cctimes.kr', 'www.cbci.co.kr', 'www.bzeronews.com', 'www.businesskorea.co.kr', 'www.itbiznews.com', 'www.consumuch.com', 'www.latimes.kr', 'www.energy-news.co.kr', 'www.lawleader.co.kr', 'www.finomy.com', 'www.financialreview.co.kr', 'www.legaltimes.co.kr', 'www.epnc.co.kr', 'www.engdaily.com', 'www.nbnnews.co.kr', 'www.economytalk.kr', 'www.mhns.co.kr', 'www.delighti.co.kr', 'www.dailysmart.co.kr']
 
     def get_all_links_and_save_to_csv(self):
         """모든 링크를 가져와서 CSV 파일에 저장하는 함수"""
@@ -43,7 +42,6 @@ class EsgfinanceNewsScraper(NewsScraper):
             stack_trace = traceback.format_exc()
             err_message = "THERE WAS AN ERROR WHILE GETTING ALL LINKS AND SAVING TO CSV.\nCHECK THE ESG FINANCE HUB SCRAPER LOGS FOR MORE DETAILS"
             self.process_err_log_msg(err_message, "get_all_links_and_save_to_csv", stack_trace, e)
-
 
     def preprocess_datetime(self, unprocessed_date):
         """날짜 전처리 함수
@@ -67,7 +65,7 @@ class EsgfinanceNewsScraper(NewsScraper):
         processed_date = preprocess_datetime_rfc2822(unprocessed_date)
         if processed_date:
             return processed_date
-        
+
         processed_date = preprocess_datetime_rfc3339(unprocessed_date)
         if processed_date:
             return processed_date
@@ -91,7 +89,7 @@ class EsgfinanceNewsScraper(NewsScraper):
         processed_date = preprocess_date_period(unprocessed_date)
         if processed_date:
             return processed_date
-        
+
         processed_date = preprocess_datetime_eng_without_seconds(unprocessed_date)
         if processed_date:
             return processed_date
@@ -103,7 +101,6 @@ class EsgfinanceNewsScraper(NewsScraper):
             err_message = f"THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
             self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
             return None
-
 
     def get_news_urls(self):
         try:
@@ -133,7 +130,6 @@ class EsgfinanceNewsScraper(NewsScraper):
             err_message = f"THERE WAS AN ERROR WHILE GETTING NEWS URLS FROM {self.news_board_url}\nCHECK THE ESG FINANCE HUB SCRAPER LOGS FOR MORE DETAILS"
             self.process_err_log_msg(err_message, "get_news_urls", stack_trace, e)
             return None
-
 
     def get_all_news_urls(self):
         try:
@@ -174,7 +170,6 @@ class EsgfinanceNewsScraper(NewsScraper):
             else:
                 info_message = f"CSV FILE DOES NOT EXIST FOR {self.scraper_name}"
                 self.process_info_log_msg(info_message, type="info")
-
                 self.get_all_links_and_save_to_csv()
                 return None
 
@@ -183,7 +178,6 @@ class EsgfinanceNewsScraper(NewsScraper):
             err_message = f"THERE WAS AN ERROR WHILE GETTING ALL NEWS URLS FROM {self.news_board_url}\nCHECK THE ESG FINANCE HUB SCRAPER LOGS FOR MORE DETAILS"
             self.process_err_log_msg(err_message, "get_all_news_urls", stack_trace, e)
             return None
-
 
     async def scrape_each_news(self, news_url):
         total_extracted_data = {}
@@ -249,7 +243,7 @@ class EsgfinanceNewsScraper(NewsScraper):
 
         if self.media_name == "kjdaily":
             create_date = create_date[:11].replace(' ', '') + create_date[14:]
-        
+
         if self.media_name == "jnilbo":
             create_date = create_date.split(' : ')[-1][:11].replace(' ', '') + create_date.split(' : ')[-1][14:]
 
@@ -258,7 +252,7 @@ class EsgfinanceNewsScraper(NewsScraper):
 
         if self.media_name in ["busan", "news2day", "nongmin", "dt"]:
             create_date = create_date.split(': ')[-1].strip()
-        
+
         if self.media_name in ["businessnews_chosun", "taxtimes", "youthdaily", "hellot"]:
             create_date = create_date.split('등록 ')[-1].strip()
 
@@ -282,7 +276,7 @@ class EsgfinanceNewsScraper(NewsScraper):
 
         if self.media_name in ["munhwa", "lak", "boannews", "kyeongin"]:
             create_date = create_date.replace('입력 ', '').strip()
-        
+
         if self.media_name == "cnbnews":
             create_date = create_date.split('\xa0')[-1].strip()
 
@@ -315,9 +309,7 @@ class EsgfinanceNewsScraper(NewsScraper):
             category="ESG",
             esg_analysis="",
             )
-
         return news_data
-
 
     async def scrape_news(self, get_all_news_urls=False):
         """뉴스를 스크래핑하는 함수"""
@@ -346,7 +338,6 @@ class EsgfinanceNewsScraper(NewsScraper):
                     # 에러 로그 개별 초기화
                     self.is_error = False
                     self.initialize_error_log(news_url)
-
                     self.session_log['total_records_processed'] += 1
                     if not self.is_already_scraped(news_url):
                         await asyncio.sleep(random.randint(1, 5))
@@ -357,7 +348,6 @@ class EsgfinanceNewsScraper(NewsScraper):
 
                     # 뉴스 데이터에 에러가 있으면, 에러 로그를 append하고, 그렇지 않으면 뉴스 데이터를 리스트에 추가
                     self.check_error(news_data, news_url)
-
                     if get_all_news_urls:
                         # 매 100개의 뉴스마다 데이터 베이스에 저장
                         if len(self.news_data_list) == 100:
@@ -366,18 +356,16 @@ class EsgfinanceNewsScraper(NewsScraper):
 
                 # 뉴스 데이터베이스에 한 번에 저장
                 self.save_news_data_bulk(self.news_data_list)
-                
+
                 # 최종 세션 로그 저장
                 self.finalize_session_log()
                 success_message = f"SCRAPING COMPLETED FOR {self.scraper_name} WITH {self.session_log['total_records_processed']} RECORDS"
                 self.process_info_log_msg(success_message, "scrape_news")
-
             except Exception as e:
                 stack_trace = traceback.format_exc()
                 err_message = "THERE WAS AN ERROR WHILE SCRAPING NEWS"
                 self.process_err_log_msg(err_message, "scrape_news", stack_trace, e)
                 await asyncio.sleep(self.retry_delay)
-
             finally:
                 if get_all_news_urls:
                     is_loop = False
@@ -385,10 +373,8 @@ class EsgfinanceNewsScraper(NewsScraper):
                     # 모든 스크래핑이 끝나면 일정 시간 대기
                     await asyncio.sleep(self.interval_time_sleep)
 
-
     def get_feed_entries(self):
         pass
-
 
     async def scrape_each_feed_entry(self, entry):
         pass

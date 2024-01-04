@@ -23,7 +23,6 @@ class GreenpostNewsScraper(NewsScraper):
         urls = greenpost_urls.urls
         self.news_board_url = urls['news_board_url']
 
-
     def preprocess_datetime(self, unprocessed_date):
         """날짜 전처리 함수
         Args:
@@ -35,7 +34,6 @@ class GreenpostNewsScraper(NewsScraper):
         processed_date = preprocess_datetime_iso(unprocessed_date)
         if processed_date:
             return processed_date
-        
         try:
             raise ValueError(f"Invalid date format: {unprocessed_date}")
         except Exception as e:
@@ -43,7 +41,6 @@ class GreenpostNewsScraper(NewsScraper):
             err_message = f"THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
             self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
             return None
-
 
     def get_news_urls(self):
         try:
@@ -63,7 +60,6 @@ class GreenpostNewsScraper(NewsScraper):
             err_message = f"THERE WAS AN ERROR WHILE GETTING NEWS URLS FROM {self.news_board_url}"
             self.process_err_log_msg(err_message, "get_news_urls", stack_trace, e)
             return None
-
 
     async def scrape_each_news(self, news_url):
         total_extracted_data = {}
@@ -121,9 +117,7 @@ class GreenpostNewsScraper(NewsScraper):
             category="ESG",
             esg_analysis="",
             )
-
         return news_data
-
 
     async def scrape_news(self):
         while True:
@@ -162,7 +156,7 @@ class GreenpostNewsScraper(NewsScraper):
 
                 # 뉴스 데이터베이스에 한 번에 저장
                 self.save_news_data_bulk(self.news_data_list)
-                
+
                 # 최종 세션 로그 저장
                 self.finalize_session_log()
 
@@ -175,10 +169,8 @@ class GreenpostNewsScraper(NewsScraper):
                 self.process_err_log_msg(err_message, "scrape_news", stack_trace, e)
                 await asyncio.sleep(self.retry_delay)
 
-
     def get_feed_entries(self):
         pass
-
 
     async def scrape_each_feed_entry(self, entry):
         pass

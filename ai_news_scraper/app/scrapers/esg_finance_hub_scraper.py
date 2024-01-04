@@ -45,20 +45,17 @@ class EsgFinanceHubScraper:
 
         self.all_links = {}    # {페이지 번호: [링크1, 링크2, ...]} 형태의 딕셔너리
 
-
     # 드라이버를 초기화하는 함수
     def get_driver(self):
         try:
             self.driver = webdriver.Chrome(service=ChromeService(executable_path=self.driver_path), options=self.chrome_options)
             self.driver.get(self.news_board_url)
-
             info_message = f"DRIVER WAS INITIALIZED WITH {self.news_board_url}"
             self.logger.info(info_message)
         except Exception as e:
             stack_trace = traceback.format_exc()
             err_message = f"THERE WAS AN ERROR WHILE GETTING DRIVER.\n{stack_trace}\n{e}"
             self.logger.error(err_message)
-
 
     # 로딩 모달이 사라질 때까지 대기하는 함수
     def wait_for_loading_to_disappear(self):
@@ -70,7 +67,6 @@ class EsgFinanceHubScraper:
         except TimeoutException:
             err_message = "TIMEOUT EXCEPTION: LOADING MODAL DID NOT DISAPPEAR"
             self.logger.error(err_message)
-
 
     # CSV 파일을 저장하는 함수
     def save_links_to_csv(self):
@@ -85,7 +81,6 @@ class EsgFinanceHubScraper:
             self.logger.error(err_message)
             self.logger.error(stack_trace)
             self.logger.error(e)
-
 
     # 마지막 페이지로 이동하여 실제 마지막 페이지 번호를 찾는 함수
     def go_to_last_page_and_find_last_page_number(self):
@@ -105,7 +100,7 @@ class EsgFinanceHubScraper:
             )
             # 페이지 번호가 숫자인 요소만 필터링
             numeric_page_numbers = [elem.text for elem in page_numbers if elem.text.isdigit()]
-            
+
             # 마지막 페이지 번호 추출
             if numeric_page_numbers:
                 self.last_page = max(map(int, numeric_page_numbers))
@@ -127,7 +122,6 @@ class EsgFinanceHubScraper:
             ).click()
             info_message = "RETURNED TO FIRST PAGE"
             self.logger.info(info_message)
-
 
     # 요소에서 URL을 추출하는 함수
     def get_link(self, element):
@@ -160,7 +154,6 @@ class EsgFinanceHubScraper:
             self.logger.info(info_message)
             return None
 
-
     # 다음 페이지로 이동하는 함수
     def go_to_next_page(self):
         try:
@@ -180,7 +173,6 @@ class EsgFinanceHubScraper:
             self.logger.error(f"Could not move to page {self.current_page + 1}: {e}")
         finally:
             self.current_page += 1  # 현재 페이지 번호 증가
-
 
     # 첫번째 페이지의 링크를 generator로 반환하는 함수
     def get_first_page_links(self):
@@ -210,18 +202,15 @@ class EsgFinanceHubScraper:
             links = [self.get_link(item) for item in word_items if self.get_link(item)]
             for link in links:
                 yield link
-
         except Exception as e:
             stack_trace = traceback.format_exc()
             err_message = f"THERE WAS AN ERROR WHILE GETTING FIRST PAGE LINKS.\n{stack_trace}\n{e}"
             self.logger.error(err_message)
             return None
-
         finally:
             info_message = "CLOSING DRIVER"
             self.logger.info(info_message)
             self.driver.quit()
-
 
     # 모든 페이지의 링크를 추출하여 CSV 파일에 저장하는 함수
     def get_all_links_and_save_to_csv(self):
@@ -238,9 +227,10 @@ class EsgFinanceHubScraper:
             self.wait_for_loading_to_disappear()
 
             # 30개씩 보기 설정
-            WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.ID, "search_cnt_combo"))).click()
+            WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.ID, "search_cnt_combo"))
+                ).click()
             self.driver.find_element(By.CSS_SELECTOR, "option[value='30']").click()            
-
             self.go_to_last_page_and_find_last_page_number()    # 마지막 페이지로 이동하여 실제 마지막 페이지 번호를 찾음
 
             # 모든 페이지에 대해 반복
@@ -253,14 +243,16 @@ class EsgFinanceHubScraper:
                     self.wait_for_loading_to_disappear()
 
                     # 현재 페이지의 첫번째 기사의 연도를 추출하여 2022년 이전인 경우 반복 중단
-                    WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "span.view-info-item > em:nth-child(2)")))
+                    WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_all_elements_located((By.CSS_SELECTOR, "span.view-info-item > em:nth-child(2)"))
+                        )
                     datetime_text = self.driver.find_element(By.CSS_SELECTOR, "span.view-info-item > em:nth-child(2)").text
                     article_year_str = int(datetime_text.split('-')[0])
                     if article_year_str < 2022:
                         info_message = f"ARTICLE YEAR IS {article_year_str}. STOPPING ITERATION."
                         self.logger.info(info_message)
                         break
-                    
+
                     # 현재 페이지에서 링크들을 추출
                     WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "span.word-item")))
                     word_items = self.driver.find_elements(By.CSS_SELECTOR, "span.word-item")
@@ -269,25 +261,20 @@ class EsgFinanceHubScraper:
 
                     # 현재 페이지의 링크들을 CSV 파일에 저장
                     self.save_links_to_csv()
-
                     self.go_to_next_page()
-
                 except TimeoutException:
-                    err_message = "TIMEOUT EXCEPTION: {self.current_page} PAGE DID NOT LOAD"
+                    err_message = f"TIMEOUT EXCEPTION: {self.current_page} PAGE DID NOT LOAD"
                     self.logger.error(err_message)
                     self.go_to_next_page()
-                
                 except NoSuchElementException:
-                    err_message = "NO SUCH ELEMENT EXCEPTION: {self.current_page} PAGE DID NOT LOAD"
+                    err_message = f"NO SUCH ELEMENT EXCEPTION: {self.current_page} PAGE DID NOT LOAD"
                     self.logger.error(err_message)
                     self.go_to_next_page()
-
         except Exception as e:
             stack_trace = traceback.format_exc()
             err_message = f"THERE WAS AN ERROR WHILE GETTING ALL LINKS AND SAVING TO CSV.\n{stack_trace}\n{e}"
             self.logger.error(err_message)
             return None
-
         finally:
             info_message = "CLOSING DRIVER"
             self.logger.info(info_message)
