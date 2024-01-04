@@ -34,7 +34,6 @@ def create_form():
                     st.markdown("### Selector")
                     selector = st.text_input("Selector", help="CSS 선택자를 입력하세요.")
                     attribute_name_selector = st.text_input("Attribute Name", help="속성 이름을 입력하세요.", key="attribute_name_selector")
-
                 with col_2:
                     st.markdown("### Find or Find All")
                     tag = st.text_input("Tag", help="찾을 HTML 태그의 이름입니다.")
@@ -42,7 +41,6 @@ def create_form():
                     find_attributes_value = st.text_input("Find Attributes Value", help="찾을 속성의 값을 입력하세요.")
                     find_attributes = {find_attributes_key: find_attributes_value} if find_attributes_key else None
                     attribute_name_find = st.text_input("Attribute Name", help="속성 이름을 입력하세요.", key="attribute_name_find_or_find_all")
-
                 attribute_name = attribute_name_selector if find_option == 'Select One' else attribute_name_find
                 parsing_rule = {
                     "selector": selector,
@@ -53,7 +51,6 @@ def create_form():
                     "tag": tag,
                     "find_attributes": find_attributes,
                 }
-
         elif parsing_method == "trafilatura":
             path1 = st.text_input("Path1")
             parsing_rule = {
@@ -62,14 +59,12 @@ def create_form():
 
     submit_button = st.button("Create")
     if submit_button:
-
         scrap_manager_data = {
             "portal": portal,
             "parsing_target_name": parsing_target_name,
             "parsing_method": parsing_method,
             "parsing_rule": parsing_rule
         }
-
         if create_scrap_manager(scrap_manager_data):
             st.success("Scrap Manager created successfully!")
         else:
@@ -78,8 +73,8 @@ def create_form():
 
 def update_form():
     scrap_manager_id = st.number_input("Enter Scrap Manager ID to Update", min_value=1, step=1)
-    
-    if st.button("Load Scrap Manager"):
+
+    if st.button("Load Scrap Manager", key="load_scrap_manager"):
         scrap_manager = get_scrap_manager_by_id(scrap_manager_id)
         if scrap_manager:
             st.session_state.scrap_manager = scrap_manager
@@ -92,8 +87,7 @@ def update_form():
         parsing_method = st.selectbox("Parsing Method", ("bs", "trafilatura"), index=0 if st.session_state.scrap_manager["parsing_method"] == "BeautifulSoup" else 1)
 
         # 파싱 메소드에 따라 입력 필드 표시
-        next_button = st.button("Parsing Rule 입력")
-
+        next_button = st.button("Parsing Rule 입력", key="parsing_rule")
         if next_button:
             if parsing_method == "bs":
                 # 파싱 규칙 관련 필드
@@ -104,7 +98,6 @@ def update_form():
                 tag = st.text_input("Tag", value=st.session_state.scrap_manager["parsing_rule"]["tag"])
                 find_attributes = st.text_input("Find Attributes", value=json.dumps(st.session_state.scrap_manager["parsing_rule"]["find_attributes"]))
                 find_all = st.checkbox("Find All", value=st.session_state.scrap_manager["parsing_rule"]["find_all"])
-
                 parsing_rule = {
                     "selector": selector,
                     "attribute_name": attribute_name,
@@ -114,14 +107,12 @@ def update_form():
                     "find_attributes": json.loads(find_attributes) if find_attributes else None,
                     "find_all": find_all
                 }
-            
             elif parsing_method == "trafilatura":
                 path1 = st.text_input("Path1", value=st.session_state.scrap_manager["parsing_rule"]["path1"])
                 parsing_rule = {
                     "path1": path1,
                 }
-
-        submitted = st.button("Update")
+        submitted = st.button("Update", key="update_scrap_manager")
         if submitted:
             updated_data = {
                 "portal": portal,
@@ -133,7 +124,6 @@ def update_form():
                 st.success("Scrap Manager updated successfully!")
             else:
                 st.error("Failed to update Scrap Manager.")
-    
     else:
         st.warning("Please load Scrap Manager first.")
 

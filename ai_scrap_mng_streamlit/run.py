@@ -38,7 +38,6 @@ with st.sidebar:
 # 스크랩 매니저
 if option == 'Scrap Manager':
 
-
     st.title("Scrap Manager")
 
     # 데이터 조회
@@ -82,16 +81,13 @@ if option == 'Scrap Manager':
         # Streamlit을 사용하여 웹 앱에 DataFrame 표시
         st.dataframe(styled_df)
 
-
     # 데이터 삽입
     st.header("Create New Scrap Manager")
     create_form()
 
-
     # 데이터 업데이트
     st.header("Update Scrap Manager")
     update_form()
-
 
     # 데이터 삭제
     st.header("Delete Scrap Manager")
@@ -107,7 +103,7 @@ elif option == 'Scrap Test':
 
     # url 입력 후 html 가져오기 및 페이지 렌더링
     check_html(test_url)
-    
+
     # 스크래핑 라이브러리 선택
     scrap_library = st.selectbox(
         'Scrap Library',
