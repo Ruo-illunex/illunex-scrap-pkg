@@ -165,7 +165,6 @@ class NaverNewsScraper(NewsScraper):
         while True:
             try:
                 # 세션 로그 초기화
-                self.is_error = False
                 self.initialize_session_log()
 
                 # 뉴스 데이터 리스트 초기화
@@ -185,7 +184,6 @@ class NaverNewsScraper(NewsScraper):
                         news_data = None
 
                         # 에러 로그 개별 초기화
-                        self.is_error = False
                         self.initialize_error_log(news_url)
 
                         self.session_log['total_records_processed'] += 1
@@ -193,7 +191,6 @@ class NaverNewsScraper(NewsScraper):
                             await asyncio.sleep(random.randint(1, 2))
                             while not news_data and scraper_cursor < len(self.all_parsing_rules_dicts):
                                 current_parsing_rule = self.all_parsing_rules_dicts[scraper_cursor]
-
                                 news_data = await self.scrape_each_news(
                                     news_url,
                                     category,
@@ -206,6 +203,7 @@ class NaverNewsScraper(NewsScraper):
                                     err_message = f"NEWS DATA IS EMPTY FOR URL: {news_url}"
                                     self.process_err_log_msg(err_message, "scrape_news", "", "")
                         else:
+                            self.is_duplicated = True
                             err_message = f"NEWS ALREADY EXISTS IN DATABASE: {news_url}"
                             self.process_err_log_msg(err_message, "scrape_news", "", "")
 

@@ -51,7 +51,6 @@ class ScraperManagerDatabase:
         finally:
             session.close()
 
-
     # scrap_error_log 테이블에 데이터를 저장하는 함수
     def save_scrap_error_logs(self, error_logs):
         """scrap_error_log 테이블에 데이터를 저장하는 함수
@@ -72,7 +71,6 @@ class ScraperManagerDatabase:
         finally:
             session.close()
 
-
     def get_scraping_statistics_by_portal(self, date):
         """특정 날짜에 대한 포털별 스크래핑 통계를 가져오는 함수
         Args:
@@ -87,8 +85,8 @@ class ScraperManagerDatabase:
         try:
             # 해당 날짜의 스크래핑 로그를 포털별로 그룹화하여 조회
             results = session.query(
-                ScrapSessionLog.remarks, 
-                func.sum(ScrapSessionLog.success_count), 
+                ScrapSessionLog.remarks,
+                func.sum(ScrapSessionLog.success_count),
                 func.sum(ScrapSessionLog.fail_count)
             ).filter(
                 func.date(ScrapSessionLog.start_time) == date

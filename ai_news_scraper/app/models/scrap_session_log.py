@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Text, DateTime
+from sqlalchemy import Column, Integer, Text, DateTime
 from sqlalchemy.dialects.mysql import BIGINT
 from pydantic import BaseModel
 
@@ -18,6 +18,7 @@ class ScrapSessionLog(BaseManager):
     total_records_processed = Column(Integer)
     success_count = Column(Integer)
     fail_count = Column(Integer)
+    dup_count = Column(Integer)
     remarks = Column(Text)
 
     # 테이블 인코딩 설정
@@ -37,6 +38,7 @@ class ScrapSessionLogPydantic(BaseModel):
     total_records_processed: int
     success_count: int
     fail_count: int
+    dup_count: int
     remarks: str
 
     # Pydantic 모델의 Config 클래스

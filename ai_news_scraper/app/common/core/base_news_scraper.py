@@ -54,6 +54,7 @@ class NewsScraper(abc.ABC):
 
         self.scraped_md5s = deque(maxlen=10000)  # 최근 스크래핑한 URL MD5 저장
 
+        self.is_duplicated = False  # 중복 여부
         # 세션 로그
         self.session_log = {
             "remarks": self.scraper_name,
@@ -151,7 +152,7 @@ class NewsScraper(abc.ABC):
             self.process_err_log_msg(err_message, "get_parsing_rules_dict", stack_trace, e)
             return None
 
-    # 세션 로그 초기화  
+    # 세션 로그 초기화
     def initialize_session_log(self) -> None:
         """세션 로그 초기화"""
         self.session_log['start_time'] = self.get_current_time()
@@ -159,6 +160,8 @@ class NewsScraper(abc.ABC):
         self.session_log['total_records_processed'] = 0
         self.session_log['success_count'] = 0
         self.session_log['fail_count'] = 0
+        self.session_log['dup_count'] = 0
+        self.is_error = False  # 에러 여부 초기화
 
         info_message = "SESSION LOG INITIALIZED"
         self.process_info_log_msg(info_message)
@@ -176,6 +179,8 @@ class NewsScraper(abc.ABC):
         self.error_log['error_message'] = ""
         self.error_log['error_time'] = None
         self.error_log['url'] = news_url
+        self.is_error = False  # 에러 여부 초기화
+        self.is_duplicated = False  # 중복 여부 초기화
 
         info_message = f"ERROR LOG INITIALIZED FOR URL: {news_url}"
         self.process_info_log_msg(info_message)
@@ -297,9 +302,12 @@ class NewsScraper(abc.ABC):
 
         # 에러 로그가 있으면 에러 로그 리스트에 추가
         if self.is_error:
-            self.session_log['fail_count'] += 1
-            self.error_log['error_time'] = self.get_current_time()
-            self.error_logs.append(ScrapErrorLog(**self.error_log))
+            if self.is_duplicated:
+                self.session_log['dup_count'] += 1
+            else:
+                self.session_log['fail_count'] += 1
+                self.error_log['error_time'] = self.get_current_time()
+                self.error_logs.append(ScrapErrorLog(**self.error_log))
 
     # 스크랩한 데이터 리스트를 데이터베이스에 저장하는 함수
     def save_news_data_bulk(self, news_data_list: list) -> None:

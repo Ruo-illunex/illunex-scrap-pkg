@@ -129,7 +129,6 @@ class StartupnNewsScraper(NewsScraper):
         while True:
             try:
                 # 세션 로그 초기화
-                self.is_error = False
                 self.initialize_session_log()
 
                 # 뉴스 데이터 리스트 초기화
@@ -144,7 +143,6 @@ class StartupnNewsScraper(NewsScraper):
                 for news_url in news_urls:
                     news_data = None
                     # 에러 로그 개별 초기화
-                    self.is_error = False
                     self.initialize_error_log(news_url)
 
                     self.session_log['total_records_processed'] += 1
@@ -153,8 +151,8 @@ class StartupnNewsScraper(NewsScraper):
 
                         # 각 뉴스 URL에 대해 세부 정보 스크랩
                         news_data = await self.scrape_each_news(news_url)
-
                     else:
+                        self.is_duplicated = True
                         err_message = f"NEWS ALREADY EXISTS IN DATABASE: {news_url}"
                         self.process_err_log_msg(err_message, "scrape_news", "", "")
 

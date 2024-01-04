@@ -59,7 +59,6 @@ async def scrape_daum_news_endpoint():
     try:
         await scraper.scrape_daum_news()
         return {"message": "Daum News Scraping Started"}
-
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "daum")
@@ -74,7 +73,6 @@ async def scrape_naver_news_endpoint():
     try:
         await scraper.scrape_naver_news()
         return {"message": "Naver News Scraping Started"}
-
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "naver")
@@ -89,7 +87,6 @@ async def scrape_zdnet_news_endpoint():
     try:
         await scraper.scrape_zdnet_news()
         return {"message": "ZDNet News Scraping Started"}
-
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "zdnet")
@@ -104,7 +101,6 @@ async def scrape_vs_news_endpoint():
     try:
         await scraper.scrape_vs_news()
         return {"message": "Venture Square News Scraping Started"}
-
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "venturesquare")
@@ -119,7 +115,6 @@ async def scrape_thebell_news_endpoint():
     try:
         await scraper.scrape_thebell_news()
         return {"message": "The Bell News Scraping Started"}
-    
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "thebell")
@@ -134,7 +129,6 @@ async def scrape_startupn_news_endpoint():
     try:
         await scraper.scrape_startupn_news()
         return {"message": "Startupn News Scraping Started"}
-    
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "startupn")
@@ -149,7 +143,6 @@ async def scrape_startuptoday_news_endpoint():
     try:
         await scraper.scrape_startuptoday_news()
         return {"message": "StartupToday News Scraping Started"}
-    
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "startuptoday")
@@ -164,7 +157,6 @@ async def scrape_platum_news_endpoint():
     try:
         await scraper.scrape_platum_news()
         return {"message": "Platum News Scraping Started"}
-    
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "platum")
@@ -179,7 +171,6 @@ async def scrape_esg_news_endpoint():
     try:
         await scraper.scrape_esg_news()
         return {"message": "ESG News Scraping Started"}
-    
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "esg")
@@ -194,7 +185,6 @@ async def scrape_greenpost_news_endpoint():
     try:
         await scraper.scrape_greenpost_news()
         return {"message": "Greenpost News Scraping Started"}
-    
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "greenpost")
@@ -210,7 +200,6 @@ async def scrape_esg_finance_news_endpoint(get_all_news: bool = False):
     try:
         await scraper.scrape_esg_finance_news(get_all_news_urls=get_all_news)
         return {"message": "ESG Finance News Scraping Started"}
-    
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "esg_finance")
@@ -225,7 +214,6 @@ def scrape_esg_finance_hub_endpoint():
     try:
         scraper.scrape_esg_finance_hub()
         return {"message": "ESG Finance Hub Scraping Started"}
-    
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "esg_finance_hub")
