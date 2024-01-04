@@ -23,7 +23,6 @@ class DaumNewsScraper(NewsScraper):
         urls = daum_urls.urls
         self.news_board_url = urls['news_board_url']
 
-
     def preprocess_datetime(self, unprocessed_date):
         """날짜 전처리 함수
         Args:
@@ -34,7 +33,7 @@ class DaumNewsScraper(NewsScraper):
         processed_date = preprocess_datetime_compact(unprocessed_date)
         if processed_date:
             return processed_date
-        
+
         try:
             raise ValueError(f"Invalid date format: {unprocessed_date}")
         except Exception as e:
@@ -42,7 +41,6 @@ class DaumNewsScraper(NewsScraper):
             err_message = f"THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
             self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
             return None
-
 
     def get_news_urls(self, category):
         try:
@@ -61,7 +59,7 @@ class DaumNewsScraper(NewsScraper):
                 err_message = f"NO NEWS URLS WERE FOUND FROM {url}"
                 self.process_err_log_msg(err_message, "get_news_urls", None, None)
                 return None
-            
+
             else:
                 for news in news_list:
                     yield news['href']
@@ -71,7 +69,6 @@ class DaumNewsScraper(NewsScraper):
             err_message = "THERE WAS AN ERROR WHILE GETTING NEWS URLS"
             self.process_err_log_msg(err_message, "get_news_urls", stack_trace, e)
             return None
-
 
     async def scrape_each_news(self, news_url, category):
         total_extracted_data = {}
@@ -100,7 +97,7 @@ class DaumNewsScraper(NewsScraper):
         create_date = total_extracted_data.get('create_date')
         image_url = total_extracted_data.get('image_url')
         media = total_extracted_data.get('media')
-            
+
         # title이나 content, create_date가 없으면 다음 데이터로 넘어갑니다.
         if any([not title, not content, not create_date]):
             none_elements = [element for element in [title, content, create_date] if not element]
@@ -127,9 +124,7 @@ class DaumNewsScraper(NewsScraper):
             kind=kind_id,
             category=""
         )
-
         return news_data
-
 
     async def scrape_news(self):
         while True:
@@ -173,7 +168,7 @@ class DaumNewsScraper(NewsScraper):
 
                 # 뉴스 데이터베이스에 한 번에 저장
                 self.save_news_data_bulk(self.news_data_list)
-                
+
                 # 최종 세션 로그 저장
                 self.finalize_session_log()
 
@@ -186,10 +181,8 @@ class DaumNewsScraper(NewsScraper):
                 self.process_err_log_msg(err_message, "scrape_news", stack_trace, e)
                 await asyncio.sleep(self.retry_delay)
 
-
     def get_feed_entries(self):
         pass
-
 
     async def scrape_each_feed_entry(self, entry):
         pass

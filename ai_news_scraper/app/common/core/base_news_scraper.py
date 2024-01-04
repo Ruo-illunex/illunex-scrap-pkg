@@ -27,7 +27,6 @@ class NewsScraper(abc.ABC):
     다양한 뉴스 사이트에 대한 스크래핑 클래스가 이 클래스를 상속받아 구현됩니다.
     """
 
-
     def __init__(self, scraper_name: str):
         """
         Args:
@@ -57,7 +56,7 @@ class NewsScraper(abc.ABC):
 
         # 세션 로그
         self.session_log = {
-            "remarks" : self.scraper_name,
+            "remarks": self.scraper_name,
         }
         self.initialize_session_log()
 
@@ -79,23 +78,19 @@ class NewsScraper(abc.ABC):
             self.process_err_log_msg(err_message, "load_yaml")
             self.category_dict = {}
 
-
     # URL의 MD5 해시를 생성하는 함수
     def generate_md5(self, url: str) -> str:
         return hashlib.md5(url.encode()).hexdigest()
-
 
     # 스크래핑 전 URL MD5 확인
     def is_already_scraped(self, url: str) -> bool:
         url_md5 = self.generate_md5(url)
         return url_md5 in self.scraped_md5s
 
-
     # 스크래핑 후 URL MD5 저장
     def mark_as_scraped(self, url: str):
         url_md5 = self.generate_md5(url)
         self.scraped_md5s.append(url_md5)
-
 
     # 인포, 성공, 경고 메세지 > 로그 메세지 로직
     def process_info_log_msg(self, message: str, type: str="info") -> None:
@@ -114,7 +109,6 @@ class NewsScraper(abc.ABC):
             log_message = Messages.warning_message(message)
             self.logger.warning(log_message)
 
-
     # 에러 메세지 > 로그 메세지 로직
     def process_err_log_msg(self, err_message: str, function_name: str, stack_trace: str = None, exception: Exception = None) -> None:
         """에러 메세지 > 로그 메세지 로직
@@ -128,7 +122,6 @@ class NewsScraper(abc.ABC):
         self.logger.error(log_message)
         self.is_error = True
         self.error_log['error_message'] += log_message
-
 
     # 파싱 규칙 딕셔너리 가져오기
     def get_parsing_rules_dict(self, scraper_name: str = None) -> dict:
@@ -158,7 +151,6 @@ class NewsScraper(abc.ABC):
             self.process_err_log_msg(err_message, "get_parsing_rules_dict", stack_trace, e)
             return None
 
-
     # 세션 로그 초기화  
     def initialize_session_log(self) -> None:
         """세션 로그 초기화"""
@@ -170,7 +162,6 @@ class NewsScraper(abc.ABC):
 
         info_message = "SESSION LOG INITIALIZED"
         self.process_info_log_msg(info_message)
-
 
     # 에러 로그 개별 초기화
     def initialize_error_log(self, news_url: str) -> None:
@@ -189,7 +180,6 @@ class NewsScraper(abc.ABC):
         info_message = f"ERROR LOG INITIALIZED FOR URL: {news_url}"
         self.process_info_log_msg(info_message)
 
-
     # 현재 시간을 가져오는 함수
     def get_current_time(self) -> str:
         """현재 시간을 가져오는 함수
@@ -197,13 +187,11 @@ class NewsScraper(abc.ABC):
             current_time (str): 현재 시간
         """
         return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
 
     # soup에서 데이터 추출
     def safe_extract(self, soup, selector=None, attribute_name=None, default=None, find=False, tag=None, find_attributes=None, find_all=False):
         """
         soup에서 데이터를 안전하게 추출하는 함수.
-
         Args:
             soup (BeautifulSoup): BeautifulSoup 객체.
             selector (str): CSS 선택자.
@@ -246,7 +234,6 @@ class NewsScraper(abc.ABC):
             self.process_info_log_msg(warning_message, "warning")
             return default
 
-
     def extract_element(self, soup, parsing_rule):
         """뉴스 요소를 추출하는 함수
         Args:
@@ -265,7 +252,6 @@ class NewsScraper(abc.ABC):
             default=parsing_rule['default'],
             find_all=parsing_rule['find_all']
         )
-
 
     def extract_news_details(self, soup, elements: list, parsing_rules_dict: dict = None) -> dict:
         """뉴스 상세 정보를 추출하는 함수
@@ -289,9 +275,7 @@ class NewsScraper(abc.ABC):
                 err_message = f"PARSING RULES NOT FOUND FOR {element}"
                 self.process_err_log_msg(err_message, "extract_news_details")
                 extracted_data[element] = None
-
         return extracted_data
-
 
     # 스크랩한 데이터를 데이터베이스에 저장하는 함수
     def check_error(self, news_data: dict, news_url: str) -> None:
@@ -317,7 +301,6 @@ class NewsScraper(abc.ABC):
             self.error_log['error_time'] = self.get_current_time()
             self.error_logs.append(ScrapErrorLog(**self.error_log))
 
-
     # 스크랩한 데이터 리스트를 데이터베이스에 저장하는 함수
     def save_news_data_bulk(self, news_data_list: list) -> None:
         """스크랩한 데이터 리스트를 데이터베이스에 저장하는 함수
@@ -333,7 +316,6 @@ class NewsScraper(abc.ABC):
             stack_trace = traceback.format_exc()
             err_message = f"THERE WAS AN ERROR WHILE SAVING NEWS DATA FOR {self.scraper_name}"
             self.process_err_log_msg(err_message, "save_news_data_bulk", stack_trace, e)
-
 
     # 최종 세션 로그 저장 함수
     def finalize_session_log(self) -> None:
@@ -354,13 +336,12 @@ class NewsScraper(abc.ABC):
                 self.scraper_manager_db.save_scrap_error_logs(self.error_logs)
                 success_message = "ERROR LOGS SAVED FOR SESSION LOG ID: {session_log_id}"
                 self.process_info_log_msg(success_message, "success")
-
+                self.error_logs = []    # 에러 로그 리스트 초기화
         except Exception as e:
             stack_trace = traceback.format_exc()
             err_message = "THERE WAS AN ERROR WHILE SAVING SESSION LOG AND ERROR LOGS"
             log_message = Messages.error_message(err_message, "finalize_session_log", stack_trace, e)
             self.logger.error(log_message)
-
 
     # 재시도를 위한 비동기 함수 정의
     async def fetch_url_with_retry(self, session: aiohttp.ClientSession, url: str, retries: int = 3) -> str:
@@ -376,7 +357,6 @@ class NewsScraper(abc.ABC):
                     await asyncio.sleep(2)  # 잠시 대기 후 재시도
                 else:
                     raise e
-
 
     async def scrape_each_news_with_bs(self, news_url, elements, parsing_rules_dict=None):
         try:
@@ -413,7 +393,6 @@ class NewsScraper(abc.ABC):
             self.process_err_log_msg(err_message, "scrape_each_news", stack_trace, e)
             return None
 
-
     async def scrape_each_news_with_trafilatura(self, news_url, elements: list, parsing_rules_dict: dict = None, with_metadata=True):
         extracted_data = {}
         if not parsing_rules_dict:
@@ -440,15 +419,12 @@ class NewsScraper(abc.ABC):
                     extracted_data[element] = result
                 else:
                     extracted_data[element] = None
-            
             return extracted_data
-
         except Exception as e:
             stack_trace = traceback.format_exc()
             err_message = f"THERE WAS AN ERROR WHILE SCRAPING: {news_url}"
             self.process_err_log_msg(err_message, "scrape_each_news_with_trafilatura", stack_trace, e)
             return None
-
 
     @abc.abstractmethod
     def get_news_urls(self, category: str=None) -> Generator[str, None, None]:
@@ -458,7 +434,6 @@ class NewsScraper(abc.ABC):
         """
         pass
 
-
     @abc.abstractmethod
     async def scrape_each_news(self, news_url: str, category: str=None, parsing_rules_dict: dict=None) -> Optional[dict]:
         """
@@ -466,7 +441,6 @@ class NewsScraper(abc.ABC):
         서브클래스에서 구현해야 합니다.
         """
         pass
-
 
     @abc.abstractmethod
     def preprocess_datetime(self, unprocessed_date: str) -> Optional[str]:
@@ -476,7 +450,6 @@ class NewsScraper(abc.ABC):
         """
         pass
 
-
     @abc.abstractmethod
     async def scrape_news(self) -> None:
         """
@@ -485,7 +458,6 @@ class NewsScraper(abc.ABC):
         """
         pass
 
-
     @abc.abstractmethod
     def get_feed_entries(self) -> Generator[dict, None, None]:
         """
@@ -493,7 +465,6 @@ class NewsScraper(abc.ABC):
         서브클래스에서 구현해야 합니다.
         """
         pass
-
 
     @abc.abstractmethod
     async def scrape_each_feed_entry(self, feed_entry: dict) -> Optional[dict]:

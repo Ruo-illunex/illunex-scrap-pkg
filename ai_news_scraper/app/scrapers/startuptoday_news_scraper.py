@@ -24,7 +24,6 @@ class StartuptodayNewsScraper(NewsScraper):
         self.news_board_url = urls['news_board_url']
         self.base_url = urls['base_url']
 
-
     def preprocess_datetime(self, unprocessed_date):
         """날짜 전처리 함수
         Args:
@@ -36,7 +35,7 @@ class StartuptodayNewsScraper(NewsScraper):
         processed_date = preprocess_datetime_iso(unprocessed_date)
         if processed_date:
             return processed_date
-        
+
         try:
             raise ValueError(f"Invalid date format: {unprocessed_date}")
         except Exception as e:
@@ -44,7 +43,6 @@ class StartuptodayNewsScraper(NewsScraper):
             err_message = f"THERE WAS AN ERROR WHILE PROCESSING DATE: {unprocessed_date}"
             self.process_err_log_msg(err_message, "preprocess_datetime", stack_trace, e)
             return None
-
 
     def get_news_urls(self):
         try:
@@ -60,7 +58,7 @@ class StartuptodayNewsScraper(NewsScraper):
                 err_message = f"NO NEWS URLS WERE FOUND FROM {self.news_board_url}"
                 self.process_err_log_msg(err_message, "get_news_urls", "", "")
                 return None
-            
+
             else:
                 for link in links:
                     if '/news/articleView' in link['href']:
@@ -71,7 +69,6 @@ class StartuptodayNewsScraper(NewsScraper):
             err_message = "THERE WAS AN ERROR WHILE GETTING NEWS URLS"
             self.process_err_log_msg(err_message, "get_news_urls", stack_trace, e)
             return None
-
 
     async def scrape_each_news(self, news_url):
         total_extracted_data = {}
@@ -101,7 +98,7 @@ class StartuptodayNewsScraper(NewsScraper):
         image_url = total_extracted_data.get('image_url')
         media = total_extracted_data.get('media')
         kind = total_extracted_data.get('kind')
-            
+
         # title이나 content, create_date가 없으면 다음 데이터로 넘어갑니다.
         if any([not title, not content, not create_date]):
             none_elements = [element for element in [title, content, create_date] if not element]
@@ -128,9 +125,7 @@ class StartuptodayNewsScraper(NewsScraper):
             kind=kind_id,
             category="",
             )
-
         return news_data
-
 
     async def scrape_news(self):
         while True:
@@ -163,7 +158,7 @@ class StartuptodayNewsScraper(NewsScraper):
                     else:
                         err_message = f"NEWS ALREADY EXISTS IN DATABASE: {news_url}"
                         self.process_err_log_msg(err_message, "scrape_news", "", "")
-                
+
                     # 뉴스 데이터에 에러가 있으면, 에러 로그를 append하고, 그렇지 않으면 뉴스 데이터를 리스트에 추가
                     self.check_error(news_data, news_url)
 
@@ -182,10 +177,8 @@ class StartuptodayNewsScraper(NewsScraper):
                 self.process_err_log_msg(err_message, "scrape_news", stack_trace, e)
                 await asyncio.sleep(self.retry_delay)
 
-
     def get_feed_entries(self):
         pass
-
 
     async def scrape_each_feed_entry(self, entry):
         pass
