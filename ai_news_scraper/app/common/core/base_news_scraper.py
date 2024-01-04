@@ -324,7 +324,7 @@ class NewsScraper(abc.ABC):
         try:
             # 세션 로그 저장
             session_log_id = self.scraper_manager_db.save_scrap_session_log(ScrapSessionLog(**self.session_log))
-            success_message = "SESSION LOG SAVED WITH ID: {session_log_id}"
+            success_message = f"SESSION LOG SAVED WITH ID: {session_log_id}"
             self.process_info_log_msg(success_message, "success")
 
             if session_log_id:
@@ -334,7 +334,7 @@ class NewsScraper(abc.ABC):
 
                 # 에러 로그 저장
                 self.scraper_manager_db.save_scrap_error_logs(self.error_logs)
-                success_message = "ERROR LOGS SAVED FOR SESSION LOG ID: {session_log_id}"
+                success_message = f"ERROR LOGS SAVED FOR SESSION LOG ID: {session_log_id}"
                 self.process_info_log_msg(success_message, "success")
                 self.error_logs = []    # 에러 로그 리스트 초기화
         except Exception as e:
