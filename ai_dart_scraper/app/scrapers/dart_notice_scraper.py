@@ -1,6 +1,6 @@
 import asyncio
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import aiohttp
 import pandas as pd
@@ -14,7 +14,7 @@ from app.models_init import CollectDartNoticePydantic
 
 
 class DartNoticeScraper:
-    def __init__(self) -> None:
+    def __init__(self, api_call_limit: int = 19900) -> None:
         file_path = FILE_PATHS["log"] + 'scrapers'
         make_dir(file_path)
         file_path += f'/dart_notice_scraper_{get_current_datetime()}.log'
@@ -24,11 +24,34 @@ class DartNoticeScraper:
         )
         self._compids_and_corpcodes = collections_db.get_companyids_and_corpcodes()    # [(company_id, corp_code), ...]
         self._url = 'https://opendart.fss.or.kr/api/list.json'
-        self._max_concurrent_main_tasks = 5
+        self._max_concurrent_main_tasks = 3
         self._max_concurrent_sub_tasks = 5
         self._delay_time = 20
+        self._api_call_limit = api_call_limit
+        self._api_call_count = 0
+        self._now = datetime.now() + timedelta(hours=9)
         self._db_write_queue = asyncio.Queue()
-    
+
+    def _check_if_past_midnight(self):
+        """자정이 지났는지 확인"""
+        now = datetime.now() + timedelta(hours=9)
+        if now.day != self._now.day:
+            self._now = now
+            self._api_call_count = 0
+            self._api_call_limit = 19900
+            return True
+        return False
+
+    async def _wait_until_midnight(self):
+        """자정까지 대기"""
+        now = datetime.now() + timedelta(hours=9)
+        midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+        wait_seconds = (midnight - now).total_seconds() + 1
+        info_msg = f"API call limit reached. Wait until midnight. Wait seconds: {wait_seconds} seconds"
+        self._logger.info(info_msg)
+        print(info_msg)
+        await asyncio.sleep(wait_seconds)
+
     async def __aenter__(self):
         """세션 컨텍스트 매니저"""
         if not hasattr(self, 'session') or self.session.closed:
@@ -62,11 +85,21 @@ class DartNoticeScraper:
 
     async def __fetch_page(self, session, url, params, semaphore) -> dict:
         async with semaphore:
-            await self._delay()
+            if self._api_call_count >= self._api_call_limit:
+                await self._wait_until_midnight()   # 자정까지 대기
+            else:   # API 호출 횟수가 제한에 도달하지 않았다면
+                await self._delay()  # 딜레이
+
+            if self._check_if_past_midnight():  # 자정이 지났는지 확인
+                info_msg = f"Past midnight. Reset API call count and limit."
+                self._logger.info(info_msg)
+                print(info_msg)
+
             page = params['page_no']
-            try:
+            try:    # API 호출
                 async with session.get(url, params=params) as response:
-                    info_msg = f"Corp_code: {params['corp_code']} - Page: {page}"
+                    self._api_call_count += 1   # API 호출 횟수 증가
+                    info_msg = f"Corp_code: {params['corp_code']} & Page: {page} - API call count: {self._api_call_count}/{self._api_call_limit} ({round(self._api_call_count / self._api_call_limit * 100, 2)}%)"
                     self._logger.info(info_msg)
                     print(info_msg)
                     return await response.json()

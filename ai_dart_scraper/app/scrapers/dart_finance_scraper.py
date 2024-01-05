@@ -41,9 +41,9 @@ class DartFinanceScraper:
             'CFS',      # 연결재무제표
             'OFS'       # 재무제표 or 별도재무제표
             ]
-        self._delay_time = 25  # OpenDartReader API 호출 시 딜레이 - 초 단위
-        self._api_call_limit = api_call_limit   # OpenDartReader API 호출 제한 횟수
-        self._api_call_count = 0    # OpenDartReader API 호출 횟수
+        self._delay_time = 25  # API 호출 시 딜레이 - 초 단위
+        self._api_call_limit = api_call_limit   # API 호출 제한 횟수
+        self._api_call_count = 0    # API 호출 횟수
         self._now = datetime.datetime.now() + datetime.timedelta(hours=9)   # 한국시간 기준(UTC+9)
 
     def _check_if_past_midnight(self):
@@ -52,7 +52,7 @@ class DartFinanceScraper:
         if now.day != self._now.day:    # 자정 이후
             self._now = now # 현재 시간으로 업데이트
             self._api_call_count = 0    # API 호출 횟수 초기화
-            self._api_call_limit = 19900    # API 호출 제한 횟수 초기화 (OpenDartReader API 호출 제한 횟수는 하루에 20000회 이므로 100회를 여유롭게 둠)
+            self._api_call_limit = 19900    # API 호출 제한 횟수 초기화 (DART API 호출 제한 횟수는 하루에 20000회 이므로 100회를 여유롭게 둠)
             return True
         return False
 
@@ -68,11 +68,11 @@ class DartFinanceScraper:
             await self.session.close()
 
     async def _delay(self):
-        """OpenDartReader API 호출 시 딜레이"""
+        """DART API 호출 시 딜레이"""
         await asyncio.sleep(self._delay_time)
 
     async def _get_company_finance_info(self, session, company_id, corp_code, bsns_year, reprt_code, fs_div, semaphore, order_idx) -> None:
-        """OpenDartReader API를 이용해 기업의 재무 정보를 수집하는 함수
+        """DART API를 이용해 기업의 재무 정보를 수집하는 함수
         Args:
             session (aiohttp.ClientSession): aiohttp 세션
             company_id (str): 기업 ID   -> NewCompanyInfo 테이블의 id 컬럼
@@ -84,7 +84,7 @@ class DartFinanceScraper:
             order_idx (int): 순서   -> 로그 출력용
         """
         async with semaphore:   # 동시 요청 수 제어
-            # 파라미터 설정 -> OpenDartReader API 문서 참고
+            # 파라미터 설정 -> DART API 문서 참고
             self._params.update({
                 'corp_code': corp_code,     # 기업 코드
                 'bsns_year': bsns_year,     # 사업 연도
@@ -94,9 +94,6 @@ class DartFinanceScraper:
 
             # API 호출 제한 횟수를 초과하면 자정까지 기다림
             if self._api_call_count >= self._api_call_limit:
-                info_msg = f"API call limit reached. Waiting until midnight"
-                self._logger.info(info_msg)
-                print(info_msg)
                 await self._wait_until_midnight()
 
             # 자정 이후라면 API 호출 횟수와 제한 횟수를 초기화
@@ -176,7 +173,7 @@ class DartFinanceScraper:
                 await self._delay()
 
     async def scrape_dart_finance(self) -> None:
-        """OpenDartReader를 이용해 모든 기업의 재무 정보를 수집하는 함수"""
+        """DART를 이용해 모든 기업의 재무 정보를 수집하는 함수"""
         async with self as scraper:
             info_msg = f"Start scraping dart finance info\n{self._size} companies will be searched"
             self._logger.info(info_msg)

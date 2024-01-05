@@ -26,7 +26,7 @@ class DartInfoScraper:
         self._params = {'crtfc_key': DART_API_KEY}
         self._corp_codes_ls = self._get_corp_code_list()
         self._batch_size = 100  # 한 번에 저장할 데이터 개수
-        self._delay_time = 1.5  # OpenDartReader API 호출 시 딜레이 - 초 단위
+        self._delay_time = 1.5  # DART API 호출 시 딜레이 - 초 단위
 
     # aiohttp.ClientSession을 인스턴스 수준에서 초기화
     async def __aenter__(self):
@@ -37,7 +37,7 @@ class DartInfoScraper:
         await self.session.close()
 
     def _get_corp_code_list(self) -> list:
-        """OpenDartReader를 이용해 모든 기업의 고유번호 리스트를 가져오는 함수
+        """DART API를 이용해 모든 기업의 고유번호 리스트를 가져오는 함수
         Returns:
             list: 고유번호 리스트
         """

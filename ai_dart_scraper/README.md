@@ -122,6 +122,7 @@ github repo : [https://github.com/Ruo-illunex/illunex-scrap-pkg](https://github.
 * **파라미터** :
   * `startDt`: 공시정보목록 시작일 (선택적)
   * `endDt`: 공시정보목록 최종일 (선택적)
+  * `apiCallLimit`: API 호출 제한 (선택적)
 * **목적** :Open Dart API를 이용한 공시정보목록 수집
 * **응답** : `{"status": "Scraping in progress..."}`
 
