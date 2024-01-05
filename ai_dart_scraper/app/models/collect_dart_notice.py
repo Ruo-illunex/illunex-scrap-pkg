@@ -20,7 +20,7 @@ class CollectDartNotice(BaseCollections):
     corp_code = Column(String(100), comment='DART 고유번호')
     stock_code = Column(String(100), comment='종목 코드')
     report_nm = Column(String(200), comment='보고서 이름')
-    rcept_no = Column(String(100), comment='접수 번호')
+    rcept_no = Column(String(100), unique=True, comment='접수 번호')
     flr_nm = Column(String(100), comment='공시 제출인 이름')
     rcept_dt = Column(String(50), comment='접수 날짜')
     rm = Column(Text, comment='비고')
@@ -48,8 +48,6 @@ class CollectDartNoticePydantic(BaseModel):
     flr_nm: Optional[str] = None
     rcept_dt: Optional[str] = None
     rm: Optional[str] = None
-    create_date: Optional[date] = None
-    update_date: Optional[date] = None
     
     class Config:
         from_attributes = True

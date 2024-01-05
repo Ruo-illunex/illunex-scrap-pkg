@@ -163,9 +163,10 @@ class CollectionsDatabase:
 
                 company_id = data_list[0]['company_id']
                 insert_stmt = insert(CollectDartNotice).values(data_list)
-                session.execute(insert_stmt)
+                do_nothing_stmt = insert_stmt.on_conflict_do_nothing(index_elements=['rcept_no'])
+                session.execute(do_nothing_stmt)
                 session.commit()
-                result_msg = f"Success: Inserted {len(data_list)} data into [collect_dart_notice] for company_id {company_id}"
+                result_msg = f"Success: Inserted data into [collect_dart_notice] for company_id {company_id}"
                 return result_msg
             except SQLAlchemyError as e:
                 session.rollback()

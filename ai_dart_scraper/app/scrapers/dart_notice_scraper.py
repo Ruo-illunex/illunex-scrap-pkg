@@ -26,7 +26,7 @@ class DartNoticeScraper:
         self._url = 'https://opendart.fss.or.kr/api/list.json'
         self._max_concurrent_main_tasks = 5
         self._max_concurrent_sub_tasks = 5
-        self._delay_time = 2
+        self._delay_time = 20
         self._db_write_queue = asyncio.Queue()
     
     async def __aenter__(self):
@@ -121,7 +121,7 @@ class DartNoticeScraper:
                 self._logger.error(err_msg)
                 return []
 
-    async def _scrape_company_dart_notice(self, company_id, corp_code, semaphore):
+    async def _scrape_company_dart_notice(self, company_id, corp_code, semaphore, start=None, end=None):
         async with semaphore:
             await self._delay()
 
@@ -130,7 +130,7 @@ class DartNoticeScraper:
             print(info_msg)
 
             try:
-                results = await self._list_async(corp_code=corp_code)
+                results = await self._list_async(corp_code=corp_code, start=start, end=end)
                 notice_data = [CollectDartNoticePydantic(**result).dict() for result in results]
                 for result in notice_data:
                     result['company_id'] = company_id
@@ -149,7 +149,7 @@ class DartNoticeScraper:
                 self._logger.error(err_msg)
                 return False  # 오류 발생
 
-    async def scrape_dart_notice(self) -> None:
+    async def scrape_dart_notice(self, start=None, end=None):
         """OpenDartReader를 이용해 모든 기업의 공시 정보를 수집하는 함수"""
         info_msg = f"Start: Scrape dart notice info"
         self._logger.info(info_msg)
@@ -160,7 +160,7 @@ class DartNoticeScraper:
         try:
             tasks = []
             for company_id, corp_code in self._compids_and_corpcodes:
-                task = asyncio.create_task(self._scrape_company_dart_notice(company_id, corp_code, main_semaphore))
+                task = asyncio.create_task(self._scrape_company_dart_notice(company_id, corp_code, main_semaphore, start, end))
                 tasks.append(task)
             await asyncio.gather(*tasks)
             await self._db_write_queue.join()

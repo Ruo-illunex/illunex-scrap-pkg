@@ -64,10 +64,10 @@ async def scrape_dart_info(token: str = Depends(verify_token)):
 
 
 @app.get("/scrape/dart_finance")
-async def scrape_dart_finance(bsns_year: Optional[int] = None, api_call_limit: Optional[int] = 20000, token: str = Depends(verify_token)):
+async def scrape_dart_finance(bsnsYear: Optional[int] = None, apiCallLimit: Optional[int] = 20000, token: str = Depends(verify_token)):
     """OpenDartReader를 이용해 모든 기업의 재무 정보를 수집하는 함수"""
     try:
-        scraper = DartFinanceScraper(bsns_year=bsns_year, api_call_limit=api_call_limit)
+        scraper = DartFinanceScraper(bsns_year=bsnsYear, api_call_limit=apiCallLimit)
         await scraper.scrape_dart_finance()
         return {"status": "Scraping in progress..."}
     except Exception as e:
@@ -77,11 +77,11 @@ async def scrape_dart_finance(bsns_year: Optional[int] = None, api_call_limit: O
 
 
 @app.get("/scrape/dart_notice")
-async def scrape_dart_notice(token: str = Depends(verify_token)):
+async def scrape_dart_notice(startDt: Optional[str] = None, endDt: Optional[str] = None, token: str = Depends(verify_token)):
     """OpenDartReader를 이용해 모든 기업의 공시 정보를 수집하는 함수"""
     try:
         scraper = DartNoticeScraper()
-        await scraper.scrape_dart_notice()
+        await scraper.scrape_dart_notice(start=startDt, end=endDt)
         return {"status": "Scraping in progress..."}
     except Exception as e:
         err_msg = f"Error: {e}\n{traceback.format_exc()}"
