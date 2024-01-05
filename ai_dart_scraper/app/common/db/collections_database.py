@@ -150,10 +150,10 @@ class CollectionsDatabase:
                 self.logger.error(f"Error: {e}\n{err_msg}")
                 return err_msg
 
-    def bulk_insert_collectdartnotice(self, data_list: List[CollectDartNoticePydantic]) -> None:
+    def bulk_insert_collectdartnotice(self, data_list: List[dict]) -> None:
         """데이터베이스에 데이터를 일괄 추가하는 함수
         Args:
-            data_list (List[CollectDartNoticePydantic]): 추가할 데이터 리스트
+            data_list (List[dict]): 추가할 데이터 리스트
         """
         with self.get_session() as session:
             try:
@@ -161,9 +161,8 @@ class CollectionsDatabase:
                     result_msg = "No data to insert"
                     return result_msg
 
-                company_id = data_list[0].company_id
-                insert_data = [data.dict() for data in data_list]
-                insert_stmt = insert(CollectDartNotice).values(insert_data)
+                company_id = data_list[0]['company_id']
+                insert_stmt = insert(CollectDartNotice).values(data_list)
                 session.execute(insert_stmt)
                 session.commit()
                 result_msg = f"Success: Inserted {len(data_list)} data into [collect_dart_notice] for company_id {company_id}"
