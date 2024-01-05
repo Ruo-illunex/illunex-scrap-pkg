@@ -1,6 +1,8 @@
-from fastapi import FastAPI, Depends
-
 from typing import Optional
+import traceback
+
+from fastapi import FastAPI, Depends
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.common.log.log_config import setup_logger
 from app.common.core.utils import get_current_datetime, make_dir
@@ -51,14 +53,64 @@ async def health_check():
 @app.get("/scrape/dart_info")
 async def scrape_dart_info(token: str = Depends(verify_token)):
     """OpenDartReader를 이용해 모든 기업의 기업 정보를 수집하는 함수"""
-    scraper = DartInfoScraper()
-    await scraper.scrape_dart_info()
-    return {"status": "Scraping in progress..."}
+    try:
+        scraper = DartInfoScraper()
+        await scraper.scrape_dart_info()
+        return {"status": "Scraping in progress..."}
+    except Exception as e:
+        err_msg = f"Error: {e}\n{traceback.format_exc()}"
+        logger.error(err_msg)
+        return {"status": err_msg}
 
 
 @app.get("/scrape/dart_finance")
 async def scrape_dart_finance(bsns_year: Optional[int] = None, api_call_limit: Optional[int] = 20000, token: str = Depends(verify_token)):
     """OpenDartReader를 이용해 모든 기업의 재무 정보를 수집하는 함수"""
-    scraper = DartFinanceScraper(bsns_year=bsns_year, api_call_limit=api_call_limit)
-    await scraper.scrape_dart_finance()
-    return {"status": "Scraping in progress..."}
+    try:
+        scraper = DartFinanceScraper(bsns_year=bsns_year, api_call_limit=api_call_limit)
+        await scraper.scrape_dart_finance()
+        return {"status": "Scraping in progress..."}
+    except Exception as e:
+        err_msg = f"Error: {e}\n{traceback.format_exc()}"
+        logger.error(err_msg)
+        return {"status": err_msg}
+
+
+@app.get("/scrape/dart_notice")
+async def scrape_dart_notice(token: str = Depends(verify_token)):
+    """OpenDartReader를 이용해 모든 기업의 공시 정보를 수집하는 함수"""
+    try:
+        scraper = DartNoticeScraper()
+        await scraper.scrape_dart_notice()
+        return {"status": "Scraping in progress..."}
+    except Exception as e:
+        err_msg = f"Error: {e}\n{traceback.format_exc()}"
+        logger.error(err_msg)
+        return {"status": err_msg}
+
+
+async def scrape_dart_info_task():
+    """기업 정보 수집을 위한 비동기 작업"""
+    try:
+        scraper = DartInfoScraper()
+        await scraper.scrape_dart_info()
+    except Exception as e:
+        err_msg = f"Error: {e}\n{traceback.format_exc()}"
+        logger.error(err_msg)
+
+
+async def scrape_dart_finance_task():
+    """재무 정보 수집을 위한 비동기 작업"""
+    try:
+        scraper = DartFinanceScraper()
+        await scraper.scrape_dart_finance()
+    except Exception as e:
+        err_msg = f"Error: {e}\n{traceback.format_exc()}"
+        logger.error(err_msg)
+
+
+# 스케줄러 설정
+scheduler = AsyncIOScheduler()
+scheduler.add_job(scrape_dart_info_task, 'cron', day=20)
+scheduler.add_job(scrape_dart_finance_task, 'cron', day=20)
+scheduler.start()

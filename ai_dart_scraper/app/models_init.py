@@ -4,3 +4,5 @@ from app.models.new_company_info import NewCompanyInfo, NewCompanyInfoPydantic
 from app.models.new_company_finance import NewCompanyFinance, NewCompanyFinancePydantic
 from app.models.new_scrap_company_dart_info import NewScrapCompanyDartInfo, NewScrapCompanyDartInfoPydantic
 from app.models.code_class import CodeClass, CodeClassPydantic
+from app.models.collect_dart_notice import CollectDartNotice, CollectDartNoticePydantic
+from app.models.collect_dart_document import CollectDartDocument, CollectDartDocumentPydantic

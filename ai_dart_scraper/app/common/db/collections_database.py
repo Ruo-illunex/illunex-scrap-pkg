@@ -14,7 +14,12 @@ from app.config.settings import COLLECTIONS_DB_URL
 from app.common.log.log_config import setup_logger
 from app.config.settings import FILE_PATHS
 from app.common.core.utils import get_current_datetime, make_dir
-from app.models_init import CollectDart, CollectDartPydantic, CollectDartFinance, CollectDartFinancePydantic
+from app.models_init import (
+    CollectDart, CollectDartPydantic,
+    CollectDartFinance, CollectDartFinancePydantic,
+    CollectDartNotice, CollectDartNoticePydantic,
+    CollectDartDocument, CollectDartDocumentPydantic
+)
 from app.common.db.companies_database import CompaniesDatabase
 
 
@@ -137,7 +142,31 @@ class CollectionsDatabase:
                 insert_stmt = insert(CollectDartFinance).values(insert_data)
                 session.execute(insert_stmt)
                 session.commit()
-                result_msg = f"Success: Inserted {len(data_list)} data for company_id {company_id}"
+                result_msg = f"Success: Inserted {len(data_list)} data into [collect_dart_finance] for company_id {company_id}"
+                return result_msg
+            except SQLAlchemyError as e:
+                session.rollback()
+                err_msg = traceback.format_exc()
+                self.logger.error(f"Error: {e}\n{err_msg}")
+                return err_msg
+
+    def bulk_insert_collectdartnotice(self, data_list: List[CollectDartNoticePydantic]) -> None:
+        """데이터베이스에 데이터를 일괄 추가하는 함수
+        Args:
+            data_list (List[CollectDartNoticePydantic]): 추가할 데이터 리스트
+        """
+        with self.get_session() as session:
+            try:
+                if not data_list:
+                    result_msg = "No data to insert"
+                    return result_msg
+
+                company_id = data_list[0].company_id
+                insert_data = [data.dict() for data in data_list]
+                insert_stmt = insert(CollectDartNotice).values(insert_data)
+                session.execute(insert_stmt)
+                session.commit()
+                result_msg = f"Success: Inserted {len(data_list)} data into [collect_dart_notice] for company_id {company_id}"
                 return result_msg
             except SQLAlchemyError as e:
                 session.rollback()
