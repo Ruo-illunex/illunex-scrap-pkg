@@ -163,8 +163,8 @@ class CollectionsDatabase:
 
                 company_id = data_list[0]['company_id']
                 insert_stmt = insert(CollectDartNotice).values(data_list)
-                do_nothing_stmt = insert_stmt.on_conflict_do_nothing(index_elements=['rcept_no'])
-                session.execute(do_nothing_stmt)
+                ignore_stmt = insert_stmt.prefix_with('IGNORE')
+                session.execute(ignore_stmt)
                 session.commit()
                 result_msg = f"Success: Inserted data into [collect_dart_notice] for company_id {company_id}"
                 return result_msg

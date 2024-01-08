@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 
 import aiohttp
 import pandas as pd
-from pydantic import ValidationError
 
 from app.database_init import collections_db
 from app.common.log.log_config import setup_logger
@@ -26,7 +25,7 @@ class DartNoticeScraper:
         self._url = 'https://opendart.fss.or.kr/api/list.json'
         self._max_concurrent_main_tasks = 3
         self._max_concurrent_sub_tasks = 5
-        self._delay_time = 20
+        self._delay_time = 10
         self._api_call_limit = api_call_limit
         self._api_call_count = 0
         self._now = datetime.now() + timedelta(hours=9)
@@ -96,17 +95,25 @@ class DartNoticeScraper:
                 print(info_msg)
 
             page = params['page_no']
-            try:    # API 호출
-                async with session.get(url, params=params) as response:
-                    self._api_call_count += 1   # API 호출 횟수 증가
-                    info_msg = f"Corp_code: {params['corp_code']} & Page: {page} - API call count: {self._api_call_count}/{self._api_call_limit} ({round(self._api_call_count / self._api_call_limit * 100, 2)}%)"
-                    self._logger.info(info_msg)
-                    print(info_msg)
-                    return await response.json()
-            except Exception as e:
-                err_msg = f"Error: {e}\n{traceback.format_exc()}"
-                self._logger.error(err_msg)
-                return {}
+            retry_attempts = 3
+            for attempt in range(retry_attempts):
+                try:
+                    async with session.get(url, params=params) as response:
+                        self._api_call_count += 1   # API 호출 횟수 증가
+                        info_msg = f"Corp_code: {params['corp_code']} & Page: {page} - API call count: {self._api_call_count}/{self._api_call_limit} ({round(self._api_call_count / self._api_call_limit * 100, 2)}%)"
+                        self._logger.info(info_msg)
+                        print(info_msg)
+                        return await response.json()
+                except Exception as e:
+                    if attempt < retry_attempts - 1:
+                        await asyncio.sleep(5)
+                        continue
+                    else:
+                        err_msg = f"Error: {e}\n{traceback.format_exc()}"
+                        self._logger.error(err_msg)
+                        print(err_msg)
+                        return {}
+            return {}
 
     async def _list_async(self, corp_code=None, start=None, end=None) -> list:
         start = pd.to_datetime(start) if start else pd.to_datetime('1900-01-01')
@@ -140,7 +147,7 @@ class DartNoticeScraper:
                         pages = await asyncio.gather(*tasks)
                         for page in pages:
                             results.extend(page.get('list', []))
-                            info_msg += f", {page['page_no']}"
+                            info_msg += f", {page.get('page_no', 'None')}"
                         self._logger.info(info_msg)
                         print(info_msg)
                         return results
