@@ -7,11 +7,8 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=on \
     PIP_DISABLE_PIP_VERSION_CHECK=on
 
-# 필요한 파일 복사
-COPY requirements.txt pyproject.toml poetry.lock /usr/src/
-
-# 작업 디렉터리 설정
-WORKDIR /usr/src
+# 작업 디렉토리 설정
+WORKDIR /usr/src/app
 
 # 패키지 업데이트 및 필요한 도구 설치
 RUN apt update -y && apt upgrade -y && \
@@ -22,15 +19,22 @@ RUN apt update -y && apt upgrade -y && \
     sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' && \
     apt update -y && \
     # 크롬 브라우저 설치
-    apt install -y google-chrome-stable && \
-    # 파이썬 라이브러리 설치
-    pip install -r requirements.txt && \
-    poetry config virtualenvs.create false && \
-    if [ -f pyproject.toml ]; then poetry install; fi
+    apt install -y google-chrome-stable
 
-# 나머지 파일 복사
-COPY . /usr/src/app
-WORKDIR /usr/src/app/
+# Poetry 설치
+RUN pip install poetry==1.7.1
+
+# Poetry 가상 환경 생성 비활성화
+RUN poetry config virtualenvs.create false
+
+# `pyproject.toml`과 `poetry.lock` 파일을 컨테이너에 복사
+COPY pyproject.toml poetry.lock ./
+
+# Poetry를 사용하여 의존성 설치
+RUN poetry install --only main
+
+# 애플리케이션 코드 복사
+COPY . .
 
 # 헬스체크 명령 추가
 HEALTHCHECK --interval=5m --timeout=30s \
