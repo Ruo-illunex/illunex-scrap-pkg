@@ -142,6 +142,8 @@ class NaverNewsScraper(NewsScraper):
 
         url_md5 = self.generate_md5(news_url)
         create_date = self.preprocess_datetime(create_date)
+        if image_url == "https://ssl.pstatic.net/static.news/image/news/ogtag/navernews_800x420_20221201.jpg":
+            image_url = "no image"  # 네이버 뉴스 이미지가 네이버 로고인 경우, 이미지가 없다고 판단합니다.
         if self.category_dict.get(self.scraper_name).get(category):
             kind_id = self.category_dict.get(self.scraper_name).get(category)
         else:

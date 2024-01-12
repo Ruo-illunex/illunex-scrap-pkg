@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "ai-venture-scraper"
+version = "0.1.0"
+description = ""
+authors = ["Ruo Lee <ruo@illunex.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+python-dotenv = "^1.0.0"
+selenium = "^4.16.0"
+pillow = "^10.2.0"
+sqlalchemy = "^2.0.25"
+pymysql = "^1.1.0"
+requests = "^2.31.0"
+aiohttp = "^3.9.1"
+fastapi = "^0.108.0"
+pandas = "^2.1.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

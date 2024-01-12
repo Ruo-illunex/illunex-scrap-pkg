@@ -48,7 +48,7 @@ def get_current_date():
 def get_corp_codes() -> dict:
     url = 'https://opendart.fss.or.kr/api/corpCode.xml'
     params = {'crtfc_key': DART_API_KEY}
-    
+
     resp = requests.get(url, params=params)
     if resp.status_code != 200:
         raise Exception(f"Error: {resp.status_code} {resp.reason}")

@@ -18,7 +18,7 @@ from app.config.auth import verify_token
 
 # 로거 설정
 current_time = get_current_datetime()
-file_path = FILE_PATHS["log"] + f'main_logger'
+file_path = FILE_PATHS["log"] + 'main_logger'
 make_dir(file_path)
 file_path += f'/main_{current_time}.log'
 logger = setup_logger(

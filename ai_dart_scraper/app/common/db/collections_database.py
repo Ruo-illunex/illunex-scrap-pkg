@@ -18,7 +18,6 @@ from app.models_init import (
     CollectDart, CollectDartPydantic,
     CollectDartFinance, CollectDartFinancePydantic,
     CollectDartNotice, CollectDartNoticePydantic,
-    CollectDartDocument, CollectDartDocumentPydantic
 )
 from app.common.db.companies_database import CompaniesDatabase
 
