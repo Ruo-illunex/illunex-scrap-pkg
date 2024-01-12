@@ -39,3 +39,6 @@ SYNOLOGY_CHAT = {
 }
 
 TROCR_API_TOKEN = os.getenv('TROCR_API_TOKEN')
+
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITHM = os.getenv('ALGORITHM')

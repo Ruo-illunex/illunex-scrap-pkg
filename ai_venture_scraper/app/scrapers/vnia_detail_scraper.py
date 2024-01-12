@@ -17,8 +17,7 @@ from app.config.settings import FILE_PATHS, TROCR_API_TOKEN
 from app.common.core.utils import make_dir, get_current_datetime
 from app.common.log.log_config import setup_logger
 from app.scrapers.vnia_list_scraper import VniaListScraper
-from app.common.db.collections_database import CollectionsDatabase
-from app.common.db.companies_database import CompaniesDatabase
+from app.database_init import collections_db, companies_db
 from app.models_init import (
     CollectVniaInfoPydantic,
     CollectVniaFinanceBalancePydantic,
@@ -45,9 +44,7 @@ class VniaScraper:
         self._api_url = "https://api-inference.huggingface.co/models/microsoft/trocr-base-printed"
         self._api_headers = {"Authorization": f"Bearer {TROCR_API_TOKEN}"}
 
-        self._collections_database = CollectionsDatabase()
-        self._companies_database = CompaniesDatabase()
-        self._comp_id_df = self._companies_database.get_company_id_df()
+        self._comp_id_df = companies_db.get_company_id_df()
         self._init_data()
 
     def _init_data(self) -> None:
@@ -774,7 +771,7 @@ class VniaScraper:
                     all_investment_info = self._check_investment_info_with_pydantic(investment_info)
                     all_venture_business_certificate = self._check_venture_business_certificate_with_pydantic(venture_business_certificate)
                     # DB에 저장
-                    msg, is_success = self._collections_database.insert_all_vnia_data(
+                    msg, is_success = collections_db.insert_all_vnia_data(
                         vnia_info=company_info,
                         vnia_finance_balance=all_company_bs,
                         vnia_finance_income=all_company_is,
