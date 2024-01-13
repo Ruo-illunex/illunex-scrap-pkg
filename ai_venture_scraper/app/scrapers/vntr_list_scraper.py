@@ -8,14 +8,14 @@ from app.common.core.utils import make_dir, get_current_datetime
 from app.common.log.log_config import setup_logger
 
 
-class VniaListScraper:
+class VntrListScraper:
     def __init__(self) -> None:
         self._data_path = FILE_PATHS['data']
-        self._log_path = FILE_PATHS['log'] + 'vnia_list_scraper'
+        self._log_path = FILE_PATHS['log'] + 'vntr_list_scraper'
         make_dir(self._log_path)
-        self._log_path += f'/vnia_list_scraper_{get_current_datetime()}.log'
+        self._log_path += f'/vntr_list_scraper_{get_current_datetime()}.log'
         self._logger = setup_logger(
-            'vnia_list_scraper',
+            'vntr_list_scraper',
             self._log_path
         )
         self._url = 'https://www.smes.go.kr/venturein/pbntc/searchVntrCmpAction'
@@ -77,11 +77,11 @@ class VniaListScraper:
         result = self._get_response(1)
         if result is None:
             return 0
-        totalcnt = result['totalCnt']
+        totalcnt = result.get('TOTAL_COUNT', 0)
         self._logger.info(f'totalcnt: {totalcnt}')
         return totalcnt
 
-    def _get_vnia_sn_list(self) -> None:
+    def _get_vntr_sn_indstycd_dict(self) -> None:
         """벤처기업 인증번호 목록을 가져오는 함수"""
         try:
             page_size = self._get_totalcnt()
@@ -89,34 +89,29 @@ class VniaListScraper:
                 self._logger.warning('page_size is 0')
                 return
             info_data = self._get_response(page_size)['DATA_LIST']
-            vnia_sn_list = [row['vnia_sn'] for row in info_data]
-            if vnia_sn_list is []:
-                self._logger.warning('vnia_sn_list is empty')
-            elif len(vnia_sn_list) != page_size:
-                self._logger.warning(f'vnia_sn_list length is not {page_size}: {len(vnia_sn_list)}')
-            else:
-                # vnia_sn_list를 pickle 파일로 저장
-                with open(self._data_path+'vnia_sn_list.pkl', 'wb') as f:
-                    pickle.dump(vnia_sn_list, f)
-                self._logger.info(f'vnia_sn_list length: {len(vnia_sn_list)}')
+            vniasn_indstycd_dict = {row['vnia_sn']: row['indsty_cd'] for row in info_data}
+            # vniasn_indstycd_dict를 pickle 파일로 저장
+            with open(self._data_path+'vniasn_indstycd_dict.pkl', 'wb') as f:
+                pickle.dump(vniasn_indstycd_dict, f)
+            self._logger.info(f'successfully saved vniasn_indstycd_dict / length: {len(vniasn_indstycd_dict)}')
         except Exception:
             self._logger.error(traceback.format_exc())
 
-    def read_vnia_sn_list(self) -> Optional[list]:
-        """vnia_sn_list.pkl 파일을 읽어서 벤처기업 인증번호 목록을 반환하는 함수
+    def read_vntr_sn_indstycd_dict(self) -> Optional[dict]:
+        """vniasn_indstycd_dict.pkl 파일을 읽어서 벤처기업 인증번호 목록을 반환하는 함수
 
         Returns:
             list: 벤처기업 인증번호 목록
         """
         try:
-            with open(self._data_path+'vnia_sn_list.pkl', 'rb') as f:
-                vnia_sn_list = pickle.load(f)
-                self._logger.info(f'vnia_sn_list length: {len(vnia_sn_list)}')
-                return vnia_sn_list
+            with open(self._data_path+'vniasn_indstycd_dict.pkl', 'rb') as f:
+                vniasn_indstycd_dict = pickle.load(f)
+                self._logger.info(f'successfully read vniasn_indstycd_dict / length: {len(vniasn_indstycd_dict)}')
+                return vniasn_indstycd_dict
         except FileNotFoundError:
-            self._logger.info('vnia_sn_list does not exist')
-            self._get_vnia_sn_list()
-            self.read_vnia_sn_list()
+            self._logger.info('vniasn_indstycd_dict does not exist')
+            self._get_vntr_sn_indstycd_dict()
+            return self.read_vntr_sn_indstycd_dict()
         except Exception:
             self._logger.error(traceback.format_exc())
             return None

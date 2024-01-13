@@ -1,8 +1,8 @@
 import time
 import traceback
-import json
 from typing import Optional, Tuple, List
 from collections import deque
+from copy import deepcopy
 
 import requests
 from selenium import webdriver
@@ -16,27 +16,27 @@ from selenium.common.exceptions import NoSuchElementException
 from app.config.settings import FILE_PATHS, TROCR_API_TOKEN
 from app.common.core.utils import make_dir, get_current_datetime
 from app.common.log.log_config import setup_logger
-from app.scrapers.vnia_list_scraper import VniaListScraper
+from app.scrapers.vntr_list_scraper import VntrListScraper
 from app.database_init import collections_db, companies_db
 from app.models_init import (
-    CollectVniaInfoPydantic,
-    CollectVniaFinanceBalancePydantic,
-    CollectVniaFinanceIncomePydantic,
-    CollectVniaInvestmentInfoPydantic,
-    CollectVniaCertificatePydantic,
+    CollectVntrInfoPydantic,
+    CollectVntrFinanceBalancePydantic,
+    CollectVntrFinanceIncomePydantic,
+    CollectVntrInvestmentInfoPydantic,
+    CollectVntrCertificatePydantic,
 )
 
 
-class VniaScraper:
+class VntrScraper:
     def __init__(self) -> None:
         self._data_path = FILE_PATHS['data']
-        self._log_path = FILE_PATHS['log'] + 'vnia_scraper'
+        self._log_path = FILE_PATHS['log'] + 'vntr_scraper'
         self._driver_path = FILE_PATHS['chromedriver']
 
         make_dir(self._log_path)
         self._log_file = self._log_path + f'/{get_current_datetime()}.log'
         self._logger = setup_logger(
-            'vnia_scraper',
+            'vntr_scraper',
             self._log_file
         )
 
@@ -55,7 +55,8 @@ class VniaScraper:
             'company_nm': None,
             'representative_nm': None,
             'corp_no': None,
-            'biz_nm': None,
+            'indsty_cd': None,
+            'indsty_nm': None,
             'main_prod': None,
             'biz_no': None,
             'tel_no': None,
@@ -84,16 +85,21 @@ class VniaScraper:
             'certificate_details': [],  # 벤처기업확인서 상세정보
         }
 
-    def _get_vnia_list(self) -> Optional[list]:
+    def _get_vntr_list(self) -> Optional[dict]:
         """벤처기업 인증번호 목록을 가져오는 함수
         
         Returns:
-            Optional[list]: 벤처기업 인증번호 목록
+            Optional[dict]: 벤처기업 인증번호 목록 (key: 벤처기업 인증번호, value: 산업코드)
         """
         try:
-            vnia_list_scraper = VniaListScraper()
-            vnia_list = vnia_list_scraper.read_vnia_sn_list()
-            return vnia_list
+            vntr_list_scraper = VntrListScraper()
+            self._vntr_dict = vntr_list_scraper.read_vntr_sn_indstycd_dict()
+            if self._vntr_dict is None:
+                self._logger.error('벤처기업 인증번호 목록을 다시 가져옵니다.')
+                print('벤처기업 인증번호 목록을 다시 가져옵니다.')
+                return self._get_vntr_list()
+            vntr_list = list(self._vntr_dict.keys())
+            return vntr_list
         except Exception as e:
             self._logger.error(f'벤처기업 인증번호 목록을 가져오는데 실패했습니다. {e}')
             self._logger.error(traceback.format_exc())
@@ -172,6 +178,8 @@ class VniaScraper:
         Returns:
             str: 전처리된 문자열
         """
+        if value in ['0', '']:
+            return value
         return ''.join(value.split(',')[:-1])
 
     def _get_financial_info(self, driver: webdriver.Chrome, xpath: str) -> list:
@@ -402,7 +410,7 @@ class VniaScraper:
             self._logger.error(traceback.format_exc())
             return None
 
-    def _get_company_info(self, driver: webdriver.Chrome) -> Optional[dict]:
+    def _get_company_info(self, driver: webdriver.Chrome, vnia_sn: str) -> Optional[dict]:
         """회사 정보를 가져오는 함수
 
         Args:
@@ -411,31 +419,28 @@ class VniaScraper:
         Returns:
             Optional[dict]: 회사 정보
         """
-        result = self.company_info.copy()
+        result = deepcopy(self.company_info)
         try:
             self._logger.info(f'회사 정보를 가져옵니다.')
             print(f'회사 정보를 가져옵니다.')
-            company_nm = driver.find_element(By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[1]/table/tbody/tr[1]/td')
-            representative_nm = driver.find_element(By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[1]/table/tbody/tr[2]/td[1]')
-            corp_no = driver.find_element(By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[1]/table/tbody/tr[2]/td[2]')
-            biz_nm = driver.find_element(By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[1]/table/tbody/tr[3]/td[1]')
-            main_prod = driver.find_element(By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[1]/table/tbody/tr[3]/td[2]')
-            biz_no = driver.find_element(By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[1]/table/tbody/tr[4]/td[1]')
-            tel_no = driver.find_element(By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[1]/table/tbody/tr[4]/td[2]')
-            address = driver.find_element(By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[1]/table/tbody/tr[5]/td')
+            table_xpath = '//*[@id="real_contents"]/div/div[1]/div[1]/table/tbody/tr'
+            temp_company_info = []
+            table_tr_ls = driver.find_elements(By.XPATH, table_xpath)
+            for tr in table_tr_ls:
+                row = tr.find_elements(By.TAG_NAME, 'td')
+                for item in row:
+                    temp_company_info.append(item.text.strip())
 
-            result['company_id'] = self._search_id_from_df(biz_no.text.replace('-', ''))
-            result['company_nm'] = company_nm.text
-            result['representative_nm'] = representative_nm.text
-            result['corp_no'] = corp_no.text.replace('-', '')
-            result['biz_nm'] = biz_nm.text
-            result['main_prod'] = main_prod.text
-            result['biz_no'] = biz_no.text.replace('-', '')
-            result['tel_no'] = tel_no.text
-            result['address'] = address.text
-            
-            # json으로 보기
-            print(json.dumps(result, indent=4, ensure_ascii=False))
+            result['company_nm'] = temp_company_info[0]
+            result['representative_nm'] = temp_company_info[1]
+            result['corp_no'] = temp_company_info[2].replace('-', '')
+            result['indsty_cd'] = self._vntr_dict.get(vnia_sn)
+            result['indsty_nm'] = temp_company_info[3]
+            result['main_prod'] = temp_company_info[4]
+            result['biz_no'] = temp_company_info[5].replace('-', '')
+            result['tel_no'] = temp_company_info[6]
+            result['address'] = temp_company_info[7]
+            result['company_id'] = self._search_id_from_df(result['biz_no'])
             return result
         except Exception as e:
             self._logger.error(f'회사 정보를 가져오는데 실패했습니다. {e}')
@@ -452,7 +457,7 @@ class VniaScraper:
         Returns:
             Optional[dict]: 회사 재무정보
         """
-        result = self.company_finance.copy()
+        result = deepcopy(self.company_finance)
         try:
             self._logger.info(f'회사 재무정보를 가져옵니다.')
             print(f'회사 재무정보를 가져옵니다.')
@@ -499,9 +504,6 @@ class VniaScraper:
                 result['balance_sheet'].append(self._get_balance_sheet(bs))
             for is_ in is_list:
                 result['income_statement'].append(self._get_income_statement(is_))
-
-            # json 형태로 보기
-            print(json.dumps(result, indent=4, ensure_ascii=False))
             return result
         except Exception as e:
             self._logger.error(f'회사 재무정보를 가져오는데 실패했습니다. {e}')
@@ -518,7 +520,7 @@ class VniaScraper:
         Returns:
             Optional[dict]: 투자정보
         """
-        result = self.investment_info.copy()
+        result = deepcopy(self.investment_info)
         try:
             self._logger.info(f'투자정보를 가져옵니다.')
             print(f'투자정보를 가져옵니다.')
@@ -541,10 +543,9 @@ class VniaScraper:
                 # 투자정보 테이블 바디의 행의 셀 가져오기
                 ii_cells = row.find_elements(By.TAG_NAME, "td")
                 data = [cell.text for cell in ii_cells]
+                if (len(data) < 3) or (data[0] in '투자정보 내용이 없습니다.'):
+                    data = ('', '', '')
                 result['investment_details'].append(self._get_investment_details(data))
-
-            # json 형태로 보기
-            print(json.dumps(result, indent=4, ensure_ascii=False))
             return result
         except Exception as e:
             self._logger.error(f'투자정보를 가져오는데 실패했습니다. {e}')
@@ -561,7 +562,7 @@ class VniaScraper:
         Returns:
             Optional[dict]: 벤처기업확인서
         """
-        result = self.venture_business_certificate.copy()
+        result = deepcopy(self.venture_business_certificate)
         try:
             self._logger.info(f'벤처기업확인서를 가져옵니다.')
             print(f'벤처기업확인서를 가져옵니다.')
@@ -584,17 +585,16 @@ class VniaScraper:
                 # 벤처기업확인서 테이블 바디의 행의 셀 가져오기
                 vc_cells = row.find_elements(By.TAG_NAME, "td")
                 data = [cell.text for cell in vc_cells]
+                if len(data) < 7:
+                    data = ('', '', '', '', '', '', '')
                 result['certificate_details'].append(self._get_venture_business_certificate_details(data))
-
-            # json 형태로 보기
-            print(json.dumps(result, indent=4, ensure_ascii=False))
             return result
         except Exception as e:
             self._logger.error(f'벤처기업확인서를 가져오는데 실패했습니다. {e}')
             self._logger.error(traceback.format_exc())
             return None
 
-    def _get_vnia_details(self, driver: webdriver.Chrome, vnia_sn: str, captcha_key: str) -> Optional[dict]:
+    def _get_vntr_details(self, driver: webdriver.Chrome, vnia_sn: str, captcha_key: str) -> Optional[dict]:
         """벤처기업 상세정보를 가져오는 함수
 
         Args:
@@ -605,6 +605,7 @@ class VniaScraper:
             Optional[dict]: 벤처기업 상세정보
         """
         try:
+            self._init_data()
             self._logger.info(f'벤처기업 상세정보를 가져옵니다.')
             print(f'벤처기업 상세정보를 가져옵니다.')
             # 벤처기업 상세정보 URL
@@ -617,20 +618,17 @@ class VniaScraper:
                 return None
 
             # 회사 정보 가져오기
-            company_info = self._get_company_info(driver)
+            company_info = self._get_company_info(driver, vnia_sn)
             if company_info is None:
                 return None
-
             # 회사 재무정보 가져오기
             company_finance = self._get_company_finance(driver, company_info)
             if company_finance is None:
                 return None
-
             # 투자정보 가져오기
             investment_info = self._get_investment_info(driver, company_info)
             if investment_info is None:
                 return None
-
             # 벤처기업확인서 가져오기
             venture_business_certificate = self._get_venture_business_certificate(driver, company_info)
             if venture_business_certificate is None:
@@ -642,9 +640,6 @@ class VniaScraper:
                 'investment_info': investment_info,
                 'venture_business_certificate': venture_business_certificate,
             }
-
-            # json 형태로 보기
-            print(json.dumps(result, indent=4, ensure_ascii=False))
             return result
         except Exception as e:
             self._logger.error(f'벤처기업 상세정보를 가져오는데 실패했습니다. {e}')
@@ -653,10 +648,10 @@ class VniaScraper:
 
     def _check_company_info_with_pydantic(
         self, company_info: dict
-        ) -> Optional[CollectVniaInfoPydantic]:
+        ) -> Optional[CollectVntrInfoPydantic]:
         try:
             # pydantic 모델로 변환
-            company_info = CollectVniaInfoPydantic(**company_info)
+            company_info = CollectVntrInfoPydantic(**company_info)
             return company_info
         except Exception as e:
             self._logger.error(f'회사 정보를 pydantic 모델로 변환하는데 실패했습니다. {e}')
@@ -665,7 +660,7 @@ class VniaScraper:
 
     def _check_company_finance_with_pydantic(
         self, company_finance: dict
-        ) -> Optional[Tuple[List[CollectVniaFinanceBalancePydantic], List[CollectVniaFinanceIncomePydantic]]]:
+        ) -> Optional[Tuple[List[CollectVntrFinanceBalancePydantic], List[CollectVntrFinanceIncomePydantic]]]:
         try:
             base_company_finance = {
                 'company_id': company_finance['company_id'],
@@ -675,18 +670,21 @@ class VniaScraper:
             }
             all_company_bs = []
             for bs in company_finance['balance_sheet']:
-                company_bs_temp = base_company_finance.copy()
-                company_bs_temp.update(bs)
-                all_company_bs.append(company_bs_temp.copy())
+                if bs.values() != [''] * len(bs):
+                    company_bs_temp = base_company_finance.copy()
+                    company_bs_temp.update(bs)
+                    all_company_bs.append(company_bs_temp.copy())
             all_company_is = []
-            for is_ in company_finance['income_statement']:
-                company_is_temp = base_company_finance.copy()
-                company_is_temp.update(is_)
-                all_company_is.append(company_is_temp.copy())
-            
-            # pydantic 모델로 변환
-            all_company_bs = [CollectVniaFinanceBalancePydantic(**company_bs) for company_bs in all_company_bs]
-            all_company_is = [CollectVniaFinanceIncomePydantic(**company_is) for company_is in all_company_is]
+            for inc in company_finance['income_statement']:
+                if inc.values() != [''] * len(inc):
+                    company_is_temp = base_company_finance.copy()
+                    company_is_temp.update(inc)
+                    all_company_is.append(company_is_temp)
+
+            if all_company_bs:
+                all_company_bs = [CollectVntrFinanceBalancePydantic(**company_bs) for company_bs in all_company_bs]
+            if all_company_is:
+                all_company_is = [CollectVntrFinanceIncomePydantic(**company_is) for company_is in all_company_is]
             return all_company_bs, all_company_is
         except Exception as e:
             self._logger.error(f'회사 재무정보를 pydantic 모델로 변환하는데 실패했습니다. {e}')
@@ -695,7 +693,7 @@ class VniaScraper:
 
     def _check_investment_info_with_pydantic(
         self, investment_info: dict
-        ) -> Optional[List[CollectVniaInvestmentInfoPydantic]]:
+        ) -> Optional[List[CollectVntrInvestmentInfoPydantic]]:
         try:
             base_investment_info = {
                 'company_id': investment_info['company_id'],
@@ -705,12 +703,14 @@ class VniaScraper:
             }
             all_investment_info = []
             for ii in investment_info['investment_details']:
-                investment_info_temp = base_investment_info.copy()
-                investment_info_temp.update(ii)
-                all_investment_info.append(investment_info_temp.copy())
-            
-            # pydantic 모델로 변환
-            all_investment_info = [CollectVniaInvestmentInfoPydantic(**investment_info) for investment_info in all_investment_info]
+                print(ii.values())
+                if list(ii.values()) != [''] * len(ii):
+                    investment_info_temp = base_investment_info.copy()
+                    investment_info_temp.update(ii)
+                    all_investment_info.append(investment_info_temp)
+            print(all_investment_info)
+            if all_investment_info:
+                all_investment_info = [CollectVntrInvestmentInfoPydantic(**investment_info) for investment_info in all_investment_info]
             return all_investment_info
         except Exception as e:
             self._logger.error(f'투자정보를 pydantic 모델로 변환하는데 실패했습니다. {e}')
@@ -719,7 +719,7 @@ class VniaScraper:
 
     def _check_venture_business_certificate_with_pydantic(
         self, venture_business_certificate: dict
-        ) -> Optional[List[CollectVniaCertificatePydantic]]:
+        ) -> Optional[List[CollectVntrCertificatePydantic]]:
         try:
             base_venture_business_certificate = {
                 'company_id': venture_business_certificate['company_id'],
@@ -729,54 +729,66 @@ class VniaScraper:
             }
             all_venture_business_certificate = []
             for vc in venture_business_certificate['certificate_details']:
-                venture_business_certificate_temp = base_venture_business_certificate.copy()
-                venture_business_certificate_temp.update(vc)
-                all_venture_business_certificate.append(venture_business_certificate_temp.copy())
-            
-            # pydantic 모델로 변환
-            all_venture_business_certificate = [CollectVniaCertificatePydantic(**venture_business_certificate) for venture_business_certificate in all_venture_business_certificate]
+                if vc.values() != [''] * len(vc):
+                    venture_business_certificate_temp = base_venture_business_certificate.copy()
+                    venture_business_certificate_temp.update(vc)
+                    all_venture_business_certificate.append(venture_business_certificate_temp)
+
+            if all_venture_business_certificate:
+                all_venture_business_certificate = [CollectVntrCertificatePydantic(**venture_business_certificate) for venture_business_certificate in all_venture_business_certificate]
             return all_venture_business_certificate
         except Exception as e:
             self._logger.error(f'벤처기업확인서를 pydantic 모델로 변환하는데 실패했습니다. {e}')
             self._logger.error(traceback.format_exc())
             return None
 
-    def scrape_vnia(self):
-        vnia_queue = deque(self._get_vnia_list())
-        while vnia_queue:
-            print(f'남은 벤처기업 수: {len(vnia_queue)}')
+    def scrape_vntr(self):
+        vntr_queue = deque(self._get_vntr_list())
+        while vntr_queue:
+            print(f'남은 벤처기업 수: {len(vntr_queue)}')
             is_success = False
-            vnia_sn = vnia_queue.popleft()
-            driver = self._get_driver()
+            vnia_sn = vntr_queue.popleft()
             try:
                 # 캡챠 키가 맞을 때까지 반복 -> 5번 반복
                 try_count = 5
                 while try_count > 0:
+                    driver = self._get_driver(self.captcha_url)
                     try_count -= 1
                     captcha_key = self._get_captcha_key(driver)
                     if captcha_key is None:
+                        driver.quit()
+                        time.sleep(5)
                         continue
-                    vnia_details = self._get_vnia_details(driver, vnia_sn, captcha_key)
-                    if vnia_details is None:
+                    # 캡챠키가 숫자 6자리인지 확인
+                    if not captcha_key.isdigit() or len(captcha_key) != 6:
+                        driver.quit()
+                        time.sleep(5)
+                        continue
+                    vntr_details = self._get_vntr_details(driver, vnia_sn, captcha_key)
+                    if vntr_details is None:
+                        driver.quit()
+                        time.sleep(5)
                         continue
                     break
-                if vnia_details:
-                    company_info = vnia_details['company_info']
-                    company_finance = vnia_details['company_finance']
-                    investment_info = vnia_details['investment_info']
-                    venture_business_certificate = vnia_details['venture_business_certificate']
+                if vntr_details:
+                    company_info = vntr_details['company_info']
+                    company_finance = vntr_details['company_finance']
+                    investment_info = vntr_details['investment_info']
+                    venture_business_certificate = vntr_details['venture_business_certificate']
                     # pydantic 모델로 변환
                     company_info = self._check_company_info_with_pydantic(company_info)
                     all_company_bs, all_company_is = self._check_company_finance_with_pydantic(company_finance)
                     all_investment_info = self._check_investment_info_with_pydantic(investment_info)
                     all_venture_business_certificate = self._check_venture_business_certificate_with_pydantic(venture_business_certificate)
+
+                    print(all_investment_info)
                     # DB에 저장
-                    msg, is_success = collections_db.insert_all_vnia_data(
-                        vnia_info=company_info,
-                        vnia_finance_balance=all_company_bs,
-                        vnia_finance_income=all_company_is,
-                        vnia_investment_info=all_investment_info,
-                        vnia_certificate=all_venture_business_certificate
+                    msg, is_success = collections_db.insert_all_vntr_data(
+                        vntr_info=company_info,
+                        vntr_finance_balance=all_company_bs,
+                        vntr_finance_income=all_company_is,
+                        vntr_investment=all_investment_info,
+                        vntr_certificate=all_venture_business_certificate
                     )
                     self._logger.info(msg)
                     print(msg)
@@ -784,11 +796,12 @@ class VniaScraper:
                 self._logger.error(f'벤처기업 상세정보를 가져오는데 실패했습니다. {e}')
                 self._logger.error(traceback.format_exc())
                 print(f'벤처기업 상세정보를 가져오는데 실패했습니다. {e}')
+                driver.quit()
                 continue
             finally:
                 driver.quit()
                 if not is_success:
-                    vnia_queue.append(vnia_sn)
+                    vntr_queue.append(vnia_sn)
                     time.sleep(5)
                     continue
         self._logger.info(f'벤처기업 상세정보를 모두 가져왔습니다.')

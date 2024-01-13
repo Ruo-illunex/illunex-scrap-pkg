@@ -1,2 +1,2 @@
-from app.scrapers.vnia_list_scraper import VniaListScraper
-from app.scrapers.vnia_detail_scraper import VniaScraper
+from app.scrapers.vntr_list_scraper import VntrListScraper
+from app.scrapers.vntr_detail_scraper import VntrScraper

@@ -7,19 +7,20 @@ from pydantic import BaseModel
 from app.common.db.base import BaseCollections
 
 
-class CollectVniaInfo(BaseCollections):
+class CollectVntrInfo(BaseCollections):
     """벤처기업 인증번호 정보 모델 클래스"""
 
-    __tablename__ = 'collect_vnia_info'
+    __tablename__ = 'collect_vntr_info'
 
     # 테이블 컬럼 정의
     id = Column(Integer, primary_key=True, autoincrement=True, comment='고유번호')
     company_id = Column(Integer, nullable=True, comment='companies.new_company_info.id')
-    company_nm = Column(String(100), comment='벤처기업 이름')
-    representative_nm = Column(String(100), comment='대표자 이름')
+    company_nm = Column(String(30), comment='벤처기업 이름')
+    representative_nm = Column(String(20), comment='대표자 이름')
     corp_no = Column(String(50), comment='법인 번호')
-    biz_nm = Column(String(200), comment='업종명')
-    main_prod = Column(String(200), comment='주요제품')
+    indsty_cd = Column(String(10), comment='업종코드')
+    indsty_nm = Column(String(50), comment='업종명')
+    main_prod = Column(String(50), comment='주요제품')
     biz_no = Column(String(50), unique=True, comment='사업자 번호')
     tel_no = Column(String(50), comment='전화 번호')
     address = Column(String(200), comment='주소')
@@ -33,7 +34,7 @@ class CollectVniaInfo(BaseCollections):
     }
 
 
-class CollectVniaInfoPydantic(BaseModel):
+class CollectVntrInfoPydantic(BaseModel):
     """벤처기업 인증번호 정보 Pydantic 모델"""
 
     # 모델 필드 정의
@@ -41,7 +42,8 @@ class CollectVniaInfoPydantic(BaseModel):
     company_nm: Optional[str] = None
     representative_nm: Optional[str] = None
     corp_no: Optional[str] = None
-    biz_nm: Optional[str] = None
+    indsty_cd: Optional[str] = None
+    indsty_nm: Optional[str] = None
     main_prod: Optional[str] = None
     biz_no: Optional[str] = None
     tel_no: Optional[str] = None

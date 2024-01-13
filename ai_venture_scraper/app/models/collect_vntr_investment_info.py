@@ -1,23 +1,23 @@
 from datetime import date
 from typing import Optional
 
-from sqlalchemy import Column, Integer, String, Date
+from sqlalchemy import Column, Integer, String, Date, UniqueConstraint
 from pydantic import BaseModel
 
 from app.common.db.base import BaseCollections
 
 
-class CollectVniaInvestmentInfo(BaseCollections):
+class CollectVntrInvestmentInfo(BaseCollections):
     """벤처기업 투자정보 모델 클래스"""
 
-    __tablename__ = 'collect_vnia_investment_info'
+    __tablename__ = 'collect_vntr_investment_info'
 
     # 테이블 컬럼 정의
     id = Column(Integer, primary_key=True, autoincrement=True, comment='고유번호')
     company_id = Column(Integer, nullable=True, comment='companies.new_company_info.id')
     company_nm = Column(String(20), comment='벤처기업 이름')
     corp_no = Column(String(15), comment='법인 번호')
-    biz_no = Column(String(10), unique=True, comment='사업자 번호')
+    biz_no = Column(String(10), comment='사업자 번호')
     invest_date = Column(String(20), comment='투자 날짜')
     invest_amount = Column(String(20), comment='투자 금액')
     change_amount = Column(String(100), comment='변경사항(잔액)')
@@ -25,13 +25,13 @@ class CollectVniaInvestmentInfo(BaseCollections):
     update_date = Column(Date, default=date.today, onupdate=date.today, comment='수정일')
 
     # 인코딩 설정
-    __table_args__ = {
-        'mysql_charset': 'utf8mb4',
-        'mysql_collate': 'utf8mb4_unicode_ci'
-    }
+    __table_args__ = (
+        UniqueConstraint('biz_no', 'invest_date', name='uix_biz_no_invest_date'),
+        {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_unicode_ci'}
+    )
 
 
-class CollectVniaInvestmentInfoPydantic(BaseModel):
+class CollectVntrInvestmentInfoPydantic(BaseModel):
     """벤처기업 투자정보 Pydantic 모델"""
 
     # 모델 필드 정의

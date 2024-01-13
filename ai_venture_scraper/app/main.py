@@ -43,12 +43,12 @@ async def health_check():
     return {"status": "healthy"}
 
 
-@app.get("/scrape/vnia")
-def scrape_vnia(token: str = Depends(verify_token)):
-    """VniaScraper를 이용해 모든 기업의 기업 정보를 수집하는 함수"""
+@app.get("/scrape/vntr")
+def scrape_vntr(token: str = Depends(verify_token)):
+    """VntrScraper를 이용해 모든 기업의 기업 정보를 수집하는 함수"""
     try:
-        scraper = VniaScraper()
-        scraper.scrape_vnia()
+        scraper = VntrScraper()
+        scraper.scrape_vntr()
         return {"status": "Scraping in progress..."}
     except Exception as e:
         logger.error(e)
