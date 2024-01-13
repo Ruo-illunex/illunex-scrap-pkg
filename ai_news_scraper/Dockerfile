@@ -23,6 +23,7 @@ RUN apt update -y && apt upgrade -y && \
     apt update -y && \
     # 크롬 브라우저 설치
     apt install -y google-chrome-stable && \
+    apt-get install -y curl && \
     # 파이썬 라이브러리 설치
     pip install -r requirements.txt && \
     poetry config virtualenvs.create false && \

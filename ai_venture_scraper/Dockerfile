@@ -19,7 +19,8 @@ RUN apt update -y && apt upgrade -y && \
     sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' && \
     apt update -y && \
     # 크롬 브라우저 설치
-    apt install -y google-chrome-stable
+    apt install -y google-chrome-stable && \
+    apt-get install -y curl
 
 # Poetry 설치
 RUN pip install poetry==1.7.1

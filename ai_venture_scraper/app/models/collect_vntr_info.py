@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from sqlalchemy import Column, Integer, String, Date
+from sqlalchemy import Column, Integer, String, Date, Text
 from pydantic import BaseModel
 
 from app.common.db.base import BaseCollections
@@ -15,12 +15,12 @@ class CollectVntrInfo(BaseCollections):
     # 테이블 컬럼 정의
     id = Column(Integer, primary_key=True, autoincrement=True, comment='고유번호')
     company_id = Column(Integer, nullable=True, comment='companies.new_company_info.id')
-    company_nm = Column(String(30), comment='벤처기업 이름')
+    company_nm = Column(Text, comment='벤처기업 이름')
     representative_nm = Column(String(20), comment='대표자 이름')
     corp_no = Column(String(50), comment='법인 번호')
     indsty_cd = Column(String(10), comment='업종코드')
     indsty_nm = Column(String(50), comment='업종명')
-    main_prod = Column(String(50), comment='주요제품')
+    main_prod = Column(Text, comment='주요제품')
     biz_no = Column(String(50), unique=True, comment='사업자 번호')
     tel_no = Column(String(50), comment='전화 번호')
     address = Column(String(200), comment='주소')

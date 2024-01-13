@@ -107,7 +107,7 @@ class CollectionsDatabase:
                 # 리스트가 비어있는 경우에는 삽입하지 않음
                 if vntr_finance_balance:
                     self.insert_vntr_finance_balance(vntr_finance_balance, session)
-                msg += f', 재무정보 {len(vntr_finance_balance)}개'
+                msg += f' : 재무정보 {len(vntr_finance_balance)}개'
                 if vntr_finance_income:
                     self.insert_vntr_finance_income(vntr_finance_income, session)
                 msg += f', 손익정보 {len(vntr_finance_income)}개'

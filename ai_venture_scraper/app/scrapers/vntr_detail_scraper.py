@@ -670,13 +670,13 @@ class VntrScraper:
             }
             all_company_bs = []
             for bs in company_finance['balance_sheet']:
-                if bs.values() != [''] * len(bs):
+                if list(bs.values()) != [''] * len(bs):
                     company_bs_temp = base_company_finance.copy()
                     company_bs_temp.update(bs)
                     all_company_bs.append(company_bs_temp.copy())
             all_company_is = []
             for inc in company_finance['income_statement']:
-                if inc.values() != [''] * len(inc):
+                if list(inc.values()) != [''] * len(inc):
                     company_is_temp = base_company_finance.copy()
                     company_is_temp.update(inc)
                     all_company_is.append(company_is_temp)
@@ -703,12 +703,10 @@ class VntrScraper:
             }
             all_investment_info = []
             for ii in investment_info['investment_details']:
-                print(ii.values())
                 if list(ii.values()) != [''] * len(ii):
                     investment_info_temp = base_investment_info.copy()
                     investment_info_temp.update(ii)
                     all_investment_info.append(investment_info_temp)
-            print(all_investment_info)
             if all_investment_info:
                 all_investment_info = [CollectVntrInvestmentInfoPydantic(**investment_info) for investment_info in all_investment_info]
             return all_investment_info
@@ -729,7 +727,7 @@ class VntrScraper:
             }
             all_venture_business_certificate = []
             for vc in venture_business_certificate['certificate_details']:
-                if vc.values() != [''] * len(vc):
+                if list(vc.values()) != [''] * len(vc):
                     venture_business_certificate_temp = base_venture_business_certificate.copy()
                     venture_business_certificate_temp.update(vc)
                     all_venture_business_certificate.append(venture_business_certificate_temp)
@@ -744,8 +742,9 @@ class VntrScraper:
 
     def scrape_vntr(self):
         vntr_queue = deque(self._get_vntr_list())
+        total_vntr_count = len(vntr_queue)
         while vntr_queue:
-            print(f'남은 벤처기업 수: {len(vntr_queue)}')
+            print(f'* 남은 벤처기업 수: {len(vntr_queue)} / {total_vntr_count} (진행 상황: {round((total_vntr_count - len(vntr_queue)) / total_vntr_count * 100, 2)}%)')
             is_success = False
             vnia_sn = vntr_queue.popleft()
             try:
@@ -781,7 +780,6 @@ class VntrScraper:
                     all_investment_info = self._check_investment_info_with_pydantic(investment_info)
                     all_venture_business_certificate = self._check_venture_business_certificate_with_pydantic(venture_business_certificate)
 
-                    print(all_investment_info)
                     # DB에 저장
                     msg, is_success = collections_db.insert_all_vntr_data(
                         vntr_info=company_info,
@@ -791,7 +789,7 @@ class VntrScraper:
                         vntr_certificate=all_venture_business_certificate
                     )
                     self._logger.info(msg)
-                    print(msg)
+                    print(f'--- {msg} ---\n')
             except Exception as e:
                 self._logger.error(f'벤처기업 상세정보를 가져오는데 실패했습니다. {e}')
                 self._logger.error(traceback.format_exc())
