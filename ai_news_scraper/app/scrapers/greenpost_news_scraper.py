@@ -10,7 +10,7 @@ import requests
 from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import EsgNews
 from app.scrapers.urls import URLs
-from app.common.core.utils import preprocess_datetime_iso
+from app.common.core.utils import preprocess_datetime_iso, normal_text
 
 
 class GreenpostNewsScraper(NewsScraper):
@@ -103,6 +103,7 @@ class GreenpostNewsScraper(NewsScraper):
             kind_id = self.category_dict.get(self.scraper_name).get(kind)
         else:
             kind_id = self.category_dict.get(self.scraper_name).get("etc")
+        norm_title = normal_text(title)
 
         news_data = EsgNews(
             url=news_url,
@@ -116,6 +117,7 @@ class GreenpostNewsScraper(NewsScraper):
             kind=kind_id,
             category="ESG",
             esg_analysis="",
+            norm_title=norm_title,
             )
         return news_data
 

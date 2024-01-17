@@ -148,6 +148,7 @@ class NaverNewsScraper(NewsScraper):
             kind_id = self.category_dict.get(self.scraper_name).get(category)
         else:
             kind_id = self.category_dict.get(self.scraper_name).get("etc")
+        norm_title = normal_text(title)
 
         news_data = NaverNews(
             url=news_url,
@@ -160,6 +161,7 @@ class NaverNewsScraper(NewsScraper):
             media=media,
             kind=kind_id,
             category="",
+            norm_title=norm_title,
             )
         return news_data
 

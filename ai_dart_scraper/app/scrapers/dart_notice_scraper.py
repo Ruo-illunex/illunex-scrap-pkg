@@ -90,7 +90,7 @@ class DartNoticeScraper:
                 await self._delay()  # 딜레이
 
             if self._check_if_past_midnight():  # 자정이 지났는지 확인
-                info_msg = f"Past midnight. Reset API call count and limit."
+                info_msg = "Past midnight. Reset API call count and limit."
                 self._logger.info(info_msg)
                 print(info_msg)
 
@@ -191,7 +191,7 @@ class DartNoticeScraper:
 
     async def scrape_dart_notice(self, start=None, end=None):
         """OpenDartReader를 이용해 모든 기업의 공시 정보를 수집하는 함수"""
-        info_msg = f"Start: Scrape dart notice info"
+        info_msg = "Start: Scrape dart notice info"
         self._logger.info(info_msg)
         print(info_msg)
 
@@ -209,6 +209,6 @@ class DartNoticeScraper:
             self._logger.error(err_msg)
         finally:
             db_writer_task.cancel()
-            info_msg = f"End: Scrape dart notice info"
+            info_msg = "End: Scrape dart notice info"
             self._logger.info(info_msg)
             print(info_msg)

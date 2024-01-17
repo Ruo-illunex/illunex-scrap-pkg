@@ -48,8 +48,11 @@ def scrape_vntr(token: str = Depends(verify_token)):
     """VntrScraper를 이용해 모든 기업의 기업 정보를 수집하는 함수"""
     try:
         scraper = VntrScraper()
-        scraper.scrape_vntr()
+        scraper.scrape()
         return {"status": "Scraping in progress..."}
     except Exception as e:
         logger.error(e)
         return {"status": "Scraping failed..."}
+    finally:
+        logger.info("Scraping completed...")
+        logger.info("--------------------------------------------------")

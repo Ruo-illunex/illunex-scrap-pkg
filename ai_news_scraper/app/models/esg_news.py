@@ -25,6 +25,7 @@ class EsgNews(BaseScraper):
     media = Column(String(255))
     category = Column(String(255))
     esg_analysis = Column(Text)
+    norm_title = Column(String(255))
 
     # 테이블 인코딩 설정
     __table_args__ = {
@@ -47,6 +48,7 @@ class EsgNewsPydantic(BaseModel):
     media: str
     category: str
     esg_analysis: str
+    norm_title: str
 
     # Pydantic 모델의 Config 클래스
     class Config:

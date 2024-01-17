@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import EtcNews
 from app.scrapers.urls import URLs
-from app.common.core.utils import preprocess_datetime_rfc2822
+from app.common.core.utils import preprocess_datetime_rfc2822, normal_text
 
 
 class PlatumNewsScraper(NewsScraper):
@@ -96,6 +96,7 @@ class PlatumNewsScraper(NewsScraper):
                 kind_id = self.category_dict.get(self.scraper_name).get(kind)
             else:
                 kind_id = self.category_dict.get(self.scraper_name).get("etc")
+            norm_title = normal_text(title)
 
             news_data = EtcNews(
                 url=url,
@@ -108,6 +109,7 @@ class PlatumNewsScraper(NewsScraper):
                 media=media,
                 kind=kind_id,
                 category="",
+                norm_title=norm_title,
                 )
             return news_data
 

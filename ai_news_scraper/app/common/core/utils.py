@@ -1,7 +1,9 @@
 import datetime
 import email.utils
+import re
 
 import yaml
+import hanja
 
 
 # YAML 파일 불러오는 함수
@@ -105,7 +107,7 @@ def preprocess_datetime_eng_without_seconds(date_str):
         match = re.search(r'(\d+):(\d+) (a\.m\.|p\.m\.) ET (\w+)\. (\d+), (\d+)', date_str)
         if not match:
             return None
-        
+
         hour, minute, am_pm, month, day, year = match.groups()
 
         # 12시간제 시간을 24시간제로 변환
@@ -125,3 +127,9 @@ def preprocess_datetime_eng_without_seconds(date_str):
         return dt.strftime("%Y-%m-%d %H:%M:%S")
     except Exception as e:
         return None
+
+
+def normal_text(in_str: str) -> str:
+    rep_exp = r"[^a-zA-Z0-9가-힣]"
+    temp1 = hanja.translate(in_str, "substitution")
+    return re.sub(rep_exp, "", temp1)

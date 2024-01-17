@@ -117,7 +117,7 @@ class CollectionsDatabase:
                 if vntr_certificate:
                     self.insert_vntr_certificate(vntr_certificate, session)
                 msg += f', 인증정보 {len(vntr_certificate)}개'
-                
+
                 status = True
                 session.commit()
                 msg += '를 DB에 삽입하였습니다.'

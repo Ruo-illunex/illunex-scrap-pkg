@@ -27,7 +27,6 @@ COMPANIES_DB_URL = f'mysql+pymysql://{username}:{password}@{host}:{port}/{compan
 FILE_PATHS = {
     'data': 'app/data/',
     'log': 'app/common/log/',
-    'chromedriver': 'app/config/chromedriver'
     }
 
 # 시놀로지 챗봇 설정
@@ -42,3 +41,5 @@ TROCR_API_TOKEN = os.getenv('TROCR_API_TOKEN')
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 ALGORITHM = os.getenv('ALGORITHM')
+
+HUB_HOST = os.getenv('HUB_HOST')

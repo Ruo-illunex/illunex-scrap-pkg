@@ -13,7 +13,7 @@ from app.models_init import CollectDartFinancePydantic
 
 
 class DartFinanceScraper:
-    def __init__(self, bsns_year:int = None, api_call_limit: int = 19900) -> None:
+    def __init__(self, bsns_year: int = None, api_call_limit: int = 19900) -> None:
         file_path = FILE_PATHS["log"] + 'scrapers'
         make_dir(file_path)
         file_path += f'/dart_finance_scraper_{get_current_datetime()}.log'
@@ -98,7 +98,7 @@ class DartFinanceScraper:
 
             # 자정 이후라면 API 호출 횟수와 제한 횟수를 초기화
             if self._check_if_past_midnight():
-                info_msg = f"Past midnight. Resetting API call count and limit"
+                info_msg = "Past midnight. Resetting API call count and limit"
                 self._logger.info(info_msg)
                 print(info_msg)
 
@@ -189,7 +189,7 @@ class DartFinanceScraper:
                                 name=f"{company_id}_{bsns_year}_{reprt_code}_{fs_div}")
                             tasks.append(task)
             await asyncio.gather(*tasks)
-        info_msg = f"Finish scraping dart finance info"
+        info_msg = "Finish scraping dart finance info"
         self._logger.info(info_msg)
         print(info_msg)
 

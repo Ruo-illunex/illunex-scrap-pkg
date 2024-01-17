@@ -24,6 +24,7 @@ class EtcNews(BaseScraper):
     portal = Column(String(255))
     media = Column(String(255))
     category = Column(String(255))
+    norm_title = Column(String(255))
 
     # 테이블 인코딩 설정
     __table_args__ = {
@@ -45,6 +46,7 @@ class EtcNewsPydantic(BaseModel):
     portal: str
     media: str
     category: str
+    norm_title: str
 
     # Pydantic 모델의 Config 클래스
     class Config:

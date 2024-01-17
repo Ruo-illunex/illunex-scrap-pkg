@@ -49,4 +49,71 @@ services:
       - "8503:8080"  # 포트 변경
     env_file:
       - ./ai_venture_scraper/.env
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --workers 1
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080
+
+  selenium-hub:
+    image: selenium/hub:latest
+    ports:
+      - 4442:4442
+      - 4443:4443
+      - 4444:4444
+    environment:
+      GRID_MAX_SESSION: 16
+    security_opt:
+      - seccomp:unconfined
+
+  chrome-node_1:
+    image: selenium/node-chrome:latest
+    depends_on:
+      - selenium-hub
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: 4442
+      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+      SE_NODE_MAX_SESSIONS: 4
+      selenium-manager: 'true'
+      VNC_NO_PASSWORD: 'true'
+    security_opt:
+      - seccomp:unconfined
+
+  chrome-node_2:
+    image: selenium/node-chrome:latest
+    depends_on:
+      - selenium-hub
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: 4442
+      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443d
+      SE_NODE_MAX_SESSIONS: 4
+      VNC_NO_PASSWORD: 'true'
+      selenium-manager: 'true'
+    security_opt:
+      - seccomp:unconfined
+
+  chrome-node_3:
+    image: selenium/node-chrome:latest
+    depends_on:
+      - selenium-hub
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: 4442
+      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+      SE_NODE_MAX_SESSIONS: 4
+      VNC_NO_PASSWORD: 'true'
+      selenium-manager: 'true'
+    security_opt:
+      - seccomp:unconfined
+
+  chrome-node_4:
+    image: selenium/node-chrome:latest
+    depends_on:
+      - selenium-hub
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: 4442
+      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+      SE_NODE_MAX_SESSIONS: 4
+      VNC_NO_PASSWORD: 'true'
+      selenium-manager: 'true'
+    security_opt:
+      - seccomp:unconfined
