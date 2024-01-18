@@ -23,7 +23,7 @@ from app.models_init import (
 
 class CollectionsDatabase:
     def __init__(self) -> None:
-        self.engine = create_engine(COLLECTIONS_DB_URL, pool_recycle=3600, pool_size=20, max_overflow=0)
+        self.engine = create_engine(COLLECTIONS_DB_URL, pool_recycle=3600, pool_size=20, max_overflow=20)
         self.SessionLocal = sessionmaker(bind=self.engine)
         file_path = FILE_PATHS["log"] + 'database'
         make_dir(file_path)
@@ -46,42 +46,34 @@ class CollectionsDatabase:
         finally:
             session.close()
 
-    def insert_vntr_info(self, data: CollectVntrInfoPydantic, session) -> str:
+    def insert_vntr_info(self, data: List[CollectVntrInfoPydantic], session):
         """vntr_info 테이블에 데이터를 삽입하는 함수"""
-        insert_stmt = insert(CollectVntrInfo).values(**data.dict())
+        insert_data = [item.dict() for item in data]
+        insert_stmt = insert(CollectVntrInfo).values(insert_data)
         on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
-            **{c.name: c for c in insert_stmt.table.c if c.name != 'id'}
+            **{k: insert_stmt.inserted[k] for k in insert_data[0]}
             )
         session.execute(on_duplicate_key_stmt)
 
-    def insert_vntr_finance_balance(self, data: List[CollectVntrFinanceBalancePydantic], session) -> str:
+    def insert_vntr_finance_balance(self, data: List[CollectVntrFinanceBalancePydantic], session):
         """vntr_finance_balance 테이블에 데이터를 삽입하는 함수"""
         insert_data = [item.dict() for item in data]
-        insert_stmt = insert(CollectVntrFinanceBalance).values(insert_data)
-        on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
-            **{c.name: c for c in insert_stmt.table.c if c.name != 'id'}
-            )
-        session.execute(on_duplicate_key_stmt)
+        insert_stmt = insert(CollectVntrFinanceBalance).values(insert_data).prefix_with('IGNORE')
+        session.execute(insert_stmt)
 
-    def insert_vntr_finance_income(self, data: List[CollectVntrFinanceIncomePydantic], session) -> str:
+    def insert_vntr_finance_income(self, data: List[CollectVntrFinanceIncomePydantic], session):
         """vntr_finance_income 테이블에 데이터를 삽입하는 함수"""
         insert_data = [item.dict() for item in data]
-        insert_stmt = insert(CollectVntrFinanceIncome).values(insert_data)
-        on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
-            **{c.name: c for c in insert_stmt.table.c if c.name != 'id'}
-        )
-        session.execute(on_duplicate_key_stmt)
+        insert_stmt = insert(CollectVntrFinanceIncome).values(insert_data).prefix_with('IGNORE')
+        session.execute(insert_stmt)
 
-    def insert_vntr_investment(self, data: List[CollectVntrInvestmentInfoPydantic], session) -> str:
+    def insert_vntr_investment(self, data: List[CollectVntrInvestmentInfoPydantic], session):
         """vntr_investment_info 테이블에 데이터를 삽입하는 함수"""
         insert_data = [item.dict() for item in data]
-        insert_stmt = insert(CollectVntrInvestmentInfo).values(insert_data)
-        on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
-            **{c.name: c for c in insert_stmt.table.c if c.name != 'id'}
-        )
-        session.execute(on_duplicate_key_stmt)
+        insert_stmt = insert(CollectVntrInvestmentInfo).values(insert_data).prefix_with('IGNORE')
+        session.execute(insert_stmt)
 
-    def insert_vntr_certificate(self, data: List[CollectVntrCertificatePydantic], session) -> str:
+    def insert_vntr_certificate(self, data: List[CollectVntrCertificatePydantic], session):
         """vntr_certificate 테이블에 데이터를 삽입하는 함수"""
         insert_data = [item.dict() for item in data]
         insert_stmt = insert(CollectVntrCertificate).values(insert_data)
@@ -92,31 +84,33 @@ class CollectionsDatabase:
 
     def insert_all_vntr_data(
         self,
-        vntr_info: CollectVntrInfoPydantic,
+        vntr_info: List[CollectVntrInfoPydantic],
         vntr_finance_balance: List[Optional[CollectVntrFinanceBalancePydantic]],
         vntr_finance_income: List[Optional[CollectVntrFinanceIncomePydantic]],
         vntr_investment: List[Optional[CollectVntrInvestmentInfoPydantic]],
         vntr_certificate: List[Optional[CollectVntrCertificatePydantic]]
-    ) -> None:
+    ) -> tuple:
         """벤처기업 인증번호 정보, 재무정보, 투자정보, 인증정보를 DB에 삽입하는 함수"""
         status = False
         with self.get_session() as session:
             try:
-                self.insert_vntr_info(vntr_info, session)
-                msg = f'{vntr_info.company_nm}'
                 # 리스트가 비어있는 경우에는 삽입하지 않음
+                msg = ''
+                if vntr_info:
+                    self.insert_vntr_info(vntr_info, session)
+                    msg += f'벤처기업 정보 {len(vntr_info)}개'
                 if vntr_finance_balance:
                     self.insert_vntr_finance_balance(vntr_finance_balance, session)
-                msg += f' : 재무정보 {len(vntr_finance_balance)}개'
+                    msg += f', 재무정보 {len(vntr_finance_balance)}개'
                 if vntr_finance_income:
                     self.insert_vntr_finance_income(vntr_finance_income, session)
-                msg += f', 손익정보 {len(vntr_finance_income)}개'
+                    msg += f', 손익정보 {len(vntr_finance_income)}개'
                 if vntr_investment:
                     self.insert_vntr_investment(vntr_investment, session)
-                msg += f', 투자정보 {len(vntr_investment)}개'
+                    msg += f', 투자정보 {len(vntr_investment)}개'
                 if vntr_certificate:
                     self.insert_vntr_certificate(vntr_certificate, session)
-                msg += f', 인증정보 {len(vntr_certificate)}개'
+                    msg += f', 인증정보 {len(vntr_certificate)}개'
 
                 status = True
                 session.commit()

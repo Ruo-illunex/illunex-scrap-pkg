@@ -17,6 +17,9 @@ pandas = "^2.1.4"
 pyjwt = "^2.8.0"
 apscheduler = "^3.10.4"
 uvicorn = "^0.25.0"
+pillow = "^10.2.0"
+transformers = "^4.36.2"
+torch = "^2.1.2"
 
 
 [build-system]

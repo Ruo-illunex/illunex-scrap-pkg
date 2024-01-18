@@ -1,21 +1,16 @@
-import os
 import time
 import traceback
 from typing import Optional, Tuple, List
-from queue import Queue
+from collections import deque
 from copy import deepcopy
-from threading import Thread
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import requests
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
 
-from app.config.settings import FILE_PATHS
-from app.common.core.trocr import trocr
+from app.config.settings import FILE_PATHS, TROCR_API_TOKEN
 from app.common.core.utils import make_dir, get_current_datetime
 from app.common.log.log_config import setup_logger
 from app.scrapers.vntr_list_scraper import VntrListScraper
@@ -29,10 +24,11 @@ from app.models_init import (
 )
 
 
-class VntrScraper:
+class VntrSlowScraper:
     def __init__(self) -> None:
         self._data_path = FILE_PATHS['data']
         self._log_path = FILE_PATHS['log'] + 'vntr_scraper'
+        self._driver_path = FILE_PATHS['chromedriver']
 
         make_dir(self._log_path)
         self._log_file = self._log_path + f'/{get_current_datetime()}.log'
@@ -42,11 +38,11 @@ class VntrScraper:
         )
 
         self.captcha_url = "https://www.smes.go.kr/venturein/pbntc/captchaImg.do"
+        self._api_url = "https://api-inference.huggingface.co/models/microsoft/trocr-base-printed"
+        self._api_headers = {"Authorization": f"Bearer {TROCR_API_TOKEN}"}
 
         self._comp_id_df = companies_db.get_company_id_df()
         self._init_data()
-        self.batch_size = 50
-        self._data_queue = Queue()
 
     def _init_data(self) -> None:
         """데이터를 초기화하는 함수
@@ -69,7 +65,7 @@ class VntrScraper:
             'corp_no': None,
             'biz_no': None,
             'balance_sheet': [],    # 재무상태표
-            'income_statement': [],     # 손익계산서
+            'income_statement': [], # 손익계산서
         }
         self.investment_info = {
             'company_id': None,
@@ -97,6 +93,7 @@ class VntrScraper:
             self._vntr_dict = vntr_list_scraper.read_vntr_sn_indstycd_dict()
             if self._vntr_dict is None:
                 self._logger.error('벤처기업 인증번호 목록을 다시 가져옵니다.')
+                print('벤처기업 인증번호 목록을 다시 가져옵니다.')
                 return self._get_vntr_list()
             vntr_list = list(self._vntr_dict.keys())
             return vntr_list
@@ -131,9 +128,7 @@ class VntrScraper:
             self._logger.error(traceback.format_exc())
             return None
 
-    def _get_captcha_key(
-        self, driver: webdriver.Chrome, scraper_name: str
-    ) -> Optional[str]:
+    def _get_captcha_key(self, driver: webdriver.Chrome) -> Optional[str]:
         """캡챠 키를 가져오는 함수
 
         Args:
@@ -142,25 +137,28 @@ class VntrScraper:
         Returns:
             Optional[str]: 캡챠 키
         """
-        captcha_key = None
-        file_path = self._data_path + f'captcha_{scraper_name}_{get_current_datetime()}.png'
+        file_path = self._data_path + 'captcha.png'
         try:
             self._logger.info('캡챠 키를 가져옵니다.')
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.TAG_NAME, "img"))
-                )
+            print('캡챠 키를 가져옵니다.')
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "img")))
+            # 이미지 요소를 찾아서 우클릭 후 이미지 저장
             driver.find_element(By.TAG_NAME, "img").screenshot(file_path)
-            captcha_key = trocr(file_path)
-            if captcha_key is None:
-                self._logger.error('캡챠 키를 가져오는데 실패했습니다.')
+            with open(file_path, "rb") as f:
+                img_data = f.read()
+            # TROCR API 요청
+            response = requests.post(
+                self._api_url, headers=self._api_headers, data=img_data
+                )
+            output = response.json()
+            captcha_key = output[0]["generated_text"]
             self._logger.info(f'캡챠 키: {captcha_key}')
+            print(f'캡챠 키: {captcha_key}')
+            return captcha_key
         except Exception as e:
             self._logger.error(f'캡챠 키를 가져오는데 실패했습니다. {e}')
             self._logger.error(traceback.format_exc())
-        finally:
-            if file_path:
-                os.remove(file_path)
-        return captcha_key
+            return None
 
     def _preprocess_digit_value(self, value: str) -> str:
         """숫자로 이루어진 문자열을 전처리하는 함수
@@ -175,9 +173,7 @@ class VntrScraper:
             return value
         return ''.join(value.split(',')[:-1])
 
-    def _get_financial_info(
-        self, driver: webdriver.Chrome, xpath: str
-    ) -> list:
+    def _get_financial_info(self, driver: webdriver.Chrome, xpath: str) -> list:
         """재무정보를 가져오는 함수
 
         Args:
@@ -192,14 +188,6 @@ class VntrScraper:
         return data
 
     def _get_balance_sheet(self, data: tuple) -> dict:
-        """재무상태표를 가져오는 함수
-
-        Args:
-            data (tuple): 재무상태표 데이터
-
-        Returns:
-            dict: 재무상태표
-        """
         data = list(data)
         data[1:] = list(map(self._preprocess_digit_value, data[1:]))
         return {
@@ -291,14 +279,6 @@ class VntrScraper:
         }
 
     def _get_income_statement(self, data: tuple) -> dict:
-        """손익계산서를 가져오는 함수
-
-        Args:
-            data (tuple): 손익계산서 데이터
-
-        Returns:
-            dict: 손익계산서
-        """
         data = list(data)
         data[1:] = list(map(self._preprocess_digit_value, data[1:]))
         return {
@@ -384,14 +364,6 @@ class VntrScraper:
         }
 
     def _get_investment_details(self, data: tuple) -> dict:
-        """투자정보 상세정보를 가져오는 함수
-
-        Args:
-            data (tuple): 투자정보 상세정보 데이터
-
-        Returns:
-            dict: 투자정보 상세정보
-        """
         return {
             'invest_date': data[0],  # 투자일자
             'invest_amount': self._preprocess_digit_value(data[1]),  # 투자금액
@@ -399,14 +371,6 @@ class VntrScraper:
         }
 
     def _get_venture_business_certificate_details(self, data: tuple) -> dict:
-        """벤처기업확인서 상세정보를 가져오는 함수
-
-        Args:
-            data (tuple): 벤처기업확인서 상세정보 데이터
-
-        Returns:
-            dict: 벤처기업확인서 상세정보
-        """
         return {
             'certificate_no': data[0],  # 순서번호
             'certificate_type': data[1],  # 벤처기업확인서 유형
@@ -448,7 +412,8 @@ class VntrScraper:
         """
         result = deepcopy(self.company_info)
         try:
-            self._logger.info(f'{vnia_sn} - 회사 정보를 가져옵니다.')
+            self._logger.info('회사 정보를 가져옵니다.')
+            print('회사 정보를 가져옵니다.')
             table_xpath = '//*[@id="real_contents"]/div/div[1]/div[1]/table/tbody/tr'
             temp_company_info = []
             table_tr_ls = driver.find_elements(By.XPATH, table_xpath)
@@ -468,17 +433,12 @@ class VntrScraper:
             result['address'] = temp_company_info[7]
             result['company_id'] = self._search_id_from_df(result['biz_no'])
             return result
-        except NoSuchElementException:
-            self._logger.error(f'{vnia_sn} - 회사 정보가 없습니다.')
-            return None
         except Exception as e:
             self._logger.error(f'회사 정보를 가져오는데 실패했습니다. {e}')
             self._logger.error(traceback.format_exc())
             return None
 
-    def _get_company_finance(
-        self, driver: webdriver.Chrome, company_info: dict
-    ) -> Optional[dict]:
+    def _get_company_finance(self, driver: webdriver.Chrome, company_info: dict) -> Optional[dict]:
         """회사 재무정보를 가져오는 함수
 
         Args:
@@ -490,53 +450,38 @@ class VntrScraper:
         """
         result = deepcopy(self.company_finance)
         try:
-            self._logger.info(f'{company_info["company_nm"]} - 재무정보를 가져옵니다.')
+            self._logger.info('회사 재무정보를 가져옵니다.')
+            print('회사 재무정보를 가져옵니다.')
             # 재무정보 탭 클릭
-            financial_info_tab = driver.find_element(
-                By.XPATH, '//*[@id="real_contents"]/div/ul/li[2]/a'
-                )
+            financial_info_tab = driver.find_element(By.XPATH, '//*[@id="real_contents"]/div/ul/li[2]/a')
             financial_info_tab.click()
             time.sleep(1)
             # 대차대조표 가져오기 (이미 기본으로 선택되어 있음) -> 리스트로 가져오기 [2019, 2018, ...]
             bs_xpath_format_l = '//*[@id="real_contents"]/div/div[1]/div[2]/div/div[1]/div[2]/div[2]/div[1]/table/tbody/tr[{}]/td' # 1 ~ 57
             bs_xpath_format_r = '//*[@id="real_contents"]/div/div[1]/div[2]/div/div[1]/div[2]/div[2]/div[2]/table/tbody/tr[{}]/td' # 1 ~ 27
             temp_bs = []
-            bs_years = driver.find_elements(
-                By.XPATH,
-                '//*[@id="real_contents"]/div/div[1]/div[2]/div/div[1]/div[2]/div[2]/div[1]/table/thead/tr'
-                )
+            bs_years = driver.find_elements(By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[2]/div/div[1]/div[2]/div[2]/div[1]/table/thead/tr')
             bs_years = [year.text for year in bs_years][0].split(' ')[1:]
             temp_bs.append(bs_years)
             for i in range(1, 58):
-                temp_bs.append(self._get_financial_info(
-                    driver, bs_xpath_format_l.format(i)
-                    ))
+                temp_bs.append(self._get_financial_info(driver, bs_xpath_format_l.format(i)))
             for i in range(1, 28):
-                temp_bs.append(self._get_financial_info(
-                    driver, bs_xpath_format_r.format(i)
-                    ))
+                temp_bs.append(self._get_financial_info(driver, bs_xpath_format_r.format(i)))
 
             # 손익계산서 가져오기
             # 손익계산서 탭 클릭
-            income_statement_tab = driver.find_element(
-                By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[2]/ul/li[2]/a'
-                )
+            income_statement_tab = driver.find_element(By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[2]/ul/li[2]/a')
             income_statement_tab.click()
             time.sleep(1)
 
             # 손익계산서 가져오기 -> 리스트로 가져오기 [2019, 2018, ...]
             is_xpath_format = '//*[@id="real_contents"]/div/div[1]/div[2]/div/div[2]/div[2]/table/tbody/tr[{}]/td' # 1 ~ 78
             temp_is = []
-            is_years = driver.find_elements(
-                By.XPATH,
-                '//*[@id="real_contents"]/div/div[1]/div[2]/div/div[2]/div[2]/table/thead/tr'
-                )
+            is_years = driver.find_elements(By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[2]/div/div[2]/div[2]/table/thead/tr')
             is_years = [year.text for year in is_years][0].split(' ')[1:]
             temp_is.append(is_years)
             for i in range(1, 79):
-                temp_is.append(self._get_financial_info(
-                    driver, is_xpath_format.format(i)
-                    ))
+                temp_is.append(self._get_financial_info(driver, is_xpath_format.format(i)))
 
             # 연도별로 분리 -> zip으로 묶어서 리스트로 만들기
             bs_list = list(zip(*temp_bs))
@@ -551,20 +496,12 @@ class VntrScraper:
             for is_ in is_list:
                 result['income_statement'].append(self._get_income_statement(is_))
             return result
-        except IndexError:
-            self._logger.error(f'{company_info["company_nm"]} - 재무정보가 없습니다.')
-            return None
-        except NoSuchElementException:
-            self._logger.error(f'{company_info["company_nm"]} - 재무정보가 없습니다.')
-            return None
         except Exception as e:
             self._logger.error(f'회사 재무정보를 가져오는데 실패했습니다. {e}')
             self._logger.error(traceback.format_exc())
             return None
 
-    def _get_investment_info(
-        self, driver: webdriver.Chrome, company_info: dict
-    ) -> Optional[dict]:
+    def _get_investment_info(self, driver: webdriver.Chrome, company_info: dict) -> Optional[dict]:
         """투자정보를 가져오는 함수
 
         Args:
@@ -576,11 +513,10 @@ class VntrScraper:
         """
         result = deepcopy(self.investment_info)
         try:
-            self._logger.info(f'{company_info["company_nm"]} - 투자정보를 가져옵니다.')
+            self._logger.info('투자정보를 가져옵니다.')
+            print('투자정보를 가져옵니다.')
             # 투자정보 탭 클릭
-            investment_info_tab = driver.find_element(
-                By.XPATH, '//*[@id="real_contents"]/div/ul/li[3]/a'
-                )
+            investment_info_tab = driver.find_element(By.XPATH, '//*[@id="real_contents"]/div/ul/li[3]/a')
             investment_info_tab.click()
 
             # 투자정보 가져오기
@@ -600,21 +536,14 @@ class VntrScraper:
                 data = [cell.text for cell in ii_cells]
                 if (len(data) < 3) or (data[0] in '투자정보 내용이 없습니다.'):
                     data = ('', '', '')
-                result['investment_details'].append(
-                    self._get_investment_details(data)
-                    )
+                result['investment_details'].append(self._get_investment_details(data))
             return result
-        except NoSuchElementException:
-            self._logger.error(f'{company_info["company_nm"]} - 투자정보가 없습니다.')
-            return None
         except Exception as e:
             self._logger.error(f'투자정보를 가져오는데 실패했습니다. {e}')
             self._logger.error(traceback.format_exc())
             return None
 
-    def _get_venture_business_certificate(
-        self, driver: webdriver.Chrome, company_info: dict
-    ) -> Optional[dict]:
+    def _get_venture_business_certificate(self, driver: webdriver.Chrome, company_info: dict) -> Optional[dict]:
         """벤처기업확인서를 가져오는 함수
 
         Args:
@@ -626,11 +555,10 @@ class VntrScraper:
         """
         result = deepcopy(self.venture_business_certificate)
         try:
-            self._logger.info(f'{company_info["company_nm"]} - 벤처기업확인서를 가져옵니다.')
+            self._logger.info('벤처기업확인서를 가져옵니다.')
+            print('벤처기업확인서를 가져옵니다.')
             # 벤처기업확인서 탭 클릭
-            venture_certificate_tab = driver.find_element(
-                By.XPATH, '//*[@id="real_contents"]/div/ul/li[4]/a'
-                )
+            venture_certificate_tab = driver.find_element(By.XPATH, '//*[@id="real_contents"]/div/ul/li[4]/a')
             venture_certificate_tab.click()
 
             result['company_id'] = company_info['company_id']
@@ -650,21 +578,14 @@ class VntrScraper:
                 data = [cell.text for cell in vc_cells]
                 if len(data) < 7:
                     data = ('', '', '', '', '', '', '')
-                result['certificate_details'].append(
-                    self._get_venture_business_certificate_details(data)
-                    )
+                result['certificate_details'].append(self._get_venture_business_certificate_details(data))
             return result
-        except NoSuchElementException:
-            self._logger.error(f'{company_info["company_nm"]} - 벤처기업확인서가 없습니다.')
-            return None
         except Exception as e:
             self._logger.error(f'벤처기업확인서를 가져오는데 실패했습니다. {e}')
             self._logger.error(traceback.format_exc())
             return None
 
-    def _get_vntr_details(
-        self, driver: webdriver.Chrome, vnia_sn: str, captcha_key: str
-    ) -> Optional[dict]:
+    def _get_vntr_details(self, driver: webdriver.Chrome, vnia_sn: str, captcha_key: str) -> Optional[dict]:
         """벤처기업 상세정보를 가져오는 함수
 
         Args:
@@ -676,7 +597,8 @@ class VntrScraper:
         """
         try:
             self._init_data()
-            self._logger.info(f'{vnia_sn} - 벤처기업 상세정보를 가져옵니다.')
+            self._logger.info('벤처기업 상세정보를 가져옵니다.')
+            print('벤처기업 상세정보를 가져옵니다.')
             # 벤처기업 상세정보 URL
             detail_url = f'https://www.smes.go.kr/venturein/pbntc/searchVntrCmpDtls?vniaSn={vnia_sn}&captcha={captcha_key}'
             # 벤처기업 상세정보 페이지로 이동
@@ -710,15 +632,12 @@ class VntrScraper:
                 'venture_business_certificate': venture_business_certificate,
             }
             return result
-        except NoSuchElementException:
-            self._logger.error(f'{vnia_sn} - 벤처기업 상세정보가 없습니다. (캡챠 키 오류)')
-            return None
         except Exception as e:
             self._logger.error(f'벤처기업 상세정보를 가져오는데 실패했습니다. {e}')
             self._logger.error(traceback.format_exc())
             return None
 
-    def _check_company_info(
+    def _check_company_info_with_pydantic(
         self, company_info: dict
     ) -> Optional[CollectVntrInfoPydantic]:
         try:
@@ -730,7 +649,7 @@ class VntrScraper:
             self._logger.error(traceback.format_exc())
             return None
 
-    def _check_finance(
+    def _check_company_finance_with_pydantic(
         self, company_finance: dict
     ) -> Optional[Tuple[List[CollectVntrFinanceBalancePydantic], List[CollectVntrFinanceIncomePydantic]]]:
         try:
@@ -763,7 +682,7 @@ class VntrScraper:
             self._logger.error(traceback.format_exc())
             return None, None
 
-    def _check_investment(
+    def _check_investment_info_with_pydantic(
         self, investment_info: dict
     ) -> Optional[List[CollectVntrInvestmentInfoPydantic]]:
         try:
@@ -787,7 +706,7 @@ class VntrScraper:
             self._logger.error(traceback.format_exc())
             return None
 
-    def _check_cert(
+    def _check_venture_business_certificate_with_pydantic(
         self, venture_business_certificate: dict
     ) -> Optional[List[CollectVntrCertificatePydantic]]:
         try:
@@ -812,112 +731,33 @@ class VntrScraper:
             self._logger.error(traceback.format_exc())
             return None
 
-    def _save_data(self, data: dict):
-        is_success = False
-        try:
-            # DB에 저장
-            msg, is_success = collections_db.insert_all_vntr_data(
-                vntr_info=data['all_company_info'],
-                vntr_finance_balance=data['all_company_bs'],
-                vntr_finance_income=data['all_company_is'],
-                vntr_investment=data['all_investment_info'],
-                vntr_certificate=data['all_venture_business_certificate']
-            )
-            self._logger.info(msg)
-            print(f'--- {msg} ---\n')
-        except Exception as e:
-            self._logger.error(f'벤처기업 상세정보를 저장하는데 실패했습니다. {e}')
-            self._logger.error(traceback.format_exc())
-        return is_success
-
-    def _init_final_data(self):
-        data = {
-            'all_company_info': [],
-            'all_company_bs': [],
-            'all_company_is': [],
-            'all_investment_info': [],
-            'all_venture_business_certificate': [],
-        }
-        return data
-
-    def _data_writer(self):
-        """데이터를 통합하고 DB에 저장하는 함수"""
-        while True:
-            batch_data = []
-            while len(batch_data) < self.batch_size:
-                data = self._data_queue.get()
-                if data is None:
-                    batch_data.append('END_OF_DATA')
-                    break
-                batch_data.append(data)
-                self._data_queue.task_done()
-
-            if not batch_data:
-                break
-
-            # batch_data에 있는 데이터를 통합
-            all_data = self._init_final_data()
-            for data in batch_data:
-                if data == 'END_OF_DATA':
-                    break
-                # 해당 데이터가 None이 아니거나 빈 리스트가 아닐 때만 통합
-                if data['company_info']:
-                    all_data['all_company_info'].append(data['company_info'])
-                if data['all_company_bs']:
-                    all_data['all_company_bs'].extend(data['all_company_bs'])
-                if data['all_company_is']:
-                    all_data['all_company_is'].extend(data['all_company_is'])
-                if data['all_investment_info']:
-                    all_data['all_investment_info'].extend(
-                        data['all_investment_info']
-                        )
-                if data['all_venture_business_certificate']:
-                    all_data['all_venture_business_certificate'].extend(
-                        data['all_venture_business_certificate']
-                        )
-            # DB에 저장
-            self._save_data(all_data)
-
-    def _scrape_vntr(self, vntr_list: list, scraper_name: str):
-        """벤처기업 상세정보를 가져오는 함수
-
-        Args:
-            vntr_list (list): 벤처기업일련번호 리스트
-            scraper_name (str): 스크래퍼 이름
-        """
-        vntr_queue = Queue()
-        for vntr in vntr_list:
-            vntr_queue.put(vntr)
-        total_cnt = vntr_queue.qsize()
-        while not vntr_queue.empty():
-            done_cnt = total_cnt - vntr_queue.qsize()
-            pgrs_rate = round(done_cnt / total_cnt * 100, 2)
-            print(f'[{scraper_name}] {done_cnt} / {total_cnt} ({pgrs_rate}%)')
+    def scrape_vntr(self):
+        vntr_queue = deque(self._get_vntr_list())
+        total_vntr_count = len(vntr_queue)
+        while vntr_queue:
+            print(f'* 남은 벤처기업 수: {len(vntr_queue)} / {total_vntr_count} (진행 상황: {round((total_vntr_count - len(vntr_queue)) / total_vntr_count * 100, 2)}%)')
             is_success = False
-            vntr_details = None
-            vnia_sn = vntr_queue.get()
+            vnia_sn = vntr_queue.popleft()
             try:
                 # 캡챠 키가 맞을 때까지 반복 -> 5번 반복
                 try_count = 5
                 while try_count > 0:
                     driver = self._get_driver(self.captcha_url)
                     try_count -= 1
-                    captcha_key = self._get_captcha_key(driver, scraper_name)
+                    captcha_key = self._get_captcha_key(driver)
                     if captcha_key is None:
                         driver.quit()
-                        time.sleep(2)
+                        time.sleep(5)
                         continue
                     # 캡챠키가 숫자 6자리인지 확인
                     if not captcha_key.isdigit() or len(captcha_key) != 6:
                         driver.quit()
-                        time.sleep(2)
+                        time.sleep(5)
                         continue
-                    vntr_details = self._get_vntr_details(
-                        driver, vnia_sn, captcha_key
-                        )
+                    vntr_details = self._get_vntr_details(driver, vnia_sn, captcha_key)
                     if vntr_details is None:
                         driver.quit()
-                        time.sleep(2)
+                        time.sleep(5)
                         continue
                     break
                 if vntr_details:
@@ -926,89 +766,32 @@ class VntrScraper:
                     investment_info = vntr_details['investment_info']
                     venture_business_certificate = vntr_details['venture_business_certificate']
                     # pydantic 모델로 변환
-                    company_info = self._check_company_info(company_info)
-                    all_company_bs, all_company_is = self._check_finance(company_finance)
-                    all_investment_info = self._check_investment(investment_info)
-                    all_venture_business_certificate = self._check_cert(venture_business_certificate)
-                    self._data_queue.put({
-                        'company_info': company_info,
-                        'all_company_bs': all_company_bs,
-                        'all_company_is': all_company_is,
-                        'all_investment_info': all_investment_info,
-                        'all_venture_business_certificate': all_venture_business_certificate,
-                    })
-                    self._logger.info(f'데이터 큐에 {vnia_sn} 데이터를 넣었습니다.')
-                    is_success = True
+                    company_info = self._check_company_info_with_pydantic(company_info)
+                    all_company_bs, all_company_is = self._check_company_finance_with_pydantic(company_finance)
+                    all_investment_info = self._check_investment_info_with_pydantic(investment_info)
+                    all_venture_business_certificate = self._check_venture_business_certificate_with_pydantic(venture_business_certificate)
+
+                    # DB에 저장
+                    msg, is_success = collections_db.insert_all_vntr_data(
+                        vntr_info=[company_info],
+                        vntr_finance_balance=all_company_bs,
+                        vntr_finance_income=all_company_is,
+                        vntr_investment=all_investment_info,
+                        vntr_certificate=all_venture_business_certificate
+                    )
+                    self._logger.info(msg)
+                    print(f'--- {msg} ---\n')
             except Exception as e:
-                self._logger.error(f'[{scraper_name}]벤처기업 상세정보를 가져오는데 실패했습니다. {e}')
+                self._logger.error(f'벤처기업 상세정보를 가져오는데 실패했습니다. {e}')
                 self._logger.error(traceback.format_exc())
-                print(f'[{scraper_name}]벤처기업 상세정보를 가져오는데 실패했습니다. {e}')
+                print(f'벤처기업 상세정보를 가져오는데 실패했습니다. {e}')
                 driver.quit()
                 continue
             finally:
                 driver.quit()
                 if not is_success:
-                    vntr_queue.put(vnia_sn)
-                    time.sleep(2)
+                    vntr_queue.append(vnia_sn)
+                    time.sleep(5)
                     continue
-        self._logger.info(f'[{scraper_name}] 스크래핑 완료')
-        print(f'[{scraper_name}] 스크래핑 완료')
-
-    def scrape(self):
-        """벤처기업 상세정보를 가져오는 스레드를 실행하는 함수"""
-        try:
-            writer_thread = Thread(target=self._data_writer)
-            writer_thread.start()
-
-            vntr_list = self._get_vntr_list()
-            # vntr_list를 8등분
-            vntr_list_1 = vntr_list[:len(vntr_list)//8]
-            vntr_list_2 = vntr_list[len(vntr_list)//8: len(vntr_list)//8*2]
-            vntr_list_3 = vntr_list[len(vntr_list)//8*2: len(vntr_list)//8*3]
-            vntr_list_4 = vntr_list[len(vntr_list)//8*3: len(vntr_list)//8*4]
-            vntr_list_5 = vntr_list[len(vntr_list)//8*4: len(vntr_list)//8*5]
-            vntr_list_6 = vntr_list[len(vntr_list)//8*5: len(vntr_list)//8*6]
-            vntr_list_7 = vntr_list[len(vntr_list)//8*6: len(vntr_list)//8*7]
-            vntr_list_8 = vntr_list[len(vntr_list)//8*7:]
-
-            #  threadpoolexecutor 사용
-            executors_list = []
-            with ThreadPoolExecutor(max_workers=8) as executor:
-                executors_list.append(
-                    executor.submit(self._scrape_vntr, vntr_list_1, 'SCP 1')
-                    )
-                executors_list.append(
-                    executor.submit(self._scrape_vntr, vntr_list_2, 'SCP 2')
-                    )
-                executors_list.append(
-                    executor.submit(self._scrape_vntr, vntr_list_3, 'SCP 3')
-                    )
-                executors_list.append(
-                    executor.submit(self._scrape_vntr, vntr_list_4, 'SCP 4')
-                    )
-                executors_list.append(
-                    executor.submit(self._scrape_vntr, vntr_list_5, 'SCP 5')
-                    )
-                executors_list.append(
-                    executor.submit(self._scrape_vntr, vntr_list_6, 'SCP 6')
-                    )
-                executors_list.append(
-                    executor.submit(self._scrape_vntr, vntr_list_7, 'SCP 7')
-                    )
-                executors_list.append(
-                    executor.submit(self._scrape_vntr, vntr_list_8, 'SCP 8')
-                    )
-
-            for future in as_completed(executors_list):
-                future.result()
-
-            self._logger.info('모든 스레드가 종료되었습니다.')
-            print('모든 스레드가 종료되었습니다.')
-
-            self._data_queue.put(None)
-            writer_thread.join()
-            self._logger.info('데이터 저장이 완료되었습니다.')
-        except Exception as e:
-            self._logger.error(f'벤처기업 상세정보를 가져오는데 실패했습니다. {e}')
-            self._logger.error(traceback.format_exc())
-            print(f'스크래핑 실패: {e}\n 자세한 내용은 {self._log_file} 파일을 확인해주세요.')
+        self._logger.info('벤처기업 상세정보를 모두 가져왔습니다.')
+        print('벤처기업 상세정보를 모두 가져왔습니다.')

@@ -35,5 +35,3 @@ def get_current_date():
         str: 현재 날짜 문자열
     """
     return datetime.datetime.now().strftime('%Y-%m-%d')
-
-
