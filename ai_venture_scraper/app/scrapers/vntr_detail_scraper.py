@@ -437,7 +437,9 @@ class VntrScraper:
             self._logger.error(traceback.format_exc())
             return None
 
-    def _get_company_info(self, driver: webdriver.Chrome, vnia_sn: str) -> Optional[dict]:
+    def _get_company_info(
+        self, driver: webdriver.Chrome, vnia_sn: str
+    ) -> Optional[dict]:
         """회사 정보를 가져오는 함수
 
         Args:
@@ -519,7 +521,8 @@ class VntrScraper:
             # 손익계산서 가져오기
             # 손익계산서 탭 클릭
             income_statement_tab = driver.find_element(
-                By.XPATH, '//*[@id="real_contents"]/div/div[1]/div[2]/ul/li[2]/a'
+                By.XPATH,
+                '//*[@id="real_contents"]/div/div[1]/div[2]/ul/li[2]/a'
                 )
             income_statement_tab.click()
             time.sleep(1)
@@ -599,7 +602,7 @@ class VntrScraper:
                 ii_cells = row.find_elements(By.TAG_NAME, "td")
                 data = [cell.text for cell in ii_cells]
                 if (len(data) < 3) or (data[0] in '투자정보 내용이 없습니다.'):
-                    data = ('', '', '')
+                    return None
                 result['investment_details'].append(
                     self._get_investment_details(data)
                     )
@@ -692,16 +695,10 @@ class VntrScraper:
                 return None
             # 회사 재무정보 가져오기
             company_finance = self._get_company_finance(driver, company_info)
-            if company_finance is None:
-                return None
             # 투자정보 가져오기
             investment_info = self._get_investment_info(driver, company_info)
-            if investment_info is None:
-                return None
             # 벤처기업확인서 가져오기
             venture_business_certificate = self._get_venture_business_certificate(driver, company_info)
-            if venture_business_certificate is None:
-                return None
 
             result = {
                 'company_info': company_info,
@@ -721,6 +718,14 @@ class VntrScraper:
     def _check_company_info(
         self, company_info: dict
     ) -> Optional[CollectVntrInfoPydantic]:
+        """회사 정보를 pydantic 모델로 변환하는 함수
+
+        Args:
+            company_info (dict): 회사 정보
+
+        Returns:
+            Optional[CollectVntrInfoPydantic]: 회사 정보
+        """
         try:
             # pydantic 모델로 변환
             company_info = CollectVntrInfoPydantic(**company_info)
@@ -731,9 +736,19 @@ class VntrScraper:
             return None
 
     def _check_finance(
-        self, company_finance: dict
+        self, company_finance: Optional[dict]
     ) -> Optional[Tuple[List[CollectVntrFinanceBalancePydantic], List[CollectVntrFinanceIncomePydantic]]]:
+        """회사 재무정보를 pydantic 모델로 변환하는 함수
+
+        Args:
+            company_finance (dict): 회사 재무정보
+
+        Returns:
+            Optional[Tuple[List[CollectVntrFinanceBalancePydantic], List[CollectVntrFinanceIncomePydantic]]]: 회사 재무정보
+        """
         try:
+            if company_finance is None:
+                return None, None
             base_company_finance = {
                 'company_id': company_finance['company_id'],
                 'company_nm': company_finance['company_nm'],
@@ -764,9 +779,19 @@ class VntrScraper:
             return None, None
 
     def _check_investment(
-        self, investment_info: dict
+        self, investment_info: Optional[dict]
     ) -> Optional[List[CollectVntrInvestmentInfoPydantic]]:
+        """투자정보를 pydantic 모델로 변환하는 함수
+
+        Args:
+            investment_info (dict): 투자정보
+
+        Returns:
+            Optional[List[CollectVntrInvestmentInfoPydantic]]: 투자정보
+        """
         try:
+            if investment_info is None:
+                return None
             base_investment_info = {
                 'company_id': investment_info['company_id'],
                 'company_nm': investment_info['company_nm'],
@@ -788,31 +813,46 @@ class VntrScraper:
             return None
 
     def _check_cert(
-        self, venture_business_certificate: dict
+        self, venture_business_certificate: Optional[dict]
     ) -> Optional[List[CollectVntrCertificatePydantic]]:
+        """벤처기업확인서를 pydantic 모델로 변환하는 함수
+
+        Args:
+            venture_business_certificate (dict): 벤처기업확인서
+
+        Returns:
+            Optional[List[CollectVntrCertificatePydantic]]: 벤처기업확인서
+        """
         try:
+            if venture_business_certificate is None:
+                return None
             base_venture_business_certificate = {
                 'company_id': venture_business_certificate['company_id'],
                 'company_nm': venture_business_certificate['company_nm'],
                 'corp_no': venture_business_certificate['corp_no'],
                 'biz_no': venture_business_certificate['biz_no'],
             }
-            all_venture_business_certificate = []
+            all_vc = []
             for vc in venture_business_certificate['certificate_details']:
                 if list(vc.values()) != [''] * len(vc):
                     venture_business_certificate_temp = base_venture_business_certificate.copy()
                     venture_business_certificate_temp.update(vc)
-                    all_venture_business_certificate.append(venture_business_certificate_temp)
+                    all_vc.append(venture_business_certificate_temp)
 
-            if all_venture_business_certificate:
-                all_venture_business_certificate = [CollectVntrCertificatePydantic(**venture_business_certificate) for venture_business_certificate in all_venture_business_certificate]
-            return all_venture_business_certificate
+            if all_vc:
+                all_vc = [CollectVntrCertificatePydantic(**venture_business_certificate) for venture_business_certificate in all_vc]
+            return all_vc
         except Exception as e:
             self._logger.error(f'벤처기업확인서를 pydantic 모델로 변환하는데 실패했습니다. {e}')
             self._logger.error(traceback.format_exc())
             return None
 
     def _save_data(self, data: dict):
+        """데이터를 DB에 저장하는 함수
+
+        Args:
+            data (dict): 벤처기업 상세정보
+        """
         is_success = False
         try:
             # DB에 저장
@@ -821,7 +861,7 @@ class VntrScraper:
                 vntr_finance_balance=data['all_company_bs'],
                 vntr_finance_income=data['all_company_is'],
                 vntr_investment=data['all_investment_info'],
-                vntr_certificate=data['all_venture_business_certificate']
+                vntr_certificate=data['all_vc']
             )
             self._logger.info(msg)
             print(f'--- {msg} ---\n')
@@ -831,12 +871,13 @@ class VntrScraper:
         return is_success
 
     def _init_final_data(self):
+        """최종 데이터를 저장할 딕셔너리를 초기화하는 함수"""
         data = {
             'all_company_info': [],
             'all_company_bs': [],
             'all_company_is': [],
             'all_investment_info': [],
-            'all_venture_business_certificate': [],
+            'all_vc': [],
         }
         return data
 
@@ -871,9 +912,9 @@ class VntrScraper:
                     all_data['all_investment_info'].extend(
                         data['all_investment_info']
                         )
-                if data['all_venture_business_certificate']:
-                    all_data['all_venture_business_certificate'].extend(
-                        data['all_venture_business_certificate']
+                if data['all_vc']:
+                    all_data['all_vc'].extend(
+                        data['all_vc']
                         )
             # DB에 저장
             self._save_data(all_data)
@@ -929,13 +970,13 @@ class VntrScraper:
                     company_info = self._check_company_info(company_info)
                     all_company_bs, all_company_is = self._check_finance(company_finance)
                     all_investment_info = self._check_investment(investment_info)
-                    all_venture_business_certificate = self._check_cert(venture_business_certificate)
+                    all_vc = self._check_cert(venture_business_certificate)
                     self._data_queue.put({
                         'company_info': company_info,
                         'all_company_bs': all_company_bs,
                         'all_company_is': all_company_is,
                         'all_investment_info': all_investment_info,
-                        'all_venture_business_certificate': all_venture_business_certificate,
+                        'all_vc': all_vc,
                     })
                     self._logger.info(f'데이터 큐에 {vnia_sn} 데이터를 넣었습니다.')
                     is_success = True
