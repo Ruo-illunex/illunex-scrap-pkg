@@ -1,20 +1,20 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.common.db.scraper_manager_database import ScraperManagerDatabase
 
 scraper_mng_db = ScraperManagerDatabase()
 
 
 def create_daily_message():
-    today = datetime.today().date()
-    portal_stats = scraper_mng_db.get_scraping_statistics_by_portal(today)
+    yesterday = datetime.today().date() - timedelta(days=1)
+    portal_stats = scraper_mng_db.get_scraping_statistics_by_portal(yesterday)
 
     # 메세지 포맷팅
     message_format = "📅 {} 뉴스 스크래핑 요약\n-------------------------\n{}\n-------------------------"
-    messages = [f"{portal.upper()}:\n- 성공 개수: {stats['success']}\n- 실패 개수: {stats['fail']}" 
+    messages = [f"{portal.upper()}:\n- 성공 개수: {stats['success']}\n- 실패 개수: {stats['fail']}"
                 for portal, stats in portal_stats.items()]
 
     final_message = "\n\n".join(messages)
-    final_message = message_format.format(today, final_message)
+    final_message = message_format.format(yesterday, final_message)
 
     return final_message
 

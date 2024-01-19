@@ -14,7 +14,6 @@ class ScraperManagerDatabase:
         self.engine = create_engine(SCRAPER_MNG_DB_URL, pool_recycle=3600, pool_size=20, max_overflow=0)
         self.SessionLocal = sessionmaker(bind=self.engine)
 
-
     # scraper_mng 세션을 반환하는 함수
     def get_session_scraper_mng(self):
         """scraper_mng 세션을 반환하는 함수"""
@@ -24,7 +23,6 @@ class ScraperManagerDatabase:
             yield session
         finally:
             session.close()
-
 
     # scrap_session_log 테이블에 데이터를 저장하는 함수
     def save_scrap_session_log(self, session_log):
