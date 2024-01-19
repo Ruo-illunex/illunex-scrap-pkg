@@ -33,7 +33,7 @@ from app.models_init import (
 
 class VntrScraper:
     def __init__(self) -> None:
-        self._prod_token = SYNOLOGY_CHAT['self._prod_token']
+        self._prod_token = SYNOLOGY_CHAT['prod_token']
         self._data_path = FILE_PATHS['data']
         self._log_path = FILE_PATHS['log'] + 'vntr_scraper'
 
@@ -470,12 +470,15 @@ class VntrScraper:
                     temp_company_info.append(item.text.strip())
 
             result['company_nm'] = temp_company_info[0]
+            result['biz_no'] = temp_company_info[5].replace('-', '')
+            if result['biz_no'] == '':
+                self._logger.error(f'{vnia_sn} - 사업자등록번호가 없습니다.')
+                return None
             result['representative_nm'] = temp_company_info[1]
             result['corp_no'] = temp_company_info[2].replace('-', '')
             result['indsty_cd'] = self._vntr_dict.get(vnia_sn)
             result['indsty_nm'] = temp_company_info[3]
             result['main_prod'] = temp_company_info[4]
-            result['biz_no'] = temp_company_info[5].replace('-', '')
             result['tel_no'] = temp_company_info[6]
             result['address'] = temp_company_info[7]
             result['company_id'] = self._search_id_from_df(result['biz_no'])
@@ -946,14 +949,30 @@ class VntrScraper:
         vntr_queue = Queue()
         for vntr in vntr_list:
             vntr_queue.put(vntr)
+        vntr_queue.put('END_OF_DATA')
         total_cnt = vntr_queue.qsize()
         while not vntr_queue.empty():
+            vnia_sn = vntr_queue.get()
+            if vnia_sn == 'END_OF_DATA':
+                vntr_queue.put('FINISH')
+                continue
+            if vnia_sn == 'FINISH':
+                failed_cnt = total_cnt - vntr_queue.qsize()
+                failed_list = []
+                while not vntr_queue.empty():
+                    failed_list.append(vntr_queue.get())
+                # 실패한 벤처기업일련번호 리스트를 파일로 저장
+                failed_path = FILE_PATHS['data'] + f'{scraper_name}_failed_list.txt'
+                with open(failed_path, 'w') as f:
+                    f.write('\n'.join(failed_list))
+                self._logger.info(f'[{scraper_name}] {failed_cnt}개의 벤처기업 상세정보를 가져오는데 실패했습니다. (실패 목록: {failed_path})')
+                print(f'[{scraper_name}] {failed_cnt}개의 벤처기업 상세정보를 가져오는데 실패했습니다. (실패 목록: {failed_path})')
+                break
             done_cnt = total_cnt - vntr_queue.qsize()
             pgrs_rate = round(done_cnt / total_cnt * 100, 2)
             print(f'[{scraper_name}] {done_cnt} / {total_cnt} ({pgrs_rate}%)')
             is_success = False
             vntr_details = None
-            vnia_sn = vntr_queue.get()
             try:
                 # 캡챠 키가 맞을 때까지 반복 -> 5번 반복
                 try_count = 5
@@ -1022,7 +1041,7 @@ class VntrScraper:
             message += f'벤처기업 재무정보(손익계산서): {self._statistics["collect_vntr_finance_income"]}\n'
             message += f'벤처기업 투자정보: {self._statistics["collect_vntr_investment_info"]}\n'
             message += f'벤처기업 벤처기업확인서: {self._statistics["collect_vntr_certificate"]}\n'
-            
+
             send_message_to_synology_chat(message, self._self._prod_token)
             self._logger.info('통계 메시지를 보냈습니다.')
         except Exception as e:
@@ -1098,9 +1117,9 @@ class VntrScraper:
             self._data_queue.put(None)
             writer_thread.join()
             self._logger.info('데이터 저장이 완료되었습니다.')
-            
+
             end_time = get_current_datetime()
-            end_msg = f'벤처기업 상세정보 스크래핑을 종료합니다. ({end_time})'
+            end_msg = f'벤처기업 상세정보 스크래핑을 종료합니다. \n시작시간: {start_time}\n종료시간: {end_time}'
             self._logger.info(end_msg)
             print(end_msg)
             send_message_to_synology_chat(end_msg, self._prod_token)

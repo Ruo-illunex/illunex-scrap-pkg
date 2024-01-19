@@ -26,7 +26,6 @@ class CollectVntrInvestmentInfo(BaseCollections):
 
     # 인코딩 설정
     __table_args__ = (
-        UniqueConstraint('biz_no', 'invest_date', name='uix_biz_no_invest_date'),
         {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_unicode_ci'}
     )
 
