@@ -113,15 +113,15 @@ class DartInfoScraper:
 
                     # temp_list에 100개의 데이터가 모이면 데이터베이스에 저장
                     if len(temp_list) == self._batch_size:
-                        collections_db.bulk_upsert_data_collectdart(temp_list)
-                        success_msg = f"Saved {len(temp_list)} data"
+                        new_data_count = collections_db.bulk_upsert_data_collectdart(temp_list)
+                        success_msg = f"Saved {new_data_count} data"
                         self._logger.info(success_msg)
                         print(success_msg)
                         temp_list = []  # 저장 후 리스트 초기화
 
             # 남은 데이터가 있다면 마지막으로 저장
             if temp_list:
-                collections_db.bulk_upsert_data_collectdart(temp_list)
-                success_msg = f"Saved {len(temp_list)} data"
+                new_data_count = collections_db.bulk_upsert_data_collectdart(temp_list)
+                success_msg = f"Saved {new_data_count} data"
                 self._logger.info(success_msg)
                 print(success_msg)

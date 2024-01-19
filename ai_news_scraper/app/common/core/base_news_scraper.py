@@ -18,7 +18,7 @@ from app.common.db.scraper_manager_database import ScraperManagerDatabase
 from app.models_init import ScrapSessionLog, ScrapErrorLog, ScrapManager
 from app.config import settings
 from app.common.messages import Messages
-from app.common.core.utils import load_yaml
+from app.common.core.utils import load_yaml, remove_emojis_and_special_chars
 
 
 class NewsScraper(abc.ABC):
@@ -295,6 +295,7 @@ class NewsScraper(abc.ABC):
             err_message = f"CANNOT SCRAP DATA FOR {news_url}"
             self.process_err_log_msg(err_message, "check_error")
         else:
+            news_data.content = remove_emojis_and_special_chars(news_data.content)
             self.news_data_list.append(news_data)
             self.mark_as_scraped(news_url)
             success_message = f"NEWS DATA SUCCESSFULLY SCRAPED FOR {news_url}"

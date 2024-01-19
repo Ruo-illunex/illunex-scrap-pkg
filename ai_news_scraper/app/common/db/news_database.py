@@ -13,7 +13,6 @@ class NewsDatabase:
         self.SessionLocal = sessionmaker(bind=self.engine)
         self.existing_data = None
 
-
     # 뉴스 데이터베이스에 대량의 데이터를 저장하는 함수
     def save_data_bulk(self, news_data_list: list, portal: str):
         """뉴스 데이터베이스에 데이터를 대량으로 저장하는 함수

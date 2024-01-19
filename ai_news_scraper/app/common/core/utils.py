@@ -133,3 +133,21 @@ def normal_text(in_str: str) -> str:
     rep_exp = r"[^a-zA-Z0-9가-힣]"
     temp1 = hanja.translate(in_str, "substitution")
     return re.sub(rep_exp, "", temp1)
+
+
+def remove_emojis_and_special_chars(text):
+    # 이모지 제거
+    emoji_pattern = re.compile(
+        "["
+        u"\U0001F600-\U0001F64F"  # emoticons
+        u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+        u"\U0001F680-\U0001F6FF"  # transport & map symbols
+        u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+        "]+", flags=re.UNICODE
+        )
+    text = emoji_pattern.sub(r'', text)
+
+    # 특수 문자 제거 (옵션)
+    text = re.sub(r'[^가-힣0-9a-zA-Z\s]', '', text)
+
+    return text

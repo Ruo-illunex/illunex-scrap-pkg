@@ -53,25 +53,29 @@ class CollectionsDatabase:
         on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
             **{k: insert_stmt.inserted[k] for k in insert_data[0]}
             )
-        session.execute(on_duplicate_key_stmt)
+        result = session.execute(on_duplicate_key_stmt)
+        return result.rowcount
 
     def insert_vntr_finance_balance(self, data: List[CollectVntrFinanceBalancePydantic], session):
         """vntr_finance_balance 테이블에 데이터를 삽입하는 함수"""
         insert_data = [item.dict() for item in data]
         insert_stmt = insert(CollectVntrFinanceBalance).values(insert_data).prefix_with('IGNORE')
-        session.execute(insert_stmt)
+        result = session.execute(insert_stmt)
+        return result.rowcount
 
     def insert_vntr_finance_income(self, data: List[CollectVntrFinanceIncomePydantic], session):
         """vntr_finance_income 테이블에 데이터를 삽입하는 함수"""
         insert_data = [item.dict() for item in data]
         insert_stmt = insert(CollectVntrFinanceIncome).values(insert_data).prefix_with('IGNORE')
-        session.execute(insert_stmt)
+        result = session.execute(insert_stmt)
+        return result.rowcount
 
     def insert_vntr_investment(self, data: List[CollectVntrInvestmentInfoPydantic], session):
         """vntr_investment_info 테이블에 데이터를 삽입하는 함수"""
         insert_data = [item.dict() for item in data]
         insert_stmt = insert(CollectVntrInvestmentInfo).values(insert_data).prefix_with('IGNORE')
-        session.execute(insert_stmt)
+        result = session.execute(insert_stmt)
+        return result.rowcount
 
     def insert_vntr_certificate(self, data: List[CollectVntrCertificatePydantic], session):
         """vntr_certificate 테이블에 데이터를 삽입하는 함수"""
@@ -80,7 +84,8 @@ class CollectionsDatabase:
         on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
             **{c.name: c for c in insert_stmt.table.c if c.name != 'id'}
         )
-        session.execute(on_duplicate_key_stmt)
+        result = session.execute(on_duplicate_key_stmt)
+        return result.rowcount
 
     def insert_all_vntr_data(
         self,
@@ -93,24 +98,36 @@ class CollectionsDatabase:
         """벤처기업 인증번호 정보, 재무정보, 투자정보, 인증정보를 DB에 삽입하는 함수"""
         status = False
         with self.get_session() as session:
+            statistics = {
+                'collect_vntr_info': 0,
+                'collect_vntr_finance_balance': 0,
+                'collect_vntr_finance_income': 0,
+                'collect_vntr_investment_info': 0,
+                'collect_vntr_certificate': 0
+            }
             try:
                 # 리스트가 비어있는 경우에는 삽입하지 않음
                 msg = ''
                 if vntr_info:
-                    self.insert_vntr_info(vntr_info, session)
-                    msg += f'벤처기업 정보 {len(vntr_info)}개'
+                    info_inserted = self.insert_vntr_info(vntr_info, session)
+                    statistics['collect_vntr_info'] = info_inserted
+                    msg += f'벤처기업 정보 {info_inserted}개'
                 if vntr_finance_balance:
-                    self.insert_vntr_finance_balance(vntr_finance_balance, session)
-                    msg += f', 재무정보 {len(vntr_finance_balance)}개'
+                    fb_inserted = self.insert_vntr_finance_balance(vntr_finance_balance, session)
+                    statistics['collect_vntr_finance_balance'] = fb_inserted
+                    msg += f', 재무정보 {fb_inserted}개'
                 if vntr_finance_income:
-                    self.insert_vntr_finance_income(vntr_finance_income, session)
-                    msg += f', 손익정보 {len(vntr_finance_income)}개'
+                    fi_inserted = self.insert_vntr_finance_income(vntr_finance_income, session)
+                    statistics['collect_vntr_finance_income'] = fi_inserted
+                    msg += f', 손익정보 {fi_inserted}개'
                 if vntr_investment:
-                    self.insert_vntr_investment(vntr_investment, session)
-                    msg += f', 투자정보 {len(vntr_investment)}개'
+                    inv_inserted = self.insert_vntr_investment(vntr_investment, session)
+                    statistics['collect_vntr_investment_info'] = inv_inserted
+                    msg += f', 투자정보 {inv_inserted}개'
                 if vntr_certificate:
-                    self.insert_vntr_certificate(vntr_certificate, session)
-                    msg += f', 인증정보 {len(vntr_certificate)}개'
+                    cert_inserted = self.insert_vntr_certificate(vntr_certificate, session)
+                    statistics['collect_vntr_certificate'] = cert_inserted
+                    msg += f', 인증정보 {cert_inserted}개'
 
                 status = True
                 session.commit()
@@ -126,4 +143,4 @@ class CollectionsDatabase:
                 self.logger.error(f'에러: {e}\n{msg}')
             finally:
                 session.close()
-                return msg, status
+                return msg, status, statistics

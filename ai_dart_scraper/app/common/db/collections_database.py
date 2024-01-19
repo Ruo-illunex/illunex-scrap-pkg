@@ -75,6 +75,7 @@ class CollectionsDatabase:
             data_list (List[CollectDartPydantic]): 추가 또는 업데이트할 데이터 리스트
         """
         with self.get_session() as session:
+            new_data_count = 0
             try:
                 to_add = []  # 새로 추가할 데이터를 저장할 리스트
                 for data in data_list:
@@ -92,12 +93,16 @@ class CollectionsDatabase:
                 # 새로 추가할 데이터가 있으면 일괄 처리
                 if to_add:
                     session.bulk_save_objects(to_add)
+                    new_data_count = len(to_add)
 
                 session.commit()
             except SQLAlchemyError as e:
                 session.rollback()
                 err_msg = traceback.format_exc()
                 self.logger.error(f"Error: {e}\n{err_msg}")
+                new_data_count = 0
+
+            return new_data_count
 
     def check_if_exists_collectdartfinance(self, corp_code: str, bsns_year: str, reprt_code: str, fs_div: str) -> bool:
         """데이터베이스에 해당 연도의 재무정보가 있는지 확인하는 함수
@@ -139,9 +144,10 @@ class CollectionsDatabase:
                 company_id = data_list[0].company_id
                 insert_data = [data.dict() for data in data_list]
                 insert_stmt = insert(CollectDartFinance).values(insert_data)
-                session.execute(insert_stmt)
+                result = session.execute(insert_stmt)
                 session.commit()
-                result_msg = f"Success: Inserted {len(data_list)} data into [collect_dart_finance] for company_id {company_id}"
+                inserted_rows = result.rowcount
+                result_msg = f"Success: Inserted {inserted_rows} data into [collect_dart_finance] for company_id {company_id}"
                 return result_msg
             except SQLAlchemyError as e:
                 session.rollback()
@@ -163,9 +169,10 @@ class CollectionsDatabase:
                 company_id = data_list[0]['company_id']
                 insert_stmt = insert(CollectDartNotice).values(data_list)
                 ignore_stmt = insert_stmt.prefix_with('IGNORE')
-                session.execute(ignore_stmt)
+                result = session.execute(ignore_stmt)
                 session.commit()
-                result_msg = f"Success: Inserted data into [collect_dart_notice] for company_id {company_id}"
+                inserted_rows = result.rowcount
+                result_msg = f"Success: Inserted {inserted_rows} data into [collect_dart_notice] for company_id {company_id}"
                 return result_msg
             except SQLAlchemyError as e:
                 session.rollback()

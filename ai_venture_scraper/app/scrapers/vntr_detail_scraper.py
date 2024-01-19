@@ -1,5 +1,6 @@
 import os
 import time
+import schedule
 import traceback
 from typing import Optional, Tuple, List
 from queue import Queue
@@ -14,12 +15,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
-from app.config.settings import FILE_PATHS
 from app.common.core.trocr import trocr
-from app.common.core.utils import make_dir, get_current_datetime
 from app.common.log.log_config import setup_logger
-from app.scrapers.vntr_list_scraper import VntrListScraper
+from app.config.settings import FILE_PATHS, SYNOLOGY_CHAT
 from app.database_init import collections_db, companies_db
+from app.scrapers.vntr_list_scraper import VntrListScraper
+from app.common.core.utils import make_dir, get_current_datetime
+from app.notification.synology_chat import send_message_to_synology_chat
 from app.models_init import (
     CollectVntrInfoPydantic,
     CollectVntrFinanceBalancePydantic,
@@ -31,6 +33,7 @@ from app.models_init import (
 
 class VntrScraper:
     def __init__(self) -> None:
+        self._prod_token = SYNOLOGY_CHAT['self._prod_token']
         self._data_path = FILE_PATHS['data']
         self._log_path = FILE_PATHS['log'] + 'vntr_scraper'
 
@@ -47,6 +50,13 @@ class VntrScraper:
         self._init_data()
         self.batch_size = 50
         self._data_queue = Queue()
+        self._statistics = {
+            'collect_vntr_info': 0,
+            'collect_vntr_finance_balance': 0,
+            'collect_vntr_finance_income': 0,
+            'collect_vntr_investment_info': 0,
+            'collect_vntr_certificate': 0
+        }
 
     def _init_data(self) -> None:
         """데이터를 초기화하는 함수
@@ -854,9 +864,10 @@ class VntrScraper:
             data (dict): 벤처기업 상세정보
         """
         is_success = False
+        msg = ''
         try:
             # DB에 저장
-            msg, is_success = collections_db.insert_all_vntr_data(
+            msg, is_success, statistics = collections_db.insert_all_vntr_data(
                 vntr_info=data['all_company_info'],
                 vntr_finance_balance=data['all_company_bs'],
                 vntr_finance_income=data['all_company_is'],
@@ -865,10 +876,16 @@ class VntrScraper:
             )
             self._logger.info(msg)
             print(f'--- {msg} ---\n')
+            send_message_to_synology_chat(msg, self._prod_token)
         except Exception as e:
             self._logger.error(f'벤처기업 상세정보를 저장하는데 실패했습니다. {e}')
             self._logger.error(traceback.format_exc())
-        return is_success
+        if is_success:
+            self._statistics['collect_vntr_info'] += statistics['collect_vntr_info']
+            self._statistics['collect_vntr_finance_balance'] += statistics['collect_vntr_finance_balance']
+            self._statistics['collect_vntr_finance_income'] += statistics['collect_vntr_finance_income']
+            self._statistics['collect_vntr_investment_info'] += statistics['collect_vntr_investment_info']
+            self._statistics['collect_vntr_certificate'] += statistics['collect_vntr_certificate']
 
     def _init_final_data(self):
         """최종 데이터를 저장할 딕셔너리를 초기화하는 함수"""
@@ -995,9 +1012,42 @@ class VntrScraper:
         self._logger.info(f'[{scraper_name}] 스크래핑 완료')
         print(f'[{scraper_name}] 스크래핑 완료')
 
+    # 스케줄러 관련 코드
+    def _scheduled_job_send_statistics_message(self):
+        """매일 00:00에 실행되는 스케줄러"""
+        try:
+            message = f'[{get_current_datetime()}]까지 수집/업데이트한 벤처기업 상세정보 통계\n'
+            message += f'벤처기업 정보: {self._statistics["collect_vntr_info"]}\n'
+            message += f'벤처기업 재무정보(대차대조표): {self._statistics["collect_vntr_finance_balance"]}\n'
+            message += f'벤처기업 재무정보(손익계산서): {self._statistics["collect_vntr_finance_income"]}\n'
+            message += f'벤처기업 투자정보: {self._statistics["collect_vntr_investment_info"]}\n'
+            message += f'벤처기업 벤처기업확인서: {self._statistics["collect_vntr_certificate"]}\n'
+            
+            send_message_to_synology_chat(message, self._self._prod_token)
+            self._logger.info('통계 메시지를 보냈습니다.')
+        except Exception as e:
+            self._logger.error(f'통계 메시지를 보내는데 실패했습니다. {e}')
+            self._logger.error(traceback.format_exc())
+
+    # 스케줄러 실행 함수
+    def _run_scheduler():
+        while True:
+            schedule.run_pending()
+            time.sleep(60)
+
     def scrape(self):
         """벤처기업 상세정보를 가져오는 스레드를 실행하는 함수"""
         try:
+            start_time = get_current_datetime()
+            start_msg = f'벤처기업 상세정보 스크래핑을 시작합니다. ({start_time})'
+            self._logger.info(start_msg)
+            print(start_msg)
+            send_message_to_synology_chat(start_msg, self._prod_token)
+
+            schedule.every().day.at("00:00").do(self._scheduled_job_send_statistics_message)
+            scheduler_thread = Thread(target=self._run_scheduler, daemon=True)
+            scheduler_thread.start()
+
             writer_thread = Thread(target=self._data_writer)
             writer_thread.start()
 
@@ -1044,12 +1094,19 @@ class VntrScraper:
                 future.result()
 
             self._logger.info('모든 스레드가 종료되었습니다.')
-            print('모든 스레드가 종료되었습니다.')
 
             self._data_queue.put(None)
             writer_thread.join()
             self._logger.info('데이터 저장이 완료되었습니다.')
+            
+            end_time = get_current_datetime()
+            end_msg = f'벤처기업 상세정보 스크래핑을 종료합니다. ({end_time})'
+            self._logger.info(end_msg)
+            print(end_msg)
+            send_message_to_synology_chat(end_msg, self._prod_token)
         except Exception as e:
-            self._logger.error(f'벤처기업 상세정보를 가져오는데 실패했습니다. {e}')
+            err_msg = f'벤처기업 스크래핑 실패: {e}\n 자세한 내용은 {self._log_file} 파일을 확인해주세요.'
+            self._logger.error(err_msg)
             self._logger.error(traceback.format_exc())
-            print(f'스크래핑 실패: {e}\n 자세한 내용은 {self._log_file} 파일을 확인해주세요.')
+            print(err_msg)
+            send_message_to_synology_chat(err_msg, self._prod_token)

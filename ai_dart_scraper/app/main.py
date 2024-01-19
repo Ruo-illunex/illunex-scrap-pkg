@@ -14,6 +14,7 @@ from app.api.dart_info_routers import router as dart_info_router
 from app.api.dart_finance_routers import router as dart_finance_router
 from app.config.settings import FILE_PATHS, SYNOLOGY_CHAT
 from app.config.auth import verify_token
+from app.notification.synology_chat import send_message_to_synology_chat
 
 
 # 로거 설정
@@ -92,25 +93,69 @@ async def scrape_dart_notice(startDt: Optional[str] = None, endDt: Optional[str]
 async def scrape_dart_info_task():
     """기업 정보 수집을 위한 비동기 작업"""
     try:
+        start_time = get_current_datetime()
+        start_msg = f"Scraping DartInfo started at {start_time}"
+        logger.info(start_msg)
+        send_message_to_synology_chat(start_msg, prod_token)
+
         scraper = DartInfoScraper()
         await scraper.scrape_dart_info()
+
+        end_time = get_current_datetime()
+        end_msg = f"Scraping DartInfo completed at {end_time}"
+        logger.info(end_msg)
+        send_message_to_synology_chat(end_msg, prod_token)
     except Exception as e:
         err_msg = f"Error: {e}\n{traceback.format_exc()}"
         logger.error(err_msg)
+        send_message_to_synology_chat(err_msg, prod_token)
 
 
 async def scrape_dart_finance_task():
     """재무 정보 수집을 위한 비동기 작업"""
     try:
+        start_time = get_current_datetime()
+        start_msg = f"Scraping DartFinance started at {start_time}"
+        logger.info(start_msg)
+        send_message_to_synology_chat(start_msg, prod_token)
+
         scraper = DartFinanceScraper()
         await scraper.scrape_dart_finance()
+
+        end_time = get_current_datetime()
+        end_msg = f"Scraping DartFinance completed at {end_time}"
+        logger.info(end_msg)
+        send_message_to_synology_chat(end_msg, prod_token)
     except Exception as e:
         err_msg = f"Error: {e}\n{traceback.format_exc()}"
         logger.error(err_msg)
+        send_message_to_synology_chat(err_msg, prod_token)
+
+
+async def scrape_dart_notice_task():
+    """공시 정보 수집을 위한 비동기 작업"""
+    try:
+        start_time = get_current_datetime()
+        start_msg = f"Scraping DartNotice started at {start_time}"
+        logger.info(start_msg)
+        send_message_to_synology_chat(start_msg, prod_token)
+
+        scraper = DartNoticeScraper()
+        await scraper.scrape_dart_notice()
+
+        end_time = get_current_datetime()
+        end_msg = f"Scraping DartNotice completed at {end_time}"
+        logger.info(end_msg)
+        send_message_to_synology_chat(end_msg, prod_token)
+    except Exception as e:
+        err_msg = f"Error: {e}\n{traceback.format_exc()}"
+        logger.error(err_msg)
+        send_message_to_synology_chat(err_msg, prod_token)
 
 
 # 스케줄러 설정
 scheduler = AsyncIOScheduler()
 scheduler.add_job(scrape_dart_info_task, 'cron', day=20)
 scheduler.add_job(scrape_dart_finance_task, 'cron', day=20)
+scheduler.add_job(scrape_dart_notice_task, 'cron', day=27)
 scheduler.start()

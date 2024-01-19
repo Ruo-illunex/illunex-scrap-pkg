@@ -2,7 +2,7 @@ from typing import Optional
 import traceback
 
 from fastapi import FastAPI, Depends
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.common.log.log_config import setup_logger
 from app.common.core.utils import get_current_datetime, make_dir
@@ -51,8 +51,35 @@ def scrape_vntr(token: str = Depends(verify_token)):
         scraper.scrape()
         return {"status": "Scraping in progress..."}
     except Exception as e:
-        logger.error(e)
+        err_msg = f"Error: {e}\n{traceback.format_exc()}"
+        logger.error(err_msg)
         return {"status": "Scraping failed..."}
     finally:
         logger.info("Scraping completed...")
         logger.info("--------------------------------------------------")
+
+
+def scrape_vntr_task():
+    """VntrScraper를 이용해 모든 기업의 기업 정보를 수집하는 함수를 주기적으로 실행하는 함수"""
+    try:
+        logger.info("Scraping started...")
+        scraper = VntrScraper()
+        scraper.scrape()
+    except Exception as e:
+        err_msg = f"Error: {e}\n{traceback.format_exc()}"
+        logger.error(err_msg)
+        logger.info("Scraping failed...")
+        logger.info("--------------------------------------------------")
+    finally:
+        logger.info("Scraping completed...")
+        logger.info("--------------------------------------------------")
+
+
+# 스케줄러 인스턴스 생성
+scheduler = BackgroundScheduler()
+
+# 매달 5일마다 `scrape_vntr_task` 함수를 실행하는 작업 추가
+scheduler.add_job(scrape_vntr_task, 'cron', day=5)
+
+# 스케줄러 시작
+scheduler.start()
