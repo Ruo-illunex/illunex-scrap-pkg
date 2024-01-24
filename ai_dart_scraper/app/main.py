@@ -1,6 +1,7 @@
 from typing import Optional
 import traceback
 
+import pytz
 from fastapi import FastAPI, Depends
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -65,7 +66,7 @@ async def scrape_dart_info(token: str = Depends(verify_token)):
 
 
 @app.get("/scrape/dart_finance")
-async def scrape_dart_finance(bsnsYear: Optional[int] = None, apiCallLimit: Optional[int] = 19000, token: str = Depends(verify_token)):
+async def scrape_dart_finance(bsnsYear: Optional[int] = None, apiCallLimit: Optional[int] = 19900, token: str = Depends(verify_token)):
     """OpenDartReader를 이용해 모든 기업의 재무 정보를 수집하는 함수"""
     try:
         scraper = DartFinanceScraper(bsns_year=bsnsYear, api_call_limit=apiCallLimit)
@@ -154,8 +155,8 @@ async def scrape_dart_notice_task():
 
 
 # 스케줄러 설정
-scheduler = AsyncIOScheduler()
+scheduler = AsyncIOScheduler(timezone=pytz.timezone('Asia/Seoul'))
 scheduler.add_job(scrape_dart_info_task, 'cron', day=20)
-scheduler.add_job(scrape_dart_finance_task, 'cron', day=20)
-scheduler.add_job(scrape_dart_notice_task, 'cron', day=27)
+scheduler.add_job(scrape_dart_finance_task, 'cron', day=21)
+scheduler.add_job(scrape_dart_notice_task, 'cron', day=10)
 scheduler.start()

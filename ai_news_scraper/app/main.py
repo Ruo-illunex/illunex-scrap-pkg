@@ -246,16 +246,16 @@ def scheduled_job_send_statistics_message():
     """매일 00:00에 실행되는 스케줄러"""
     try:
         message = create_daily_message()
-        send_message_to_synology_chat(message, prod_token)    # 실제 운영 환경에서는 prod_token 사용
+        status, text = send_message_to_synology_chat(message, prod_token)    # 실제 운영 환경에서는 prod_token 사용
         # send_message_to_synology_chat(message, test_token)  # 테스트용
-        logger.info("Statistics Message Sent")
+        logger.info(f'Status: {status}, Text: {text}')
 
     except Exception as e:
         logger.error(f"Error: {e}")
 
 
-# 매일 00:00에 스케줄러 실행
-schedule.every().day.at("00:00").do(scheduled_job_send_statistics_message)
+# 매일 00:00에 스케줄러 실행 -> 한국 시간 기준
+schedule.every().day.at("15:10").do(scheduled_job_send_statistics_message)
 # schedule.every(1).minutes.do(scheduled_job) # 테스트용
 
 
