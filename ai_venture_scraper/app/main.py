@@ -1,4 +1,3 @@
-from typing import Optional
 import traceback
 
 from fastapi import FastAPI, Depends

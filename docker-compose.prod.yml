@@ -52,6 +52,14 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8080
     shm_size: 2gb
 
+  ai_ocr:
+    build: ./ai_ocr
+    image: ai_ocr:1.0.0
+    restart: unless-stopped # 컨테이너가 종료되지 않는 한 항상 재시작
+    ports:
+      - "8504:8080"  # 포트 변경
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --workers 5
+
   selenium-hub:
     image: selenium/hub:latest
     ports:

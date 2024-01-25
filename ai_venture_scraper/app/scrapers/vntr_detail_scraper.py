@@ -8,6 +8,7 @@ from copy import deepcopy
 from threading import Thread
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import requests
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions as Options
 from selenium.webdriver.common.by import By
@@ -19,12 +20,11 @@ from selenium.common.exceptions import (
     TimeoutException,
     )
 
-from app.common.core.trocr import TROCR
 from app.common.log.log_config import setup_logger
-from app.config.settings import FILE_PATHS, SYNOLOGY_CHAT, HUB_HOST
+from app.config.settings import FILE_PATHS, SYNOLOGY_CHAT, HUB_HOST, OCR_HOST
 from app.database_init import collections_db, companies_db
 from app.scrapers.vntr_list_scraper import VntrListScraper
-from app.common.core.utils import make_dir, get_current_datetime
+from app.common.core.utils import make_dir, get_current_datetime, transform_img2byte
 from app.notification.synology_chat import send_message_to_synology_chat
 from app.models_init import (
     CollectVntrInfoPydantic,
@@ -49,9 +49,9 @@ class VntrScraper:
             self._log_file
         )
 
-        self._trocr = TROCR()
         self.captcha_url = "https://www.smes.go.kr/venturein/pbntc/captchaImg.do"
         self.hub_host = HUB_HOST
+        self.ocr_api = f'http://{OCR_HOST}:8080/api/v1/trocr'
 
         self._comp_id_df = companies_db.get_company_id_df()
         self._init_data()
@@ -137,7 +137,21 @@ class VntrScraper:
         captcha_key = None
         try:
             self._logger.info(f'{scraper_name} - 캡챠 키를 가져옵니다.')
-            captcha_key = self._trocr.trocr(file_path)
+            image_bytes = transform_img2byte(file_path)
+
+            response = requests.post(
+                self.ocr_api,
+                files={'image': image_bytes},
+            )
+            if response.status_code != 200:
+                self._logger.error(f'{scraper_name} - 캡챠 이미지를 가져오는데 실패했습니다. {response.status_code}')
+                return captcha_key
+            response_json = response.json()
+            if response_json['status'] != 200:
+                self._logger.error(f'{scraper_name} - 캡챠 이미지를 가져오는데 실패했습니다. {response_json["status"]}')
+                return captcha_key
+            captcha_key = response_json['text']
+
             if captcha_key is None:
                 self._logger.error(f'{scraper_name} - 캡챠 키를 가져오는데 실패했습니다.')
             self._logger.info(f'{scraper_name} - 캡챠 키: {captcha_key}')
@@ -164,7 +178,7 @@ class VntrScraper:
         """
         if value in ['0', '']:
             return value
-        return ''.join(value.split(',')[3700:-1])
+        return ''.join(value.split(',')[:-1])
 
     def _get_financial_info(
         self, driver: webdriver.Remote, xpath: str
@@ -764,7 +778,7 @@ class VntrScraper:
                 if list(bs.values()) != [''] * len(bs):
                     company_bs_temp = base_company_finance.copy()
                     company_bs_temp.update(bs)
-                    all_company_bs.append(company_bs_temp.copy())
+                    all_company_bs.append(company_bs_temp)
             all_company_is = []
             for inc in company_finance['income_statement']:
                 if list(inc.values()) != [''] * len(inc):
@@ -1025,15 +1039,6 @@ class VntrScraper:
                         })
                         self._logger.info((f'[{scraper_name}] 데이터 큐에 {vnia_sn} 데이터를 넣었습니다.'))
                         is_success = True
-                        del vntr_details
-                        del company_info
-                        del company_finance
-                        del investment_info
-                        del venture_business_certificate
-                        del all_company_bs
-                        del all_company_is
-                        del all_investment_info
-                        del all_vc
                 except ValueError as e:
                     self._logger.error(f'[{scraper_name}] ChromeDriver를 가져오는데 실패했습니다. {e}')
                     self._logger.error(traceback.format_exc())

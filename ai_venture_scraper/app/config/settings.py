@@ -43,3 +43,4 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 ALGORITHM = os.getenv('ALGORITHM')
 
 HUB_HOST = os.getenv('HUB_HOST')
+OCR_HOST = os.getenv('OCR_HOST')

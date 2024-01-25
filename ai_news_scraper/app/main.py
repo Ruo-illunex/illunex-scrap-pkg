@@ -221,6 +221,23 @@ def scrape_esg_finance_hub_endpoint():
         return {"message": f"Error: {e}"}
 
 
+@app.get("/scrape/missing_news")
+async def scrape_missing_news_endpoint(file_name: str):
+    """누락된 뉴스를 스크래핑하는 엔드포인트
+    args:
+        file_name: 누락된 뉴스 URL이 있는 파일 이름 (csv 형식)
+    """
+
+    try:
+        await scraper.scrape_missing_news(file_name=file_name)
+        return {"message": "Missing News Scraping Started"}
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        syn_err_msg = create_error_report_message(e, "missing_news")
+        send_message_to_synology_chat(syn_err_msg, dev_token)
+        return {"message": f"Error: {e}"}
+
+
 @app.on_event("startup")
 async def start_scrapers():
     """서비스가 시작되면, 스크래퍼들을 별도의 스레드에서 실행"""

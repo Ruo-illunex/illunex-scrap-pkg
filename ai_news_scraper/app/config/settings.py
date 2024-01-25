@@ -31,6 +31,7 @@ FILE_PATHS = {
     'chromedriver': 'app/config/chromedriver',
     'esg_finance_hub_links_csv': 'app/data/esg_finance_hub_links_*.csv',
     'esg_finance_media': 'app/common/core/esg_finance_media.yaml',
+    'data': 'app/data',
     }
 
 

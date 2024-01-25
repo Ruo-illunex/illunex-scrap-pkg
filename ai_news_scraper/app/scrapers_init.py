@@ -11,3 +11,4 @@ from app.scrapers.greenpost_news_scraper import scrape_greenpost_news
 from app.scrapers.esg_finance_news_scraper import scrape_esg_finance_news
 
 from app.scrapers.esg_finance_hub_scraper import  scrape_esg_finance_hub
+from app.scrapers.missing_news_scraper import scrape_missing_news
