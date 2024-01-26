@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.config.settings import NEWS_DB_URL
 from app.models_init import DaumNews, NaverNews, EtcNews, EsgNews
+from app.common.log.log_config import setup_logger
 
 
 class NewsDatabase:
@@ -12,6 +13,11 @@ class NewsDatabase:
         self.engine = create_engine(NEWS_DB_URL, pool_recycle=3600, pool_size=20, max_overflow=0)
         self.SessionLocal = sessionmaker(bind=self.engine)
         self.existing_data = None
+        self.logger = setup_logger(
+            'news_database',
+            'app/log/news_database.log',
+            level='INFO'
+        )
 
     # 뉴스 데이터베이스에 대량의 데이터를 저장하는 함수
     def save_data_bulk(self, news_data_list: list, portal: str):
@@ -32,7 +38,7 @@ class NewsDatabase:
                     existing_data = session.query(DaumNews).filter(DaumNews.url_md5 == news_data.url_md5).first()
                 elif portal in ['venturesquare', 'zdnet', 'the bell', 'startuptoday', 'startupn', 'platum']:
                     existing_data = session.query(EtcNews).filter(EtcNews.url_md5 == news_data.url_md5).first()
-                elif portal in ['esg_economy', 'greenpost_korea']:
+                elif portal in ['esg_economy', 'greenpost_korea', 'missing_news_scraper']:
                     existing_data = session.query(EsgNews).filter(EsgNews.url_md5 == news_data.url_md5).first()
 
                 # 기존 데이터가 없으면 to_add 리스트에 추가
@@ -41,9 +47,23 @@ class NewsDatabase:
 
             # to_add에 있는 모든 뉴스 데이터를 한 번에 데이터베이스에 저장
             if to_add:
-                session.bulk_save_objects(to_add)
-                session.commit()
+                try:
+                    session.bulk_save_objects(to_add)
+                    session.commit()
+                    self.logger.info(f"{portal} news data bulk saved")
+                except Exception as builk_save_error:
+                    session.rollback()
+                    self.logger.error(f"{portal} news data bulk save error: {builk_save_error}")
+                    for record in to_add:
+                        try:
+                            session.add(record)
+                            session.commit()
+                            self.logger.info(f"{portal} news data saved")
+                        except Exception as individual_save_error:
+                            session.rollback()
+                            self.logger.error(f"{portal} news {record.url} data save error: {individual_save_error}")
         except Exception as e:
+            session.rollback()
             stack_trace = traceback.format_exc()
             print(f"Error: {e}\n{stack_trace}")
         finally:

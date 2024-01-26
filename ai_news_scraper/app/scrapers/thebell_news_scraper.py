@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import EtcNews
 from app.scrapers.urls import URLs
-from app.common.core.utils import normal_text
+from app.common.core.utils import normal_text, truncate_content
 
 
 class TheBellNewsScraper(NewsScraper):
@@ -113,6 +113,7 @@ class TheBellNewsScraper(NewsScraper):
         preprocessed_create_date = self.preprocess_datetime(create_date)
         kind_id = self.category_dict.get(self.scraper_name).get("etc")
         norm_title = normal_text(title)
+        content = truncate_content(content)
 
         news_data = EtcNews(
             url=news_url,

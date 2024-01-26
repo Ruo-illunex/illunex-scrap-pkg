@@ -18,8 +18,7 @@ class EtcNews(BaseScraper):
     content = Column(Text)
     create_date = Column(DateTime)
     kind = Column(String(10))
-    #url_md5는 unique key로 설정
-    url_md5 = Column(String(35))
+    url_md5 = Column(String(35), unique=True)
     image_url = Column(Text)
     portal = Column(String(255))
     media = Column(String(255))
@@ -28,8 +27,8 @@ class EtcNews(BaseScraper):
 
     # 테이블 인코딩 설정
     __table_args__ = {
-        'mysql_charset': 'utf8mb4',         # utf8mb4로 설정
-        'mysql_collate': 'utf8mb4_unicode_ci'   # utf8mb4_unicode_ci로 설정
+        'mysql_charset': 'utf8mb4',
+        'mysql_collate': 'utf8mb4_unicode_ci'
         }
 
 

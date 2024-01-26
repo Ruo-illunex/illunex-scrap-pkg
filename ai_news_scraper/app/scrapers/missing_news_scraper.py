@@ -6,28 +6,31 @@ import types
 import time
 import datetime
 
+import requests
+import aiohttp
 import pandas as pd
 import numpy as np
-import requests
 from bs4 import BeautifulSoup
 
 from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import EsgNews
 from app.common.core.utils import *
 from app.config.settings import FILE_PATHS
-from app.common.core.utils import load_yaml, normal_text
+from app.common.core.utils import load_yaml, normal_text, truncate_content
 
 
 class MissingNewsScraper(NewsScraper):
     """Missing 뉴스 스크래퍼 클래스"""
 
-    def __init__(self, scraper_name: str, file_name: str):
+    def __init__(self, scraper_name: str, df: pd.DataFrame, file_name: str):
         """생성자
         Args:
             scraper_name (str): 스크래퍼 이름
+            df (pd.DataFrame): csv 파일을 읽은 DataFrame
             file_name (str): csv 파일 이름
         """
         super().__init__(scraper_name)
+        self._df = df
         self._file_path = FILE_PATHS.get('data')+'/'+file_name
         self.media_name = None
         self.type1 = load_yaml(FILE_PATHS.get('esg_finance_media')).get('type1')
@@ -35,16 +38,6 @@ class MissingNewsScraper(NewsScraper):
         self.type3 = load_yaml(FILE_PATHS.get('esg_finance_media')).get('type3')
         self.type4 = load_yaml(FILE_PATHS.get('esg_finance_media')).get('type4')
         self.media = load_yaml(FILE_PATHS.get('esg_finance_media')).get('media')
-
-    def _read_csv_to_df(self, file_path: str) -> pd.DataFrame:
-        """csv 파일을 읽어서 DataFrame으로 반환하는 함수
-        Args:
-            file_path (str): csv 파일 경로
-        Returns:
-            pd.DataFrame: csv 파일을 읽은 DataFrame
-        """
-        df = pd.read_csv(file_path, encoding='utf-8')
-        return df
 
     def preprocess_datetime(self, unprocessed_date: str) -> str:
         """날짜 전처리 함수
@@ -119,18 +112,18 @@ class MissingNewsScraper(NewsScraper):
         next = dt + datetime.timedelta(days=30)
         return prev.strftime('%Y.%m.%d'), next.strftime('%Y.%m.%d')
 
-    def _get_article_links_from_naver(self, word: str, ds: str, de: str) -> set:
+    def get_news_urls(self, word: str, ds: str, de: str) -> str:
         """네이버 뉴스를 검색하는 함수
         Args:
             word (str): 검색어
             ds (str): 검색 시작 날짜
             de (str): 검색 종료 날짜
         Returns:
-            set: 검색 결과 뉴스 url
+            str: 검색 결과의 뉴스 링크
         """
         try:
             url = "https://search.naver.com/search.naver"
-
+            headers = {'User-Agent': 'Mozila/5.0'}
             params = {
                 'where': 'news',
                 'query': word,
@@ -142,75 +135,51 @@ class MissingNewsScraper(NewsScraper):
                 'ds': ds,
                 'de': de,
             }
-            resp = requests.get(url, params=params)
+            while True:
+                time.sleep(random.randint(1, 5))
+                resp = requests.get(url, headers=headers, params=params)
+                if resp.status_code == 200:
+                    html = resp.text
+                    soup = BeautifulSoup(html, 'html.parser')
+                    news_items = soup.select('.list_news > li')
+                    for item in news_items:
+                        link = item.select_one('.news_tit')['href']
 
-            if resp.status_code == 200:
-                html = resp.text
-                soup = BeautifulSoup(html, 'html.parser')
-                news_items = soup.select('.list_news > li')
-                links = []
-                for item in news_items:
-                    link = item.select_one('.news_tit')['href']
-                    links.append(link)
-                return set(links)
-            else:
-                err_message = f"status code: {resp.status_code}"
-                self.process_err_log_msg(err_message=err_message, function_name='_get_article_links_from_naver')
-                return None
+                        domain = link.split('/')[2]
+                        if domain in self.type1:
+                            self.media_name = self.type1.get(domain)
+                            self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name='esg_finance_hub1')
+                        elif domain in self.type2:
+                            self.media_name = self.type2.get(domain)
+                            self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name='esg_finance_hub2')
+                        elif domain in self.type3:
+                            self.media_name = self.type3.get(domain)
+                            self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name='esg_finance_hub3')
+                        elif domain in self.type4:
+                            self.media_name = self.type4.get(domain)
+                            self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name='esg_finance_hub4')
+                        elif domain in self.media:
+                            self.media_name = self.media.get(domain)
+                            self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name=self.media_name)
+                        else:
+                            self.media_name = 'Not Registered'
+                            self.parsing_rules_dict = {}
+                        yield link
+                    break
+                elif resp.status_code == 403:
+                    err_message = f"status code: {resp.status_code} / Blocked by Naver. Retrying in 10 minutes..."
+                    self.process_err_log_msg(err_message=err_message, function_name='get_news_urls')
+                    time.sleep(600)
+                    continue
+                else:
+                    err_message = f"status code: {resp.status_code}"
+                    self.process_err_log_msg(err_message=err_message, function_name='get_news_urls')
+                    return
         except Exception as e:
             stack_trace = traceback.format_exc()
             err_message = "THERE WAS AN ERROR WHILE GETTING LINKS FROM NAVER"
-            self.process_err_log_msg(err_message, "_get_article_links_from_naver", stack_trace, e)
-            return None
-
-    def get_news_urls(self):
-        try:
-            df = self._read_csv_to_df(self._file_path)
-            all_links = set()
-            for corp, date, investor in zip(df['기업명'], df['일자'], df['투자사']):
-                ds, de = self._cal_date_range(date)
-                if investor is not np.nan:
-                    investors = investor.split(',')
-                    for inv in investors:
-                        word = f'{corp} + {inv.strip()}'
-                        result = self._get_article_links_from_naver(word, ds, de)
-                        if result:
-                            all_links.update(result)
-                            info_message = f'{len(result)}개 기사 링크 추가'
-                            self.process_info_log_msg(info_message)
-                result = self._get_article_links_from_naver(corp, ds, de)
-                if result:
-                    all_links.update(result)
-                    info_message = f'{len(result)}개 기사 링크 추가'
-                    self.process_info_log_msg(info_message)
-
-                time.sleep(3)
-            for link in list(all_links):
-                domain = link.split('/')[2]
-                if domain in self.type1:
-                    self.media_name = self.type1.get(domain)
-                    self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name='esg_finance_hub1')
-                elif domain in self.type2:
-                    self.media_name = self.type2.get(domain)
-                    self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name='esg_finance_hub2')
-                elif domain in self.type3:
-                    self.media_name = self.type3.get(domain)
-                    self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name='esg_finance_hub3')
-                elif domain in self.type4:
-                    self.media_name = self.type4.get(domain)
-                    self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name='esg_finance_hub4')
-                elif domain in self.media:
-                    self.media_name = self.media.get(domain)
-                    self.parsing_rules_dict = self.get_parsing_rules_dict(scraper_name=self.media_name)
-                else:
-                    self.media_name = 'Not Registered'
-                    self.parsing_rules_dict = {}
-                yield link
-        except Exception as e:
-            stack_trace = traceback.format_exc()
-            err_message = "THERE WAS AN ERROR WHILE GETTING NEWS URLS FROM NAVER news portal\nCHECK THE LOGS FOR MORE DETAILS"
             self.process_err_log_msg(err_message, "get_news_urls", stack_trace, e)
-            return None
+            return
 
     async def scrape_each_news(self, news_url):
         total_extracted_data = {}
@@ -327,8 +296,8 @@ class MissingNewsScraper(NewsScraper):
 
         url_md5 = hashlib.md5(news_url.encode()).hexdigest()
         preprocessed_create_date = self.preprocess_datetime(create_date)
-        kind_id = self.category_dict.get(self.scraper_name).get("etc")
         norm_title = normal_text(title)
+        content = truncate_content(content)
 
         news_data = EsgNews(
             url=news_url,
@@ -337,10 +306,10 @@ class MissingNewsScraper(NewsScraper):
             content=content,
             create_date=preprocessed_create_date,
             image_url=image_url,
-            portal='esg_finance',
+            portal='naver',
             media=media,
-            kind=kind_id,
-            category="ESG",
+            kind="999999",
+            category="MISSING_NEWS",
             esg_analysis="",
             norm_title=norm_title,
             )
@@ -349,39 +318,53 @@ class MissingNewsScraper(NewsScraper):
     async def scrape_news(self):
         """뉴스 스크래핑 함수"""
         try:
-            news_urls = self.get_news_urls()
-            if not isinstance(news_urls, types.GeneratorType):
-                err_message = "GET_NEWS_URLS DOES NOT RETURN A GENERATOR. CHECK THE 'news_board_url' OR THE RETURN VALUE OF FUNCTION 'get_news_urls'"
-                self.process_err_log_msg(err_message, "scrape_news", "", "")
-                return None
+            for corp, date, investor in zip(self._df['기업명'], self._df['일자'], self._df['투자사']):
+                # 세션 로그 초기화
+                self.initialize_session_log()
 
-            batch_size = 100
-            for i, news_url in enumerate(news_urls):
-                news_data = None
-                # 에러 로그 개별 초기화
-                self.initialize_error_log(news_url)
-                self.session_log['total_records_processed'] += 1
-                if not self.is_already_scraped(news_url):
-                    await asyncio.sleep(random.randint(1, 5))
-                    news_data = await self.scrape_each_news(news_url)
-                else:
-                    self.is_duplicated = True
-                    err_message = f"NEWS ALREADY EXISTS IN DATABASE: {news_url}"
-                    self.process_err_log_msg(err_message, "scrape_news", "", "")
+                ds, de = self._cal_date_range(date)
+                if investor is not np.nan:
+                    investors = investor.split(',')
+                    for inv in investors:
+                        word = f'{corp} + {inv.strip()}'
+                        for news_url in self.get_news_urls(word, ds, de):
+                            news_data = None
+                            self.initialize_error_log(news_url)
+                            self.session_log['total_records_processed'] += 1
+                            if not self.is_already_scraped(news_url):
+                                await asyncio.sleep(random.randint(1, 5))
+                                news_data = await self.scrape_each_news(news_url)
+                            else:
+                                self.is_duplicated = True
+                                err_message = f"NEWS ALREADY EXISTS IN DATABASE: {news_url}"
+                                self.process_err_log_msg(err_message, "scrape_news", "", "")
 
-                # 뉴스 데이터에 에러가 있으면, 에러 로그를 append하고, 그렇지 않으면 뉴스 데이터를 리스트에 추가
-                self.check_error(news_data, news_url)
-                if (i+1) % batch_size == 0:
+                            # 뉴스 데이터에 에러가 있으면, 에러 로그를 append하고, 그렇지 않으면 뉴스 데이터를 리스트에 추가
+                            self.check_error(news_data, news_url)
+
+                for news_url in self.get_news_urls(corp, ds, de):
+                    news_data = None
+                    self.initialize_error_log(news_url)
+                    self.session_log['total_records_processed'] += 1
+                    if not self.is_already_scraped(news_url):
+                        await asyncio.sleep(random.randint(1, 5))
+                        news_data = await self.scrape_each_news(news_url)
+                    else:
+                        self.is_duplicated = True
+                        err_message = f"NEWS ALREADY EXISTS IN DATABASE: {news_url}"
+                        self.process_err_log_msg(err_message, "scrape_news", "", "")
+
+                    # 뉴스 데이터에 에러가 있으면, 에러 로그를 append하고, 그렇지 않으면 뉴스 데이터를 리스트에 추가
+                    self.check_error(news_data, news_url)
+
+                if self.news_data_list:
                     self.save_news_data_bulk(self.news_data_list)
                     self.news_data_list = []
 
-            if self.news_data_list:
-                self.save_news_data_bulk(self.news_data_list)
-
-            # 최종 세션 로그 저장
-            self.finalize_session_log()
-            success_message = f"SCRAPING COMPLETED FOR {self.scraper_name} WITH {self.session_log['total_records_processed']} RECORDS"
-            self.process_info_log_msg(success_message, "scrape_news")
+                # 최종 세션 로그 저장
+                self.finalize_session_log()
+                success_message = f"SCRAPING COMPLETED FOR {self.scraper_name} WITH {self.session_log['total_records_processed']} RECORDS"
+                self.process_info_log_msg(success_message, "scrape_news")
         except Exception as e:
             stack_trace = traceback.format_exc()
             err_message = "THERE WAS AN ERROR WHILE SCRAPING NEWS\nCHECK THE LOGS FOR MORE DETAILS"
@@ -394,9 +377,9 @@ class MissingNewsScraper(NewsScraper):
         pass
 
 
-async def scrape_missing_news(file_name):
+async def scrape_missing_news(df: pd.DataFrame, file_name: str):
     """Missing 뉴스 스크래퍼를 실행하는 함수"""
-    scraper = MissingNewsScraper(scraper_name='missing_news_scraper', file_name=file_name)
+    scraper = MissingNewsScraper(scraper_name='missing_news_scraper', df=df, file_name=file_name)
     await scraper.scrape_news()
 
 

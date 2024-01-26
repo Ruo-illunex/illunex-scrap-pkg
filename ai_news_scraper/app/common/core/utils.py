@@ -151,3 +151,22 @@ def remove_emojis_and_special_chars(text):
     text = re.sub(r'[^가-힣0-9a-zA-Z\s]', '', text)
 
     return text
+
+
+def truncate_content(content, max_size=65535):
+    """
+    주어진 content 문자열을 max_size 바이트 이하로 조정하는 함수.
+    Args:
+        content (str): 원본 content 데이터.
+        max_size (int): 최대 크기를 바이트 단위로 지정 (기본값: 65535).
+
+    Returns:
+        str: 조정된 content 데이터.
+    """
+    # 인코딩된 content의 바이트 길이를 확인
+    content_bytes = content.encode('utf-8')
+    if len(content_bytes) > max_size:
+        # 최대 크기에 맞게 content를 잘라냄
+        return content_bytes[:max_size].decode('utf-8', errors='ignore')
+    else:
+        return content

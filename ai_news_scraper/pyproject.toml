@@ -23,6 +23,7 @@ trafilatura = "^1.6.3"
 python-dotenv = "^1.0.0"
 hanja = "^0.13.3"
 numpy = "^1.26.3"
+python-multipart = "^0.0.6"
 
 
 [build-system]

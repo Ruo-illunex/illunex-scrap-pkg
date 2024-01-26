@@ -14,7 +14,7 @@ from app.scrapers.urls import URLs
 from app.scrapers.esg_finance_hub_scraper import EsgFinanceHubScraper
 from app.common.core.utils import *
 from app.config.settings import FILE_PATHS
-from app.common.core.utils import load_yaml, normal_text
+from app.common.core.utils import load_yaml, normal_text, truncate_content
 
 
 class EsgfinanceNewsScraper(NewsScraper):
@@ -296,6 +296,7 @@ class EsgfinanceNewsScraper(NewsScraper):
         preprocessed_create_date = self.preprocess_datetime(create_date)
         kind_id = self.category_dict.get(self.scraper_name).get("etc")
         norm_title = normal_text(title)
+        content = truncate_content(content)
 
         news_data = EsgNews(
             url=news_url,

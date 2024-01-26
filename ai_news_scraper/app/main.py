@@ -1,9 +1,11 @@
-from fastapi import FastAPI
-import schedule
 import time
+import asyncio
 import datetime
 import threading
-import asyncio
+
+import schedule
+import pandas as pd
+from fastapi import FastAPI, UploadFile
 
 from app.scrap_manager.api.router import router as scrap_manager_router
 from app.common.db.news_database import NewsDatabase
@@ -221,15 +223,17 @@ def scrape_esg_finance_hub_endpoint():
         return {"message": f"Error: {e}"}
 
 
-@app.get("/scrape/missing_news")
-async def scrape_missing_news_endpoint(file_name: str):
+@app.post("/scrape/missing_news")
+async def scrape_missing_news_endpoint(csv_file: UploadFile = None):
     """누락된 뉴스를 스크래핑하는 엔드포인트
     args:
-        file_name: 누락된 뉴스 URL이 있는 파일 이름 (csv 형식)
+        csv_file: 누락된 뉴스의 URL이 담긴 CSV 파일
     """
 
     try:
-        await scraper.scrape_missing_news(file_name=file_name)
+        df = pd.read_csv(csv_file.file)
+        file_name = csv_file.filename
+        await scraper.scrape_missing_news(df, file_name)
         return {"message": "Missing News Scraping Started"}
     except Exception as e:
         logger.error(f"Error: {e}")

@@ -10,7 +10,7 @@ import requests
 from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import EsgNews
 from app.scrapers.urls import URLs
-from app.common.core.utils import preprocess_datetime_iso, normal_text
+from app.common.core.utils import preprocess_datetime_iso, normal_text, truncate_content
 
 
 class EsgNewsScraper(NewsScraper):
@@ -110,6 +110,7 @@ class EsgNewsScraper(NewsScraper):
         else:
             kind_id = self.category_dict.get(self.scraper_name).get("etc")
         norm_title = normal_text(title)
+        content = truncate_content(content)
 
         news_data = EsgNews(
             url=news_url,
