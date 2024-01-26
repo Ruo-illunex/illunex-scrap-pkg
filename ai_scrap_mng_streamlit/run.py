@@ -3,8 +3,22 @@ import pandas as pd
 from streamlit_option_menu import option_menu
 from streamlit_timeline import timeline
 
-from core.utils import get_scrap_managers, get_scraper_logs, convert_to_timelinejs_format_with_colors, convert_to_timelinejs_format_with_alerts, convert_error_logs_to_timelinejs_format, create_color_map, get_data_from_api
-from core.functions import create_form, update_form, delete_form, check_html, scrap_test_beautiful_soup
+from core.utils import (
+    get_scrap_managers,
+    get_scraper_logs,
+    convert_to_timelinejs_format_with_colors,
+    convert_to_timelinejs_format_with_alerts,
+    convert_error_logs_to_timelinejs_format,
+    create_color_map, get_data_from_api,
+    scrape_missing_news,
+    get_token,
+    trocr
+)
+from core.functions import (
+    create_form, update_form,
+    delete_form, check_html,
+    scrap_test_beautiful_soup
+)
 
 
 st.set_page_config(
@@ -22,8 +36,9 @@ st.set_page_config(
 
 with st.sidebar:
     option = option_menu(
-        "Menu", ['Scrap Manager', 'Scrap Test', 'Scraper Logs', 'ESG Finance Hub Scraper'],
-        icons=['house', 'kanban', 'bi bi-robot', 'bi bi-robot'],
+        "Menu",
+        ['Scrap Manager', 'Scrap Test', 'Scraper Logs', 'ESG Finance Hub Scraper', 'Missing News Scraper', 'OCR'],
+        icons=['house', 'kanban', 'bi bi-robot', 'bi bi-robot', 'bi bi-robot', 'bi bi-robot'],
         menu_icon="app-indicator",
         default_index=0,
         styles={
@@ -125,8 +140,12 @@ elif option == 'Scraper Logs':
     # pandas 데이터프레임으로 변환
     scrap_session_logs_df = pd.DataFrame(st.session_state.scrap_session_logs)
     scrap_error_logs_df = pd.DataFrame(st.session_state.scrap_error_logs)
+    if len(scrap_session_logs_df) > 20:
+        scrap_session_logs_df = scrap_session_logs_df[-20:]
+    if len(scrap_error_logs_df) > 100:
+        scrap_error_logs_df = scrap_error_logs_df[-100:]
 
-    st.header("Scrap Session Logs")
+    st.header("Scrap Session Logs(Recent 20)")
     session_logs_filter = st.selectbox(
         'Filter',
         ('Timeline By Portal', 'Timeline By Status', 'Table'),
@@ -143,7 +162,7 @@ elif option == 'Scraper Logs':
     if timelinejs_json:
         timeline(timelinejs_json, height=500)
 
-    st.header("Scrap Error Logs")
+    st.header("Scrap Error Logs(Recent 100)")
     error_logs_filter = st.selectbox(
         'Filter',
         ('Timeline', 'Table'),
@@ -193,3 +212,72 @@ elif option == 'ESG Finance Hub Scraper':
         st.write("Number of news by domain:")
         st.bar_chart(st.session_state.esg_finance_hub_data_df['domain'].value_counts())
         st.write("Total domains:", len(unique_domains))
+
+elif option == 'Missing News Scraper':
+    st.title("Missing News Scraper")
+
+    # csv 파일 업로드
+    st.header("Upload CSV File")
+    csv_file = st.file_uploader("Upload CSV File", type=['csv'])
+    if csv_file:
+        st.write("File Uploaded Successfully")
+        st.write("File Name:", csv_file.name)
+        st.write("File Type:", csv_file.type)
+        st.write("File Size:", csv_file.size, "bytes")
+
+    # 로그인
+    if 'token' not in st.session_state:
+        st.session_state.token = None
+    if st.session_state.token:
+        st.success(f"Logged in as {st.session_state.user_id}")
+    else:
+        st.warning("You need authorized UserID and Password to start scraping.")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type='password')
+        if st.button('Login', key='login'):
+            result = get_token(username, password)
+            if result["status"] == "success":
+                st.session_state.token = result["token"]
+                st.session_state.user_id = username
+                st.success("Login successful.")
+            else:
+                st.error(result["message"])
+
+    # 스크래핑 시작 버튼 (로그인이 되어있어야 활성화)
+    if st.button('Start Scraping', key='start_scraping'):
+        # 스크래핑 함수 호출 및 응답 처리
+        with st.spinner('Scraping... This may take a while.'):
+            if st.session_state.token:
+                response = scrape_missing_news(csv_file, st.session_state.token)
+                if response.status_code == 200:
+                    st.success('Scraping completed successfully.')
+                    st.json(response.json())
+                else:
+                    st.error(f'An error occurred: {response.text}')
+            else:
+                st.error('Login required.')
+
+elif option == 'OCR':
+    st.title("OCR")
+
+    # 이미지 파일 업로드
+    st.header("Upload Image File")
+    image_file = st.file_uploader("Upload Image File", type=['jpg', 'jpeg', 'png'])
+    if image_file:
+        st.write("File Uploaded Successfully")
+        st.image(image_file, caption='Uploaded Image', use_column_width=True)
+        st.write("File Name:", image_file.name)
+        st.write("File Type:", image_file.type)
+        st.write("File Size:", image_file.size, "bytes")
+
+    # OCR 시작 버튼
+    if st.button('Start OCR', key='start_ocr'):
+        # OCR 함수 호출 및 응답 처리
+        with st.spinner('OCR... This may take a while.'):
+            response = trocr(image_file)
+        if response.status_code == 200:
+            st.success('OCR completed successfully.')
+            ocr_data = response.json()
+            st.write(ocr_data['text'])
+        else:
+            st.error(f'An error occurred: {response.text}')

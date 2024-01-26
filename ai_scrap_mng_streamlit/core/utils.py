@@ -7,12 +7,47 @@ import pandas as pd
 
 from config import settings
 
-api_url = settings.API_URL
+news_api_url = settings.NEWS_API_URL
+scrape_api_url = settings.SCRAPE_API_URL
+ocr_api_url = settings.OCR_API_URL
+auth_api_url = settings.AUTH_API_URL
+
+
+def get_token(username, password):
+    response = requests.post(
+        f"{auth_api_url}token",
+        data={"username": username, "password": password}
+        )
+    if response.status_code == 200:
+        return {"status": "success", "token": response.json()["access_token"]}
+    elif response.status_code == 401:
+        return {"status": "fail", "message": "Invalid credentials"}
+    else:
+        return {"status": "fail", "message": f"An error occurred: {response.text}"}
+
+
+def trocr(upload_file):
+    # 파일의 실제 MIME 타입을 사용
+    mime_type = f"image/{upload_file.name.split('.')[-1]}"
+    files = {'image': (upload_file.name, upload_file, mime_type)}
+    response = requests.post(f"{ocr_api_url}trocr", files=files)
+    return response
+
+
+# missing_news 스크래핑
+def scrape_missing_news(uploaded_file, token):
+    files = {'csv_file': (uploaded_file.name, uploaded_file, 'text/csv')}
+    response = requests.post(
+        f"{scrape_api_url}missing_news",
+        headers={"Authorization": f"Bearer {token}"},
+        files=files
+        )
+    return response
 
 
 # 데이터 조회
 def get_scrap_managers(portal):
-    response = requests.get(f"{api_url}scrap_manager/?portal={portal}")
+    response = requests.get(f"{news_api_url}scrap_manager/?portal={portal}")
     if response.status_code == 200:
         return response.json()
     else:
@@ -21,7 +56,7 @@ def get_scrap_managers(portal):
 
 # 데이터 삽입
 def create_scrap_manager(scrap_manager_data):
-    response = requests.post(f'{api_url}scrap_manager/', json=scrap_manager_data)
+    response = requests.post(f'{news_api_url}scrap_manager/', json=scrap_manager_data)
     return response.status_code == 201
 
 
@@ -29,12 +64,12 @@ def create_scrap_manager(scrap_manager_data):
 def update_scrap_manager(id, scrap_manager_data):
     print("update_scrap_manager", id, scrap_manager_data)
 
-    response = requests.put(f"{api_url}scrap_manager/{id}", json=scrap_manager_data)
+    response = requests.put(f"{news_api_url}scrap_manager/{id}", json=scrap_manager_data)
     return response.status_code == 200
 
 
 def get_scrap_manager_by_id(id):
-    response = requests.get(f"{api_url}scrap_manager/{id}")
+    response = requests.get(f"{news_api_url}scrap_manager/{id}")
     if response.status_code == 200:
         return response.json()
     else:
@@ -42,13 +77,13 @@ def get_scrap_manager_by_id(id):
 
 
 def delete_scrap_manager(id):
-    response = requests.delete(f"{api_url}scrap_manager/{id}")
+    response = requests.delete(f"{news_api_url}scrap_manager/{id}")
     return response.status_code == 204
 
 
 # 로그 조회
 def get_scraper_logs():
-    response = requests.get(f"{api_url}scrap_manager/monitoring/")
+    response = requests.get(f"{news_api_url}scrap_manager/monitoring/")
     if response.status_code == 200:
         return response.json()
     else:
@@ -132,10 +167,10 @@ def convert_to_timelinejs_format_with_colors(df):
     for _, row in df.iterrows():
         start_dt = datetime.fromisoformat(row['start_time'])
         end_dt = datetime.fromisoformat(row['end_time'])
-        
+
         # remarks에 따라 색상을 매핑
         event_color = color_map.get(row['remarks'], default_color)
-        
+
         event = {
             "media": {
                 "url": "",
@@ -311,14 +346,14 @@ def create_color_map(df):
     return color_map
 
 
-    # 스크랩 오류 로그 데이터를 TimelineJS JSON 형식으로 변환하는 함수
+# 스크랩 오류 로그 데이터를 TimelineJS JSON 형식으로 변환하는 함수
 def convert_error_logs_to_timelinejs_format(df, color_map, default_color):
     events = []
 
     for _, row in df.iterrows():
         # 오류 시간 파싱
         error_time = datetime.fromisoformat(row['error_time'])
-        
+
         # URL의 도메인에 따라 색상 매핑, 예를 들어 'startuptoday.co.kr'에서 'startuptoday' 추출
         domain_key = row['url'].split("//")[-1].split(".")[0]  # 도메인 키 추출
         event_color = color_map.get(domain_key, default_color)
@@ -352,7 +387,7 @@ def convert_error_logs_to_timelinejs_format(df, color_map, default_color):
             },
             "unique_id": f"error_{row['error_id']}"
         }
-        
+
         events.append(event)
 
     # 타임라인 JSON 포맷
@@ -382,17 +417,17 @@ def get_data_from_api(portal):
         df (DataFrame): API에서 가져온 데이터의 DataFrame
     """
     # API 엔드포인트 URL 구성
-    url = f"{api_url}data/{portal}/"
-    
+    url = f"{news_api_url}data/{portal}/"
+
     try:
         # API 호출
         response = requests.get(url)
-        
+
         # 요청이 성공적이면
         if response.status_code == 200:
             # JSON 형식으로 데이터를 받음
             data_json = response.json()
-            
+
             # Pandas DataFrame으로 변환
             df = pd.read_json(StringIO(data_json))
             return df

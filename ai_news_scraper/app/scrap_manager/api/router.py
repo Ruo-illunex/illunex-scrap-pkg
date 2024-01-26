@@ -48,12 +48,12 @@ def create_scrap_manager(
     if not scrap_manager_data:
         logger.error(f"[Fail] ScrapManager data not specified")
         raise HTTPException(status_code=400, detail="ScrapManager data not specified")
-    
+
     # args의 type을 확인하는 예외 처리
     if not isinstance(scrap_manager_data, ScrapManagerPydantic):
         logger.error(f"[Fail] ScrapManager data is not ScrapManagerPydantic type")
         raise HTTPException(status_code=400, detail="ScrapManager data is not ScrapManagerPydantic type")
-    
+
     # scrap_manager_data가 비어있는 경우에 대한 예외 처리
     if not scrap_manager_data.dict():
         logger.error(f"[Fail] ScrapManager data is empty")
@@ -105,7 +105,7 @@ async def get_scrap_managers_by_portal_endpoint(
     returns:
         scrap_managers (list): 스크래핑 매니저 리스트
     """
-    
+
     # portal이 없는 경우에 대한 예외 처리
     if not portal:
         logger.error(f"[Fail] Portal not specified")
@@ -213,17 +213,17 @@ async def update_scrap_manager_endpoint(
     if not id:
         logger.error(f"[Fail] ID not specified")
         raise HTTPException(status_code=400, detail="ID not specified")
-    
+
     # scrap_manager_data가 없는 경우에 대한 예외 처리
     if not scrap_manager_data:
         logger.error(f"[Fail] ScrapManager data not specified")
         raise HTTPException(status_code=400, detail="ScrapManager data not specified")
-    
+
     # args의 type을 확인하는 예외 처리
     if not isinstance(scrap_manager_data, ScrapManagerPydantic):
         logger.error(f"[Fail] ScrapManager data is not ScrapManagerPydantic type")
         raise HTTPException(status_code=400, detail="ScrapManager data is not ScrapManagerPydantic type")
-    
+
     # scrap_manager_data가 비어있는 경우에 대한 예외 처리
     if not scrap_manager_data.dict():
         logger.error(f"[Fail] ScrapManager data is empty")
@@ -364,7 +364,7 @@ def get_csv_data(portal: str):
 
     # portal이 없는 경우에 대한 예외 처리
     if not portal:
-        logger.error(f"[Fail] Portal not specified")
+        logger.error("[Fail] Portal not specified")
         raise HTTPException(status_code=400, detail="Portal not specified")
 
     try:
@@ -379,12 +379,12 @@ def get_csv_data(portal: str):
             # json 파일로 변환
             data = pd.read_csv(latest_file).to_json(orient='records')
             return data
-        
+
         # CSV 파일이 존재하지 않는 경우
         else:
             logger.error(f"[Fail] CSV file not found")
             raise HTTPException(status_code=404, detail="CSV file not found")
-        
+
     except Exception as e:
         logger.error(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")

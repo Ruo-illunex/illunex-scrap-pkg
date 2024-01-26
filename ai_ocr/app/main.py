@@ -30,7 +30,7 @@ async def health_check():
 
 
 @app.post("/api/v1/trocr")
-async def get_text_from_trocr(image: UploadFile) -> dict:
+async def get_text_from_trocr(image: UploadFile, max_length: int) -> dict:
     """TROCR을 이용해 이미지에서 텍스트를 추출하는 함수
     args:
         image: PIL.Image로 변환된 객체 (Image.open(image_path).convert("RGB"))
@@ -43,7 +43,7 @@ async def get_text_from_trocr(image: UploadFile) -> dict:
         image_bytes = await image.read()
         image_pil = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
-        text = await trocr_model.trocr(image=image_pil)
+        text = await trocr_model.trocr(image=image_pil, max_length=max_length)
         return {"status": 200, "text": text}
     except Exception as e:
         err_msg = f"Error: {e}\n{traceback.format_exc()}"

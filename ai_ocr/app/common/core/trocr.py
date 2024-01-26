@@ -20,7 +20,7 @@ class TROCR:
             self._log_file
         )
 
-    async def trocr(self, image: Image) -> str:
+    async def trocr(self, image: Image, max_length=6) -> str:
         """TROCR을 이용해 이미지에서 텍스트를 추출하는 함수
         args:
             image: PIL.Image로 변환된 객체 (Image.open(image_path).convert("RGB"))
@@ -31,7 +31,7 @@ class TROCR:
             pixel_values = self._processor(
                 images=image, return_tensors="pt").pixel_values
 
-            generated_ids = self._model.generate(pixel_values, max_length=6)
+            generated_ids = self._model.generate(pixel_values, max_length=max_length)
             generated_text = self._processor.batch_decode(
                 generated_ids, skip_special_tokens=True)[0]
             return generated_text

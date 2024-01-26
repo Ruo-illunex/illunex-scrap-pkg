@@ -25,6 +25,9 @@ NEWS_DB_URL = f'mysql+pymysql://{username}:{password}@{host}:{port}/{news_databa
 SCRAPER_MNG_DB_URL = f'mysql+pymysql://{username}:{password}@{host}:{port}/{scraper_mng_database}?charset=utf8mb4'
 API_SERVER_URL = f'http://{api_server_host}:{api_server_port}/api/scrap_manager/'
 
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITHM = os.getenv('ALGORITHM')
+
 # 파일 경로
 FILE_PATHS = {
     'category':'app/common/core/category.yaml',
@@ -33,7 +36,6 @@ FILE_PATHS = {
     'esg_finance_media': 'app/common/core/esg_finance_media.yaml',
     'data': 'app/data',
     }
-
 
 # 시놀로지 챗봇 설정
 SYNOLOGY_CHAT = {

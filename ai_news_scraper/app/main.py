@@ -5,7 +5,7 @@ import threading
 
 import schedule
 import pandas as pd
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, Depends
 
 from app.scrap_manager.api.router import router as scrap_manager_router
 from app.common.db.news_database import NewsDatabase
@@ -17,6 +17,7 @@ from app.config.settings import SYNOLOGY_CHAT
 from app.notification.synology_chat import send_message_to_synology_chat
 from app.notification.statistics import create_daily_message, create_error_report_message
 from app.common.log.log_config import setup_logger
+from app.config.auth import verify_token
 
 
 # 로거 설정
@@ -60,7 +61,7 @@ async def scrape_daum_news_endpoint():
 
     try:
         await scraper.scrape_daum_news()
-        return {"message": "Daum News Scraping Started"}
+        return {"message": "Daum News Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "daum")
@@ -74,7 +75,7 @@ async def scrape_naver_news_endpoint():
 
     try:
         await scraper.scrape_naver_news()
-        return {"message": "Naver News Scraping Started"}
+        return {"message": "Naver News Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "naver")
@@ -88,7 +89,7 @@ async def scrape_zdnet_news_endpoint():
 
     try:
         await scraper.scrape_zdnet_news()
-        return {"message": "ZDNet News Scraping Started"}
+        return {"message": "ZDNet News Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "zdnet")
@@ -102,7 +103,7 @@ async def scrape_vs_news_endpoint():
 
     try:
         await scraper.scrape_vs_news()
-        return {"message": "Venture Square News Scraping Started"}
+        return {"message": "Venture Square News Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "venturesquare")
@@ -116,7 +117,7 @@ async def scrape_thebell_news_endpoint():
 
     try:
         await scraper.scrape_thebell_news()
-        return {"message": "The Bell News Scraping Started"}
+        return {"message": "The Bell News Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "thebell")
@@ -130,7 +131,7 @@ async def scrape_startupn_news_endpoint():
 
     try:
         await scraper.scrape_startupn_news()
-        return {"message": "Startupn News Scraping Started"}
+        return {"message": "Startupn News Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "startupn")
@@ -144,7 +145,7 @@ async def scrape_startuptoday_news_endpoint():
 
     try:
         await scraper.scrape_startuptoday_news()
-        return {"message": "StartupToday News Scraping Started"}
+        return {"message": "StartupToday News Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "startuptoday")
@@ -158,7 +159,7 @@ async def scrape_platum_news_endpoint():
 
     try:
         await scraper.scrape_platum_news()
-        return {"message": "Platum News Scraping Started"}
+        return {"message": "Platum News Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "platum")
@@ -172,7 +173,7 @@ async def scrape_esg_news_endpoint():
 
     try:
         await scraper.scrape_esg_news()
-        return {"message": "ESG News Scraping Started"}
+        return {"message": "ESG News Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "esg")
@@ -186,7 +187,7 @@ async def scrape_greenpost_news_endpoint():
 
     try:
         await scraper.scrape_greenpost_news()
-        return {"message": "Greenpost News Scraping Started"}
+        return {"message": "Greenpost News Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "greenpost")
@@ -201,7 +202,7 @@ async def scrape_esg_finance_news_endpoint(get_all_news: bool = False):
     """ESG 파이낸스 뉴스 스크래핑을 시작하는 엔드포인트"""
     try:
         await scraper.scrape_esg_finance_news(get_all_news_urls=get_all_news)
-        return {"message": "ESG Finance News Scraping Started"}
+        return {"message": "ESG Finance News Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "esg_finance")
@@ -215,7 +216,7 @@ def scrape_esg_finance_hub_endpoint():
 
     try:
         scraper.scrape_esg_finance_hub()
-        return {"message": "ESG Finance Hub Scraping Started"}
+        return {"message": "ESG Finance Hub Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "esg_finance_hub")
@@ -224,7 +225,7 @@ def scrape_esg_finance_hub_endpoint():
 
 
 @app.post("/scrape/missing_news")
-async def scrape_missing_news_endpoint(csv_file: UploadFile = None):
+async def scrape_missing_news_endpoint(csv_file: UploadFile = None, token: str = Depends(verify_token)):
     """누락된 뉴스를 스크래핑하는 엔드포인트
     args:
         csv_file: 누락된 뉴스의 URL이 담긴 CSV 파일
@@ -234,7 +235,7 @@ async def scrape_missing_news_endpoint(csv_file: UploadFile = None):
         df = pd.read_csv(csv_file.file)
         file_name = csv_file.filename
         await scraper.scrape_missing_news(df, file_name)
-        return {"message": "Missing News Scraping Started"}
+        return {"message": "Missing News Scraping Completed Successfully."}
     except Exception as e:
         logger.error(f"Error: {e}")
         syn_err_msg = create_error_report_message(e, "missing_news")
