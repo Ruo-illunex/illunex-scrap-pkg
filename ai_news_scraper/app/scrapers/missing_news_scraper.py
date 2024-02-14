@@ -309,7 +309,7 @@ class MissingNewsScraper(NewsScraper):
             portal='naver',
             media=media,
             kind="999999",
-            category="MISSING_NEWS",
+            # category="MISSING_NEWS",
             esg_analysis="",
             norm_title=norm_title,
             )

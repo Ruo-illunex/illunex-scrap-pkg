@@ -122,7 +122,7 @@ class EsgNewsScraper(NewsScraper):
             portal=self.scraper_name,
             media=media,
             kind=kind_id,
-            category="ESG",
+            # category="ESG",
             esg_analysis="",
             norm_title=norm_title,
             )

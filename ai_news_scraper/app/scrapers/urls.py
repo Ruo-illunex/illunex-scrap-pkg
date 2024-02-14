@@ -4,7 +4,6 @@ class URLs:
         self.portal = portal
         self.urls = {}
         self.retrieve_news_urls()
-    
 
     def retrieve_news_urls(self) -> dict:
         """뉴스 URL을 가져오는 함수"""
@@ -49,26 +48,21 @@ class URLs:
         else:
             raise ValueError(f"Error: {self.portal} is not a valid portal name")     
 
-
     def get_daum_newsboard_url(self):
         """다음 뉴스 카테고리별 URL을 생성하는 함수"""
         return "https://news.daum.net/breakingnews/{}"
-    
 
     def get_naver_newsboard_url(self):
         """네이버 뉴스 카테고리별 URL을 생성하는 함수"""
         return "https://news.naver.com/main/list.naver?mode=LSD&mid=sec&sid1={}"
-    
 
     def get_zdnet_newsboard_url(self):
         """ZDNet 뉴스 보드 URL을 리턴하는 함수"""
         return "https://zdnet.co.kr/news/?lstcode=0000&page=1"
-    
 
     def get_zdnet_base_url(self):
         """ZDNet 뉴스 기사 URL을 리턴하는 함수"""
         return "https://zdnet.co.kr{}"
-
 
     def get_startuptoday_newsboard_url(self):
         """StartupToday 뉴스 보드 URL을 리턴하는 함수"""
@@ -78,27 +72,22 @@ class URLs:
     def get_startuptoday_base_url(self):
         """StartupToday 뉴스 기사 URL을 리턴하는 함수"""
         return "https://startuptoday.co.kr{}"
-    
 
     def get_startupn_newsboard_url(self):
         """StartupN 뉴스 보드 URL을 리턴하는 함수"""
         return "https://www.startupn.kr/news/articleList.html?sc_section_code=S1N2&view_type=sm"
-    
 
     def get_startupn_base_url(self):
         """StartupN 뉴스 기사 URL을 리턴하는 함수"""
         return "https://www.startupn.kr{}"
-    
 
     def get_thebell_newsboard_url(self):
         """TheBell 뉴스 보드 URL을 리턴하는 함수"""
         return "https://www.thebell.co.kr/free/content/Article.asp?svccode=00"
-    
 
     def get_thebell_base_url(self):
         """TheBell 뉴스 기사 URL을 리턴하는 함수"""
         return "https://www.thebell.co.kr/free/content/{}"
-    
 
     def get_vs_newsboard_url(self):
         """Venture Square 뉴스 피드 URL을 리턴하는 함수"""
@@ -119,7 +108,6 @@ class URLs:
     def get_greenpostkorea_newsboard_url(self):
         """Greenpostkorea rss URL을 리턴하는 함수"""
         return "https://www.greenpostkorea.co.kr/rss/allArticle.xml"
-    
     def get_esgfinancehub_newsboard_url(self):
         """ESG Finance Hub rss URL을 리턴하는 함수"""
         return "https://www.esgfinancehub.or.kr/portal/news/summaryModal/20211213155213000177"

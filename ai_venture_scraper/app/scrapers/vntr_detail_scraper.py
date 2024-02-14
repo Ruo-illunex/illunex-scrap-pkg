@@ -65,6 +65,8 @@ class VntrScraper:
             'collect_vntr_certificate': 0
         }
 
+        self._scheduler_running = True
+
     def _init_data(self) -> None:
         """데이터를 초기화하는 함수
         """
@@ -1086,9 +1088,12 @@ class VntrScraper:
 
     # 스케줄러 실행 함수
     def _run_scheduler(self):
-        while True:
+        while self._scheduler_running:
             schedule.run_pending()
             time.sleep(60)
+
+    def _stop_scheduler(self):
+        self._scheduler_running = False
 
     def scrape(self, vntr_list: list):
         """벤처기업 상세정보를 가져오는 스레드를 실행하는 함수"""
@@ -1142,6 +1147,7 @@ class VntrScraper:
             self._logger.info(end_msg)
             print(end_msg)
             send_message_to_synology_chat(end_msg, self._prod_token)
+            self._stop_scheduler()
 
         except Exception as e:
             err_msg = f'벤처기업 스크래핑 실패: {e}\n 자세한 내용은 {self._log_file} 파일을 확인해주세요.'

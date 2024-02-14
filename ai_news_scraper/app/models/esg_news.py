@@ -22,7 +22,7 @@ class EsgNews(BaseScraper):
     image_url = Column(Text)
     portal = Column(String(255))
     media = Column(String(255))
-    category = Column(String(255))
+    # category = Column(String(255))
     esg_analysis = Column(Text)
     norm_title = Column(String(255))
 
@@ -45,7 +45,7 @@ class EsgNewsPydantic(BaseModel):
     image_url: str
     portal: str
     media: str
-    category: str
+    # category: str
     esg_analysis: str
     norm_title: str
 

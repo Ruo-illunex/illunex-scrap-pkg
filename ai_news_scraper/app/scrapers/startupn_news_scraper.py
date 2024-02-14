@@ -123,7 +123,7 @@ class StartupnNewsScraper(NewsScraper):
             portal=self.scraper_name,
             media=media,
             kind=kind_id,
-            category="",
+            # category="",
             norm_title=norm_title,
             )
         return news_data
