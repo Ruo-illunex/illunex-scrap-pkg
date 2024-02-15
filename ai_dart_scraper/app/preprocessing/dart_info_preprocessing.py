@@ -18,7 +18,7 @@ class DartInfoPreprocessing:
             file_path
         )
         self._get_ksic()
-        
+
     def _get_ksic(self):
         self._ksic_df = companies_db.get_ksic()   # [code_value, code_desc]
         # code_value = A01100 -> code: A, industry_code: 01100 분리 -> industry_code: 011로 뒤에 0 제거 (주의 앞에 0은 제거하지 않음)
