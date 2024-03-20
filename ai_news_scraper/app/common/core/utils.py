@@ -170,3 +170,19 @@ def truncate_content(content, max_size=65535):
         return content_bytes[:max_size].decode('utf-8', errors='ignore')
     else:
         return content
+
+
+def process_content(text):
+    try:
+        # 웹 공백 문자 제거
+        text = re.sub(r'&nbsp', ' ', text)  # &nbsp만 공백으로 대체
+        # 스페이스가 두 개 이상인 경우의 공백을 없애기
+        text = re.sub(r' {2,}', '', text)
+        # 각 줄의 맨 처음 시작하는 문장(또는 단어) 앞의 공백 제거
+        text = re.sub(r'(?<=\n)\s+', '', text)  # 각 줄의 맨 처음 시작하는 공백 제거
+        # 빈 줄 및 앞뒤 공백 제거
+        text = re.sub(r'^\s*\n', '', text, flags=re.MULTILINE)  # 빈 줄 제거
+        text = re.sub(r'\n\s*$', '', text, flags=re.MULTILINE)  # 끝에 남은 공백 제거
+        return text.strip()
+    except Exception as e:
+        return text
