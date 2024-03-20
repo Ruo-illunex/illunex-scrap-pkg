@@ -175,6 +175,7 @@ def truncate_content(content, max_size=65535):
 def process_content(text):
     try:
         # HTML 공백 문자인 &nbsp;를 실제 공백으로 대체합니다.
+        text = re.sub(r'\u00A0', ' ', text)
         text = re.sub(r'&nbsp;', ' ', text)
         # 두 개 이상 연속된 공백을 하나의 공백으로 치환합니다.
         text = re.sub(r' {2,}', ' ', text)
