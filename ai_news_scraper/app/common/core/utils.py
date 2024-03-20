@@ -174,6 +174,8 @@ def truncate_content(content, max_size=65535):
 
 def process_content(text):
     try:
+        # e-mail 주소를 제거합니다.
+        text = re.sub(r'\S+@\S+', '', text)
         # HTML 공백 문자인 &nbsp;를 실제 공백으로 대체합니다.
         text = re.sub(r'\u00A0', ' ', text)
         text = re.sub(r'&nbsp;', ' ', text)
