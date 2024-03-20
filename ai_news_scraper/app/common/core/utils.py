@@ -174,15 +174,17 @@ def truncate_content(content, max_size=65535):
 
 def process_content(text):
     try:
-        # 웹 공백 문자 제거
-        text = re.sub(r'&nbsp', ' ', text)  # &nbsp만 공백으로 대체
-        # 스페이스가 두 개 이상인 경우의 공백을 없애기
-        text = re.sub(r' {2,}', '', text)
-        # 각 줄의 맨 처음 시작하는 문장(또는 단어) 앞의 공백 제거
-        text = re.sub(r'(?<=\n)\s+', '', text)  # 각 줄의 맨 처음 시작하는 공백 제거
-        # 빈 줄 및 앞뒤 공백 제거
-        text = re.sub(r'^\s*\n', '', text, flags=re.MULTILINE)  # 빈 줄 제거
-        text = re.sub(r'\n\s*$', '', text, flags=re.MULTILINE)  # 끝에 남은 공백 제거
+        # HTML 공백 문자인 &nbsp;를 실제 공백으로 대체합니다.
+        text = re.sub(r'&nbsp;', ' ', text)
+        # 두 개 이상 연속된 공백을 하나의 공백으로 치환합니다.
+        text = re.sub(r' {2,}', ' ', text)
+        # 각 줄의 시작 부분에 있는 공백을 제거합니다.
+        text = re.sub(r'(?m)^\s+', '', text)
+        # 빈 줄을 제거합니다.
+        text = re.sub(r'(?m)^\n', '', text)
+        
+        # 문자열의 앞뒤에 있는 모든 공백을 제거합니다.
         return text.strip()
     except Exception as e:
+        print('content 전처리 중 에러 발생:', e)
         return text
