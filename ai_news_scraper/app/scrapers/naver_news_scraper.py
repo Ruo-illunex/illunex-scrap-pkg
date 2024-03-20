@@ -150,6 +150,7 @@ class NaverNewsScraper(NewsScraper):
             kind_id = self.category_dict.get(self.scraper_name).get("etc")
         norm_title = normal_text(title)
         content = truncate_content(content)
+        content = process_content(content)
 
         news_data = NaverNews(
             url=news_url,

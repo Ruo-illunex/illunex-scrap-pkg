@@ -8,7 +8,7 @@ import jwt
 
 from app.settings import SECRET_KEY, ALGORITHM, USERNAME, PASSWORD
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 60*24*7
+ACCESS_TOKEN_EXPIRE_MINUTES = 365*24*7
 
 # 비밀번호 해싱을 위한 설정
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

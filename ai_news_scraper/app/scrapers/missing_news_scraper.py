@@ -16,7 +16,6 @@ from app.common.core.base_news_scraper import NewsScraper
 from app.models_init import EsgNews
 from app.common.core.utils import *
 from app.config.settings import FILE_PATHS
-from app.common.core.utils import load_yaml, normal_text, truncate_content
 
 
 class MissingNewsScraper(NewsScraper):
@@ -298,6 +297,7 @@ class MissingNewsScraper(NewsScraper):
         preprocessed_create_date = self.preprocess_datetime(create_date)
         norm_title = normal_text(title)
         content = truncate_content(content)
+        content = process_content(content)
 
         news_data = EsgNews(
             url=news_url,
