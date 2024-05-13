@@ -56,7 +56,7 @@ class NewCompanyInfo(BaseCompanies):
     # 인코딩 설정
     __table_args__ = {
         'mysql_charset': 'utf8mb4',
-        'mysql_collate': 'utf8mb4_unicode_ci'
+        'mysql_collate': 'utf8mb4_general_ci'
     }
     
     def to_dict(self):
